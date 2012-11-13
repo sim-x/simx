@@ -1,0 +1,4 @@
+#Member1	Member2	Member3	Member4	User1	User2	User3
+1	string	3.14159	h	1.1	2.2	3 This is the notes field
+-4	eeep	5	Z	2.1	-2.2	99 It extends from the last colums to the end of the line
+

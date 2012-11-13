@@ -1,0 +1,2 @@
+LK: This smart_assert has been modified to fit simx architecture. 
+All includes made from <smart_assert/...> to <simx/smart_assert/....>

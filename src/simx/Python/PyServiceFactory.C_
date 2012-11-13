@@ -1,0 +1,25 @@
+//--------------------------------------------------------------------------
+// File:    PyServiceFactory.C
+// Module:  simx
+// Author:  Sunil Thulasidasan
+// Created: August 1 2012
+//
+// Description: Factory methods for Python services
+//
+// @@COPYRIGHT@@
+//
+//--------------------------------------------------------------------------
+
+
+#include <boost/python.hpp>
+#include "simx/Python/PyServiceFactory.h"
+
+using namespace std;
+using namespace boost;
+
+namespace simx {
+
+  Service* serviceCreator( const ServiceName& name, PyEntity& owner,
+			   const Input& input )
+
+}
