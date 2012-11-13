@@ -35,14 +35,14 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARIES})
 
 # simx	
-include_directories(${CMAKE_SOURCE_DIR} simx) 
+include_directories(${CMAKE_SOURCE_DIR} src src/simx) 
 #					${MPI_INCLUDE_PATH}
 #					${Boost_INCLUDE_DIRS}
 #					${PYTHON_INCLUDE_DIR})
 
 
-file(GLOB_RECURSE SIMX_SOURCES simx/*.C)
-file(GLOB_RECURSE NOT_SIMX_SOURCES simx/main*.C)
+file(GLOB_RECURSE SIMX_SOURCES src/simx/*.C)
+file(GLOB_RECURSE NOT_SIMX_SOURCES src/simx/main*.C)
 list(REMOVE_ITEM SIMX_SOURCES ${NOT_SIMX_SOURCES})
 
 add_library(simx SHARED
