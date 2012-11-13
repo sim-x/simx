@@ -48,7 +48,7 @@ for i in range(4):
 
 ##### Schedule initial events, if any ###############
 import random
-for evt_time in xrange(1000000):
+for evt_time in xrange(100000):
     j = random.choice([0,1,2,3])
     k = random.choice([0,1,2,3])
     #j =random.choice([0,1])
