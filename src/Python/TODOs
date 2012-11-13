@@ -1,0 +1,250 @@
+Simcore todo (as of Sep 28th 2012)
+
+- add python object support for InfoData -- DONE --
+
+-- and add new function createPyInfofromInfoData
+   in InfoManager (similar to what was done for ServiceManager and EntityManager) -- DONE --
+
+-- test sending and receiving Infos on same process -- DONE --
+
+-- pickling python info's for distributed memory  -- DONE --
+   
+   This was a tricky one, not conceptually, but getting cPickles unpickling to work nicely
+   with Simcore. Unpickling would frequently and unpredictably result in segfaults. pickling
+   and unpickling were both being invoked from within c++  (by importing the module using boost
+   pytohon), but only unpickling was causing the segfaults. 
+
+   The current solution to this is to do the pickling from within c++, and for unpickling
+   pass the pickled string to the python service object, along with a boolean flag, which
+   decides if the object should be unpickled or not (objects coming from entities on the
+   same process are not pickled).
+
+   I suspect this has to do with SimEngine being multi-threaded, and interfering destructively with the Python GIL. Wrapping Python call-backs inside GIL lock methods (as described in the python.org documentation) did not fix the problem, though.
+
+ Update 10/19: try looking at these links and see if they might help.
+http://dandesousa.com/2011/12/11/boost-python-calling-back-into-python-from-native-c-threads/
+
+http://stackoverflow.com/questions/8451334/why-is-pygilstate-release-throwing-fatal-python-errors/8469304#8469304
+
+
+-- Service constructors should get Python entity objects passed in, not PyEntity objects. -- DONE --
+   - This took me an entire work-day to solve. Writing this code was easy enough, but for some
+     reason, when services were being created they were unable to call the methods of the
+     base C++ class (PyEntity) via the passed-in python entity object. Turns out this was 
+     ( exactly why, I do not know) because createServices was being called from inside the
+     PyEntity constructor, that is before the python entity object was fully initialized.
+     Disabling this call inside PyEntity constructor and calling create_services explicitly
+     from python inside __init__ method solved this problem.
+
+-- Register service addresses in python -- DONE --
+
+-- How to handle multiple receives for same service object? (Python Dictionaries)
+
+-- debug stream printing for python objects -- DONE -- 
+
+-- output stream printing for python objects -- DONE -- 
+
+-- PyUtility -- DONE --
+
+-- PyLogger -- DONE -- 
+
+-- PyOutput -- DONE -- 
+
+-- General cleanup 
+
+   - getting rid of helloworld library, -- DONE --
+
+   - cleaning up the init_MPI calls   -- DONE --
+
+   -  taking care of critical Python TODOs   -- DONE -- 
+
+   - try-catch should return instead of falling through
+
+   - info_files key should not be a required value  -- DONE --
+
+-- Adding more functionality to python 
+   -- go through fasttrans/agentcore and see
+     what applications typically need.  -- DONE --
+
+-- Creating well-organized python modules that hides confusing aspects from users.  -- DONE --
+
+-- module namespace hierarchies  *** PRIORITY ***
+
+--  precreate/partition functions *** PRIORITY *** 
+
+--  initial input info creation should be in chunks. Potential segfaults if
+    everything is created at once, and there are a large number of such objects.
+    *** PRIORITY ***
+
+-- address of services should be generated automatically inside Python 
+   ( ADDR_SERVICE = get_addr() or something like that ) -- HIGH -- 
+
+-- make all python call-backs thread-safe  -- DONE --
+
+-- Change build system to cmake/git. -- DONE --
+
+-- Create sphinx documentation and webpage. ** PRIORITY **
+
+-- Package for ubuntu, fedora, os-x
+
+-- Publicity: boost python and sphinx mailing lists.
+   Simutools submission  - how will this be different from Simultech?
+   SciPy conference
+   parallel python community
+   wikipedia "List of Discrete Event Simulation Software" (add simx)
+   essa 2013 (warsaw,poland, sep 2013
+   poster at PyCon (this looks like a fun conference, even includes a 5k run!)
+)
+   pycon India?
+   wintersim talk/poster/tutorial
+   one or more leading agent-based modeling conferences
+
+-- ADTSC science highights submission
+ 
+-- Use skeleton/content mechanism from Boost-MPI?
+
+-- large scale testing, testing for memory leaks
+
+-- implementing a C++ app in python to test functionality ( AgentCore? HydroSim? EduSim? )
+
+-- testing with Prime ( or miniPrime or whatever the latest incarnation is.)
+
+-- get rid of trailing 'L' in EntityID while printing debug messages.
+
+-- Compare with SimPy
+
+
+export the following:
+--------------------
+smart_assert
+random streams -- DONE --
+
+LP
+--
+LP::MINDELAY -- DONE -- (via a wrapper function in pycontrol )
+
+
+TableReader(?)
+
+Configuration
+--------------
+config::get_config_value (? all vals are set from inside a python script, so 
+			 why is this required?)
+
+type
+----
+simx::ServiceName  -- DONE --
+
+control
+-------
+simx::control:: public functions, and enums -- DONE -- 
+
+
+output
+------
+output stream -- DONE -- 
+
+
+entity
+------
+distributeInfo -- DONE -- 
+processOutgoingInfo -- DONE -- (named this to send_info)
+getService (returns python service object) -- DONE --
+getsimxService( returns c++ PyService Object )  (is this needed?)
+output -- DONE --
+
+service
+-------
+getname -- DONE --
+output  -- DONE -- 
+getnow -- DONE --
+getentityid -- DONE --
+ControlInfo (sending receiving) (will have to ifdef the exporting functions with USE_PRIME)
+
+Messenger (? -- needed?)
+---------
+will have to ifdef the exporting functions with USE_PRIME
+
+
+Infomanager
+-----------
+duplicateInfo -- ( should not be needed. just use send_info, the python object will be copied) -- DONE -- 
+
+EntityManager
+------------
+findEntityLPID -- DONE -- (used a wrapper for this via PyManager )
+getEntity -- DONE -- (used a wrapper for this via PyManager )
+registerPlacingFunction
+probeEntities	 -- DONE -- ( used wrapper for this via PyManager )
+
+Controller
+---------
+
+
+Other
+-----
+
+adding functionality to create singleton objects.
+
+
+*******************************************
+
+PYTHON functionality
+----------------
+1. easily set timers
+2. determine if entity is on same LP
+3. easily installing services -- DONE --
+4. easily installing profiles -- DONE --
+
+
+
+For implementing a simx app in python
+----------------------------------------
+1. agentcore, hydrosim look like good targets to implement
+2. What about loadsim? Edusim? (loadSim is nowhere to be found!  edusim seems like a good candidate.)
+3. need to get a better grip on OOP in Python.
+
+For ADTSC
+---------
+compare lines of code, programmer time. 
+Also show plots of a million-entity swarm (look at Mesbahi's book for ideas). Include some eye-candy. Can use the same thing for a conference demo.
+
+
+TODOs for tomorrow
+
+1. quickly browse agentcore and hydrosim code to see what needs to be exported ( 2hrs) (--DONE --)
+2. start working on export-list above, in addition to PRIORITY implementations. -- DONE --
+
+
+
+Critical TODOs (as of 10/26 )
+
+1. The thread bug is still there. For extended runs, while unpacking, segfaults still happen.
+   - does segfaulting happend if no unpickling is done? Unpickling (called via unpack) is called byt the listening thread, so this is almost certainly a problem with the threads and GIL. (not so sure any more, see below)
+
+
+   - Could we potentially do the unpacking inside the main thread? But this is exactly what I was doing with calling unpickle from inside python (the recv method is only called by the main thread, so why is it still segfaulting? Possibly another error lurking somewhere.) 
+   Update (10/26 9:56 AM). I think this is probably a simengine buffer bug somewhere, as it only happens if a large number of infos are created initially (1000000)
+. The unpacking is done by the main thread, so this is probably not a GIL/Python thread bug. Also, as a side-effect, we can now unpickle inside c++ itself, it just has to be by the main thread. We do this inside PyService->recv() method.
+
+
+2. Sequential/Parallel runs both segfault if events are scheduled after END_TIME. This one 
+should be easy to fix -- DONE -- 
+
+
+more on segfault bug: if only packing is done inside an MPI run,
+
+
+packaging notes:
+---------------
+distutils?
+cmake (since most of the compilation is in c++) and just copy the python stuff over
+disutils + cmake?
+
+
+Performance Notes
+----------------
+
+1. DebugStream _has_ to be rewritten to prevent useless writes, which get executed irrespective of debug level. only to be thrown away. -- HIGH --
+
+2. schedule_event -- move this to C++ and determine if input-info should be created based on target entity ID.

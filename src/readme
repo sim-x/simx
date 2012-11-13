@@ -1,0 +1,193 @@
+
+Basic structure of simx:
+=============================
+
+USING simEngine:
+- complete drop-in replacement for PRIME
+- (does not have out-of-band messaging yet)
+- must use main_MPI.C instead of main_dassf.C in the final module
+- to enable: undefine SIMCORE_USE_PRIME in type.h
+
+----------------------------------------------------------
+
+- core (DaSSF etc., user should never deal with)
+    - LP, Dassf* files
+
+- simulation objects (user will deal with)
+    - Entities
+    - Services
+    - Info
+    * each object has 
+	inline std::ostream& operator<<(std::ostream& os, const <object>& p)
+	inline std::ostream& operator<<(std::ostream& os, const <object>* p)
+    which all use virtual void <object>::print(std::ostream&) const
+
+- managers (user should not need to change, but will deal with)
+    - for each object one manager
+    * input/creating/migration....
+
+MESSAGES:
+    - synch: have time to be delivered
+    - nosynch: don't have time, delivered immediately (not yet implemented)
+
+address: Entity + Service on Entity
+
+Entity: static, address uniquely identifies it, each entity has exactly one address
+Service: dynamic, service at a particular address may change at run-time, service
+    may have multiple addresses on one Entity
+
+===========================================================================
+
+OUTPUT:
+Output is done using namespace Output (call to Output::output(<entity or
+service>,<output type> ) This returns a stream into which message content
+(user defined, possibly empty) can be shifted (<<) - delimiters (\t) are
+autoticly added between message components. 
+Syntax: Time    EntityId        ServiceId       Type    CustomData
+
+===========================================================================
+NOTES:
+- All IDs with value <IDTYPE>() are considered "undefined".
+
+- Done in such a way that user (designer) does NOT have to write 
+    ANY "new" and "delete" code for simx objects. Use Managers to 
+    do so and return smart_pointers instead of "*" to the user
+
+- Each container object used (std::vector, list, set, map, loki::AssocVector)
+    have their corresponding operator<< functions in writers.h, 
+    which makes debug printing much easier
+
+- there is a general std::vector, list and set input operator>> 
+    in readers.h. Syntax: "[<e1> <e2> ... ]"
+
+- the Dassf* files exist to hide DaSSF internals better from the rest, 
+    especially prime::ssf::ssf_compact structure (NO DaSSF header file should be included
+    outside few simx::*.C files)
+
+- InfoManager uses map<const info_type*,...>, and assumes uniqueness 
+    for unique types, which may not be true if parts of the code
+    are dynamically linked. Also, it uses automatic numbering of 
+    Info::ClassTypes which requires that the order in which registerInfo
+    calls are made is the same on all machines, which should always be
+    true if the same binary is used.
+
+- if LP reports that an event cannot be delivered on time and will be
+    delivered later, it may be that the time resolution (Time type
+    and MINDELAY) is not well set. Try going to "double" time type.
+    (LTIME_* in configure.sh needs to be modified, and DaSSF rebuild
+    with the same --with-ltime-* setting)
+
+- Output: provides a stream where anthing can be put, automatically
+    puts "\t" between items in a record. BUT: it is only known when a record
+    is completed when we ask for Output again to do a new record. This may
+    be unconvenient for real-time output processing.
+
+- Profile data items (part of Input structures read in using readProfile) 
+    are guaranteed to stay until the program termination (so pointers or 
+    references to them are always valid)
+
+- all input structures must have copy constructor (so that Profile content
+    is read only once and then copied to a new object before reading in 
+    CustomData part)
+
+- there's a try{} catch{} wrapper around all event executions. 
+    simx has Exception base class for its errors (see Exception.h), 
+    but std::exception is also caught.
+
+- LPs in one linux-process should all be synchronized, or else the InfoManager
+    must be changed to reflect that different LPs it is responsible for
+    might have different times (InfoManager is responsible for scheduling
+    Infos from input file(s) ).
+
+- when converting anything to type Time or vice-versa, it's a good idea to do
+    static_casts, because Time may be changed (using LTIME_* #defines)
+
+- all Info-derived objects should have a DEEP copy constructor (one that
+    copies content of a possible pointer, rather then the pointer itself)
+
+- PASSING INFO:
+    - assumes all Info-derived copy-constructors are DEEP copiers
+    - sending (calling Service::sendInfo or equivalent) info only copies 
+    the Ptr<> 
+    - Services::sendInfo invalidates the arg Ptr<> to make sure it the
+    Info will not be changed after  (by default, and also issues warn if more
+    than the arg pointer to it exist) 
+    - Entity::processOutgoingInfo does NOT invalidate the arg, but it should
+    not be used directly
+    - it is undefined whether changes to Info object will or will not be
+    delivered to the destination after the call to sendInfo (or processOutgoingInfo)
+
+    - Entity::processIncomingInfo always receives the only Ptr<> to the
+    Info object ("fresh" Info object)
+	- this means that InfoRecipient::receive() gets a fresh object
+	(Ptr.unique()==true) if called from default
+	Entity::processIncomingInfo
+
+- ! if an Info is scheduled, only ServiceAddress can be specified (not ServiceID). 
+    But another service can be living at that address when the event arrives.
+
+===========================================================================
+TODO:
+- do away with EventInfoManager? It seems an overkill for such a simple function
+- LOGGER IS NOT THREAD SAFE!
+
+
+- do something with Log::log(), it is really dangerous when not initiated
+    (doesn't work with singletons and doesn't do asserts to check that)
+    Also, it is *VERY* inefficient in a way that it collects all output,
+    and then throws it away if not asked for it (even all debug logs)
+- add compile-time checks for template arguments when I expect something (so that a
+    reasonable error message can be printed). Use boost::mpl
+- idea: do "undeliverable" responses, when a info message cannot be delivered (the target 
+    object doesn't exist, doesn't handle the given message type etc.), send
+    an "undeliverable message" back to the sender, handled e.g by 
+    virtual Service::handleUndeliverableInfo. The UnliverableInfo should contain the
+    original info + reason of failure
+- idea: do "global" objects by having a special GlobalEntity (at theEntityManager()?) which could
+    be assign arbitrary services, but would only have *const* Service& getService<>, so that
+    read-only would be alright, but no changes. Changes would be achieved by sending the 
+    Services info messages, which would automatically get resend to all other
+    GlobalObjects' services.
+- add exception in case an info cannot be created to InfoManager::createInfo (uses ASSERT now)
+    add exeptions (derived from simx/Exception.h) to other suitable places.
+- do not assert that an input record is valid, if it is not only output error and skip it 
+    (add record# memory into frmework/File and use it to indicate where the error is)
+    - better done in the framework/File/FileReader.h directly
+- enable on-line creation of Services and Entities
+    - special-purpose services, EntityCreators, living at special-purpose Entity
+- use perfect hashing where suitable for const lookup
+- add ServiceAddress arg to InfoRecipient::receive so that if a service serves two addresses,
+    it knows where the Info is supposed to go
+- add start(ServiceAddress) and stop(ServiceAddress) methods of Service, which will be called before/after
+    the service is added/removed from some address on an Entity
+- add sent-info-removal call (if the info has not yet been delivered, discard it)
+- EntityID uses 8 bytes (5 bytes of payload, plus 3 of struct padding). This is not very efficient
+- use correct random seed for DaSSF
+- decide whether multiple LPs per unix process are necessary. If not, then pull getRandom and getNow
+    from Entity and Service into global functions that would use "the" LP in the unix process.
+    - hide away the whole "LP concept" from users of simx
+- is getSize necessary for all Infos? I think not, but it's used for infos in InfoPacket in PacketSim
+- incorporate some support for real-time interaction (Info sending), after the simulation has 
+    been started
+- decide on final type for Time (??)
+- currently, for a service to directly access other services on the same entity,
+    it needs to remember the entity itself. And it is also remembered in the
+    Service class (but private). Do something about this (make it accessible
+    e.g. getEntity() in service??).
+
+- do unit tests
+
+TODO: (LK 10/30/2008):
+- implement entity deletion (EntityManager::deleteEntity)... .just like createEntity, but
+    should be much easier (need to remember which entities are deleted
+    to discard future events for it). Use InfoControllerModifyEntity
+    event (with fActon==kREMOVE)
+- allow InfoControllerModifyEntit to be readable from INFO_FILE, which will allow additions/
+    deletions of entities from input file 
+- implement a function that suggest a new EntityID such that this entity is guaranteed 
+    not to exist yet. Each machine (EntityManager) needs to have its own
+    sequence of numbers, e.g. i*NumMnachines + rank (and bigger than any existing entity)
+    
+
+
+

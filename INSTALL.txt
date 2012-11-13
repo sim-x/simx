@@ -1,0 +1,12 @@
+To build simx:
+
+cd build
+cmake ../src
+
+This will build the simx shared library. If the build is succesful, you should have a 
+simx.so shared library in the build directory. 
+
+Add build/ to your PYTHONPATH environment variable.
+
+See examples/HelloWorld for a simple python simulation application that uses simx.
+

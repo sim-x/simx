@@ -1,0 +1,29 @@
+Some helpful links on boost serialization
+
+http://www.boost.org/doc/libs/1_51_0/libs/serialization/doc/index.html
+http://stackoverflow.com/questions/3672315/c-boostany-serialization
+http://mail.python.org/pipermail/cplusplus-sig/2010-September/015741.html
+http://stackoverflow.com/questions/12580579/how-to-use-boostserialization-to-save-eigenmatrix
+http://stackoverflow.com/questions/7289897/boost-serialization-and-boost-python-two-way-pickle
+http://www.boost.org/doc/libs/1_49_0/boost/mpi/python/serialize.hpp
+http://www.boost.org/doc/libs/1_51_0/libs/serialization/doc/serialization.html#registration
+http://www.boost.org/doc/libs/1_39_0/libs/python/doc/v2/import.html
+http://www.mail-archive.com/cplusplus-sig@python.org/msg00640.html
+https://bbs.archlinux.org/viewtopic.php?id=10651
+
+Eventually, did not use boost serialization. found the following python pickling
+links useful (atleast somewhat useful).
+
+Bascially used the loads and dumps method from cPickle. Invoked dumps form C++ and loads inside python interpreter (doing it form inside C++ called random segfaults, some kind of race condition was going on)
+
+http://stackoverflow.com/questions/7289897/boost-serialization-and-boost-python-two-way-pickle
+http://mail.python.org/pipermail/cplusplus-sig/2009-May/014492.html
+
+I used the code (loads,dumps) in boost::mpi::python for hints on using python pickle from C++.
+
+http://www.boost.org/doc/libs/1_49_0/boost/mpi/python/serialize.hpp
+http://git.tiker.net/boostmpi.git/blob/9ddb101c0f34e43f59053ae70616db2a97d79c52:/src/wrapper/serialize.cpp
+
+python pickling.
+---------------
+http://docs.python.org/library/pickle.html

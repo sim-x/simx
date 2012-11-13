@@ -1,0 +1,77 @@
+include $(top_srcdir)/NISAC.am
+
+TESTS = \
+	TestPackedData \
+	TestProfileHolder
+check_PROGRAMS = $(TESTS)
+
+#################################################################
+# the simx library
+lib_LTLIBRARIES = libsimx.la 
+
+libsimx_la_SOURCES = \
+	DassfEvent.C \
+	DassfLP.C \
+	LP.C \
+	readers.C \
+	register.C \
+	logger.C \
+	PackedData.C \
+	PackedData_PRIME.C \
+	EventInfo.C \
+	EventInfoManager.C \
+	Service.C \
+	ServiceData.C \
+	ServiceManager.C \
+	Input.C \
+	Info.C \
+	InfoData.C \
+	InfoManager.C \
+	InputHandler.C \
+	Entity.C \
+	EntityData.C \
+	EntityManager.C \
+	output.C \
+	control.C \
+	ControlInfoWrapper.C \
+	Messenger.C \
+	Controller.C \
+	simEngine.C
+
+libsimx_la_CXXFLAGS =  $(MPI_CXXFLAGS) $(PRIME_INCLUDES) $(PRIME_CFLAGS) $(AM_CXXFLAGS)
+
+#################################################################
+# Unit tests
+TestPackedData_SOURCES = \
+	TestPackedData.h \
+	TestPackedData.C \
+	type.h \
+	$(FRAMEWORK_SRC)/Test/Test.C \
+	$(FRAMEWORK_SRC)/Global/main_arg.C
+TestPackedData_CXXFLAGS = $(AM_CXXFLAGS) $(CPPUNIT_CFLAGS) \
+	$(MPI_CXXFLAGS) $(PRIME_INCLUDES) $(PRIME_CFLAGS)
+TestPackedData_LDFLAGS = $(AM_LDFLAGS) $(BOOST_LDFLAGS) $(BOOST_LIBS) $(CPPUNIT_LIBS) \
+	$(PRIME_LDFLAGS) $(MPI_LDFLAGS)
+TestPackedData_LDADD = \
+	$(top_builddir)/simx/libsimx.la \
+    $(FRAMEWORK_LIB)/UISlib/libUISlib.la \
+    $(PRIME_LDADD) \
+    $(MPI_PLIBS) $(MPI_LIBS) \
+	$(LIBADD_DL)
+
+
+TestProfileHolder_SOURCES = \
+	TestProfileHolder.h \
+	TestProfileHolder.C \
+	type.h \
+	$(FRAMEWORK_SRC)/Test/Test.C
+TestProfileHolder_CXXFLAGS =  $(AM_CXXFLAGS) $(CPPUNIT_CFLAGS) \
+	$(MPI_CXXFLAGS) $(PRIME_INCLUDES) $(PRIME_CFLAGS)
+TestProfileHolder_LDFLAGS = $(AM_LDFLAGS) $(BOOST_LDFLAGS) $(BOOST_LIBS) $(CPPUNIT_LIBS) \
+	$(PRIME_LDFLAGS) $(MPI_LDFLAGS)
+TestProfileHolder_LDADD = \
+	$(top_builddir)/simx/libsimx.la \
+    $(FRAMEWORK_LIB)/UISlib/libUISlib.la \
+    $(PRIME_LDADD) \
+    $(MPI_PLIBS) $(MPI_LIBS) \
+	$(LIBADD_DL)
