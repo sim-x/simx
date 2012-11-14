@@ -1,5 +1,14 @@
-SimX uses the CMake build system to generate the required Makefiles. CMake version 2.6 or higher
-is required for the build.
+Obtaining SimX
+==============
+The latest working version of SimX can be checked out via anonymous git
+
+git clone http://github.com/sim-x/simx.git
+
+Bulding SimX
+============
+
+SimX uses the CMake build system to generate the required Makefiles. 
+CMake version 2.6 or higher is required.
 
 Other requirements are
 
@@ -8,15 +17,15 @@ Other requirements are
  - MPICH2
  - gcc >= 4.2 
 
-Once the required libraries are installed, to build simx:
+Once the required libraries are installed, to build SimX:
 
 cd build
-cmake ../src
+cmake ../
 make
 
-This will build the simx shared library. If the build is succesful, you should have a 
+This will build the SimX shared library. If the build is succesful, you should have a 
 simx.so shared library in the build directory. 
 
 Add build to your PYTHONPATH environment variable.
 
-See examples/HelloWorld for a simple python simulation application that uses simx.
+See examples/HelloWorld for a simple python simulation application that uses SimX.
