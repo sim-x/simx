@@ -15,4 +15,3 @@ it under the terms of the GNU Lesser General Public License v 2.1 as published b
 Free Software Foundation. Accordingly, this library is distributed in the hope that 
 it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
-
