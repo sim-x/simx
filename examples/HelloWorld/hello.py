@@ -42,15 +42,16 @@ hh = add_service('HelloHandlerPerson',None,[1,2])
 ep = { 'SERVICES':{eAddr_HelloHandlerPerson:hh}}
 
 
-for i in range(4):
+for i in xrange(1000):
     # the third argument is a profile (should be dictionary (can be empty) or None)
     create_entity(('p',i),'Person',ep,[('p',1-i)])
 
 ##### Schedule initial events, if any ###############
 import random
 for evt_time in xrange(100000):
-    j = random.choice([0,1,2,3])
-    k = random.choice([0,1,2,3])
+    #j = random.choice([0,1,2,3])
+    j = random.choice(xrange(1000))
+    k = random.choice(xrange(1000))
     #j =random.choice([0,1])
     #k = 1 - j
     schedule_event( evt_time, ('p',j), eAddr_HelloHandlerPerson, HelloMessage([('p',k)]))

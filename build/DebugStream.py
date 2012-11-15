@@ -5,7 +5,7 @@ import simx
 
 
 # Define debug streams
-class DebugStream():
+class DebugStream:
     def __init__(self,stream_type):
         self.stream_type = stream_type
         self.debug_str = StringIO()

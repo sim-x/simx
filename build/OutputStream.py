@@ -4,7 +4,7 @@ from cStringIO import StringIO
 import simx
 
 # Define output streams
-class OutputStream():
+class OutputStream:
     def __init__(self):
         self.output_str = StringIO()
          # define output stream writer method   
