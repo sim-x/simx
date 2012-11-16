@@ -39,11 +39,11 @@ init("HelloWorld")
 
 ##### set simulation configuration values ########
 simx.set_config_value("NUMBER_LPS","0")
-simx.set_config_value("MINDELAY","10")
-simx.set_config_value("END_TIME","1000000")
+simx.set_config_value("MINDELAY","1")
+simx.set_config_value("END_TIME","100")
 simx.set_config_value("OUTPUT_FILE","output_HelloWorld.out")
 simx.set_config_value("LOG_COUT_LEVEL","warn")
-simx.set_config_value("LOG_LEVEL","info")
+simx.set_config_value("LOG_LEVEL","debug3")
 simx.set_config_value("LOG_FILE","helloworld.log")
 
 ####### Initialize environment (logging, output etc) ###########
@@ -52,7 +52,7 @@ simx.init_env()
 
 ##### Add services to be used in the simulation ########
 # the second argument is a profile (should be dictionary (can be empty) or None)
-hh = add_service('HelloHandlerPerson',None,[1,2]) 
+hh = add_service('HelloHandlerPerson',None,[]) 
 
 ##### Create Entities ##########
 
@@ -60,19 +60,20 @@ hh = add_service('HelloHandlerPerson',None,[1,2])
 ep = { 'SERVICES':{eAddr_HelloHandlerPerson:hh}}
 
 
-for i in xrange(1000):
+for i in xrange(2):
     # the third argument is a profile (should be dictionary (can be empty) or None)
     create_entity(('p',i),'Person',ep,[('p',1-i)])
 
 ##### Schedule initial events, if any ###############
 import random
-for evt_time in xrange(100000):
+for evt_time in xrange(1):
     #j = random.choice([0,1,2,3])
-    j = random.choice(xrange(1000))
-    k = random.choice(xrange(1000))
+    #j = random.choice(xrange(1000))
+    #k = random.choice(xrange(1000))
     #j =random.choice([0,1])
     #k = 1 - j
-    schedule_event( evt_time, ('p',j), eAddr_HelloHandlerPerson, HelloMessage([('p',k)]))
+    j = 0
+    schedule_event( evt_time, ('p',j), eAddr_HelloHandlerPerson, HelloMessage(source_id=('p',1-j)))
 
 ##### Run Simulation #################
 #import cProfile

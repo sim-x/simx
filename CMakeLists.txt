@@ -54,3 +54,10 @@ target_link_libraries(simx
         ${Boost_LIBRARIES}
         ${PYTHON_LIBRARIES}
 	${MPI_CXX_LIBRARIES})
+
+#add_library(simx_static ${SIMX_SOURCES} src/simx/Global/main_MPI.C)
+
+include_directories(examples/HelloWorld/cpp)
+file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_MPI.C)
+add_executable(HelloWorld ${HELLOWORLD_SOURCES})
+target_link_libraries(HelloWorld simx)

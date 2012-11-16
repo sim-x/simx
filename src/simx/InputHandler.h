@@ -19,7 +19,7 @@
 //--------------------------------------------------------------------------
 // File:    InputHandler.h
 // Module:  simx
-// Author:  Lukas Kroc
+// Author:  Lukas Kroc, Sunil Thulasidasan
 // Created: Feb 6 2005
 //
 // Description: Create and manage inputs

@@ -17,13 +17,25 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
 
-
-#### Define Messages #### (Optional)
-
 class HelloMessage:
-    def __init__(self,neighbors):
-        self.neighbors = neighbors
+    """
+    A simple hello-message object
+    """
+    def __init__(self, source_id=None, dest_id=None ):
+        self.source_id = source_id
+        self.dest_id = dest_id
+
+    def __str__(self):
+        return "HelloMessage(%s %s)" %(self.source_id, self.dest_id)
+
 
 class ReplyMessage:
-    def __init__(self,data=None):
-        self.data = data
+    """
+    A simple ReplyMessage object
+    """
+    def __init__(self,source_id=None, dest_id=None):
+        self.source_id = source_id
+        self.dest_id = dest_id
+
+    def __str__(self):
+        return "ReplyMessage(%s %s)" %(self.source_id, self.dest_id)

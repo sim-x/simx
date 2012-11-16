@@ -1,3 +1,0 @@
-# ID    TYPE    PROF        CUSTOMDATA(NeighborList)
-# (p 0)   person  10001       [(p 1)]
-# (p 1)   person  10001       [(p 0)]
