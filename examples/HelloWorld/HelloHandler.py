@@ -35,35 +35,40 @@ class HelloHandlerPerson(simx.PyService):
 
     def __init__(self,name, person, service_input ):
         super(HelloHandlerPerson,self).__init__( name, person, service_input,self )
-        debug3.write(self.get_name(),service_input.data_)   
+        debug2.write("HelloHandlerPerson in constructor",
+                     name, person, service_input.data_)   
         self.person = person
-        self.person.say_hello()
-        self.recv_function = {'HelloMessage':self.recv_hello,
-                              'ReplyMessage':self.recv_reply
+        #self.person.say_hello()
+        self.recv_function = {'HelloMessage':self.recv_HelloMessage,
+                              'ReplyMessage':self.recv_ReplyMessage
                               }
-        self.id_num = self.get_entity_id()[1]
+        #self.id_num = self.get_entity_id()[1]
         #print "hello handler entity id number is",self.id_num
         #self.neighbor_id = ('p',1-self.id_num)
         #print "neighbor id is ",self.neighbor_id
 
     def recv(self,msg):
-        output.write(self,200,'this is service output',self.get_random().
-                     get_uniform() )
-        debug3.write("HelloHandlerPerson: Inside receive method")
+        
+        #debug3.write("HelloHandlerPerson: Inside receive method")
         self.recv_function[msg.__class__.__name__](msg)
         #rf = random.choice([self.recv_hello, self.recv_reply])
         #rf(msg)
 
-    def recv_hello(self,msg):    
-        debug3.write("hello message received")
-        neighbor = msg.neighbors[0]
-        #neighbor = self.neighbor_id
-        self.send_info(ReplyMessage(range(10)),
-                       simx.get_min_delay(),neighbor,eAddr_HelloHandlerPerson)
+    def recv_HelloMessage(self,msg):    
+        debug3.write("HelloHandler received hello",msg)
+        output.write(self,100,'Received a hello')
+        output.write(self,200,"Random number:",
+                     self.get_random().get_uniform() )
+        self.send_info(ReplyMessage(source_id=self.get_entity_id(),
+                                    dest_id=msg.source_id),
+                       simx.get_min_delay(), msg.source_id,eAddr_HelloHandlerPerson)
 
-    def recv_reply(self,msg):
-        debug3.write("reply message received")
-        debug3.write("reply message data",msg.data)
+    def recv_ReplyMessage(self,msg):
+        debug3.write("HelloHandlerPerson::receive(Reply):",msg)
+        output.write(self,100,"Received a reply")
+
+    def __str__(self):
+        return "HelloHandler(%s)" %(self.get_entity_id())
 
 # should we make this one call? i.e register_service and register_addr?
 simx.register_service(HelloHandlerPerson)

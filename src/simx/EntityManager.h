@@ -220,19 +220,18 @@ void EntityManager::registerEntity(const Entity::ClassType& name,
 	throw Common::Exception("Error entity registration");
     }
 
-  /*   if( !fEntityCreatorMap.insert( std::make_pair( */
-/* 	    name, */
-/* 	    new DerivedEntityCreator<EntityClass, InputClass>(preCreator) */
-/* 	) ).second ) */
-/*     { */
-/* 	std::cerr << "ERROR: EntityManager: entity '" << name */
-/* 	    << "' is already registered" << std::endl; */
-/* 	throw Common::Exception("Error entity registration"); */
-/*     } */
+    if( !fEntityCreatorMap.insert( std::make_pair(
+	    name,
+	    new DerivedEntityCreator<EntityClass, InputClass>(preCreator)
+	) ).second )
+    {
+	std::cerr << "ERROR: EntityManager: entity '" << name
+	    << "' is already registered" << std::endl;
+	throw Common::Exception("Error entity registration");
+    }
 
     // register the Input object:
- 
-    //fInputHandler.registerInput<InputClass>(name);
+    fInputHandler.registerInput<InputClass>(name);
 }
 
 

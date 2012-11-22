@@ -72,11 +72,14 @@ InfoManager::InfoManager()
 //CANNOT    Logger::debug1() << "ServiceManager: in constructor" << endl;
   //TODO (Python, high) relocate
   //  Py_Initialize();
-  fPickler = boost::python::import("cPickle");
-  // fPickler = boost::python::import("marshal");
-  //fPickler = boost::python::import("json");
-  fPacker = fPickler.attr("dumps");
-  fUnpacker = fPickler.attr("loads");
+  // are we in Python?
+  if (Py_IsInitialized()) {
+      fPickler = boost::python::import("cPickle");
+      // fPickler = boost::python::import("marshal");
+      //fPickler = boost::python::import("json");
+      fPacker = fPickler.attr("dumps");
+      fUnpacker = fPickler.attr("loads");
+    }
 }
 
   const boost::python::object& InfoManager::getPacker() const {

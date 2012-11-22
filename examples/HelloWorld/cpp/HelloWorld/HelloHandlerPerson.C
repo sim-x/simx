@@ -1,21 +1,3 @@
-// Copyright (c) 2012. Los Alamos National Security, LLC. 
-
-// This material was produced under U.S. Government contract DE-AC52-06NA25396
-// for Los Alamos National Laboratory (LANL), which is operated by Los Alamos 
-// National Security, LLC for the U.S. Department of Energy. The U.S. Government 
-// has rights to use, reproduce, and distribute this software.  
-
-// NEITHER THE GOVERNMENT NOR LOS ALAMOS NATIONAL SECURITY, LLC MAKES ANY WARRANTY, 
-// EXPRESS OR IMPLIED, OR ASSUMES ANY LIABILITY FOR THE USE OF THIS SOFTWARE.  
-// If software is modified to produce derivative works, such modified software should
-// be clearly marked, so as not to confuse it with the version available from LANL.
-
-// Additionally, this library is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License v 2.1 as published by the 
-// Free Software Foundation. Accordingly, this library is distributed in the hope that 
-// it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
-
 /*
  * =====================================================================================
  *
@@ -39,17 +21,17 @@
 #include "HelloWorld/constants.h"
 #include "HelloWorld/HelloWorld.h"
 
-#include "SimCore/InfoManager.h"
-#include "SimCore/logger.h"
-#include "SimCore/LP.h"
-#include "SimCore/output.h"
+#include "simx/InfoManager.h"
+#include "simx/logger.h"
+#include "simx/LP.h"
+#include "simx/output.h"
 
-#include "SimCore/Common/Assert.h"
+#include "simx/Common/Assert.h"
 
 #include <ostream>
 
 using namespace std;
-using namespace SimCore;
+using namespace simx;
 
 namespace HelloWorld {
 
@@ -78,8 +60,8 @@ namespace HelloWorld {
         SMART_ASSERT( info );
         Logger::debug3() << "HelloHandlerPerson::receive( Hello ): " << *info;
 
-	Output::output(*this, 1) << "Received a hello!";
-        
+	Output::output(*this, 100) << "Received a hello!";
+	Output::output(*this, 200) << "Random Number: " << getRandom().GetUniform();
         /// Create Reply Object
         boost::shared_ptr< Reply > reply;
         theInfoManager().createInfo( reply );
@@ -102,7 +84,7 @@ namespace HelloWorld {
     void HelloHandlerPerson::receive( boost::shared_ptr< Reply > info ) {
         Logger::debug3() << "HelloHandlerPerson::receive( Hello ): " << *info << std::endl;
 
-	Output::output(*this, 1) << "Received a reply!";
+	Output::output(*this, 100) << "Received a reply!";
 
     }
 }

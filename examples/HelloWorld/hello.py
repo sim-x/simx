@@ -52,7 +52,7 @@ simx.init_env()
 
 ##### Add services to be used in the simulation ########
 # the second argument is a profile (should be dictionary (can be empty) or None)
-hh = add_service('HelloHandlerPerson',None,[1,2]) 
+hh = add_service('HelloHandlerPerson',None,[]) 
 
 ##### Create Entities ##########
 
@@ -60,19 +60,20 @@ hh = add_service('HelloHandlerPerson',None,[1,2])
 ep = { 'SERVICES':{eAddr_HelloHandlerPerson:hh}}
 
 
-for i in xrange(1000):
+for i in xrange(2):
     # the third argument is a profile (should be dictionary (can be empty) or None)
     create_entity(('p',i),'Person',ep,[('p',1-i)])
 
 ##### Schedule initial events, if any ###############
 import random
-for evt_time in xrange(100000):
+for evt_time in xrange(1000000):
     #j = random.choice([0,1,2,3])
-    j = random.choice(xrange(1000))
-    k = random.choice(xrange(1000))
+    #j = random.choice(xrange(1000))
+    #k = random.choice(xrange(1000))
     #j =random.choice([0,1])
     #k = 1 - j
-    schedule_event( evt_time, ('p',j), eAddr_HelloHandlerPerson, HelloMessage([('p',k)]))
+    j = 0
+    schedule_event( evt_time, ('p',j), eAddr_HelloHandlerPerson, HelloMessage(source_id=('p',1-j)))
 
 ##### Run Simulation #################
 #import cProfile
