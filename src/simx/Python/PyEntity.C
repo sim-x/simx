@@ -172,17 +172,27 @@ using namespace boost::python;
 void export_PyEntity() {
 
 
-  python::class_<simx::EntityID>("EntityID",python::no_init);
+  python::docstring_options doc_st_opt;//(true,true,false);
+  doc_st_opt.disable_all();
+  //  doc_st_opt.disable_cpp_signatures();
+
+  python::class_<simx::EntityID>("EntityID","simx internal EntityID type",python::no_init);
   
   python::class_<simx::Python::PyEntity,
     python::bases<simx::Entity> >
-    ("PyEntity",python::init
-				     <const simx::EntityID&,
-				     simx::LP&,
-				     const simx::Python::
-				      PyEntityInput&,
-				      const python::object&>() )
-    .def("getId",&simx::Python::PyEntity::getPyId)
+    ("PyEntity", 
+     "Python Entity Class\n"
+     "PyEntity(EntityID, LP, EntityInput)\n\n"
+     "\t EntityID    :  id of the Entity being constructed (a python tuple)\n"
+     "\t LP          :  Reference to the logical process in which this entity lives\n"
+     "\t EntityInput :  Input passed to the entity at construction time\n",
+     python::init
+     <const simx::EntityID&,
+      simx::LP&,
+      const simx::Python::
+      PyEntityInput&,
+      const python::object&>() )
+    .def("getId",&simx::Python::PyEntity::getPyId,"getId() -> Returns Entity ID","something here")
     .def("send_info",&simx::Python::PyEntity::sendPyInfo)
     .def("get_service",&simx::Python::PyEntity::getPyService,
 	 return_value_policy<copy_non_const_reference>())
