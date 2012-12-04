@@ -4,14 +4,24 @@ project(simx)
 
 cmake_minimum_required(VERSION 2.6)
 enable_language(CXX)
-#set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CXX_FLAGS)
+  #release comes with -O3 by default
+  set(CMAKE_BUILD_TYPE None CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CXX_FLAGS)
+
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-fpermissive" HAVE_FPERMISSIVE)
+if(NOT HAVE_FPERMISSIVE)
+  message(FATAL_ERROR "flag '-fpermissive' does not work")
+endif(NOT HAVE_FPERMISSIVE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive" CACHE STRING "" FORCE)
 
 # for mpich
 find_package(MPI REQUIRED)
-if (MPI_CXX_FOUND)
-   include_directories(${MPI_CXX_INCLUDE_PATH})
+if (NOT MPI_CXX_FOUND)
+  message(FATAL_ERROR "No mpi c++ lib found")
 endif()
+include_directories(${MPI_CXX_INCLUDE_PATH})
 
 # for boost
 set(Boost_USE_STATIC_LIBS  OFF)
@@ -19,18 +29,14 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost COMPONENTS
 		   python
 		   REQUIRED)
-IF (Boost_FOUND)
-  INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-  ADD_DEFINITIONS( "-DHAS_BOOST" )
-  link_directories(${Boost_LIBRARY_DIRS})
-ENDIF()
- 
-#include_directories(${Boost_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+ADD_DEFINITIONS( "-DHAS_BOOST" )
+link_directories(${Boost_LIBRARY_DIRS})
 
 
 # for python
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(PythonInterp REQUIRED VERSION 2)
+find_package(PythonLibs REQUIRED VERSION 2)
 include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARIES})
 
