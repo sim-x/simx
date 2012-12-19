@@ -46,7 +46,8 @@ namespace simx {
       
       // TODO: can(should) we pass references to the constructor instead?
       PyEntityData( boost::python::tuple& ent_id, 
-		    const Entity::ClassType& type,
+		    //const Entity::ClassType& type,
+		    boost::python::object& type,
 		    ProfileID pr_id, 
 		    PyProfile& profile,
 		    boost::python::object& data):
@@ -61,7 +62,8 @@ namespace simx {
       PyEntityData() {}
       //boost::python::tuple fEntityId;
       EntityID fEntityId;
-      Entity::ClassType      fEntityType;
+      //Entity::ClassType      fEntityType;
+      boost::python::object fEntityType;
       ProfileID              fProfileId;
       PyProfile              fProfile;
       boost::python::object        fData;

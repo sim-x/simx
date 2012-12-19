@@ -40,7 +40,7 @@ using namespace boost::python;
 void export_PyEntityData() {
   
   class_<PyEntityData>("EntityData",init<>() )
-    .def(init<tuple&,const Entity::ClassType&,
+    .def(init<tuple&,object&,
 	 ProfileID,PyProfile&,object&>() )
     .def_readwrite("id_",&PyEntityData::fEntityId)
     .def_readwrite("type_",&PyEntityData::fEntityType)
