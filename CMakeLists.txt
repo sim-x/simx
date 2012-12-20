@@ -5,7 +5,7 @@ project(simx)
 cmake_minimum_required(VERSION 2.6)
 enable_language(CXX)
 #set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-O2")
+set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
 
 # for mpich
 find_package(MPI REQUIRED)
