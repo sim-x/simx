@@ -83,6 +83,10 @@ def create_entity( ent_name, ent_class, ent_profile={}, ent_data=() ):
     ent_data    --   any custom data to be passed to entity                 
     """
 
+    if not issubclass(ent_class, simx.PyEntity):
+        error.write("Argument ",ent_class," not of type PyEntity")
+        return None
+
     if ent_profile == None:
         ent_profile = {}
 

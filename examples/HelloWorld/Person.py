@@ -25,8 +25,10 @@ from OutputStream import *
 
 ###### Define Entities ########
 class Person(simx.PyEntity):
-    def __init__(self,ID,lp,entity_input):
-        super(Person,self).__init__(ID,lp,entity_input,self)
+    def __init__(self,ID,lp,entity_input,py_obj=None):
+        if py_obj is None:
+            py_obj = self
+        super(Person,self).__init__(ID,lp,entity_input,py_obj)
         debug2.write("Person", self.getId(),"is being created with input ",
                      entity_input.data_,"at time",self.getNow())
         self.neighbor_list = entity_input.data_
@@ -40,4 +42,4 @@ class Person(simx.PyEntity):
         return "Person(%s)" %(self.neighbor_list)
 
 # register entity
-simx.register_entity(Person)
+#simx.register_entity(Person)

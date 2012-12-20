@@ -312,7 +312,7 @@ LPID EntityManager::defaultEntityPlacingFunction( const EntityID& entId ) const
     boost::shared_ptr<Input> input( fInputHandler.createInput( "PyEntity", ent_data.fProfileId, ent_data.fProfile, ent_data.fData ) );
     SMART_ASSERT( input );
     // return createEntityonLP( id, type, profileId, input );
-    return createEntityonLP( ent_data.fEntityId, ent_data.fEntityType, 
+    return createPyEntityonLP( ent_data.fEntityId, ent_data.fEntityType, 
 			     ent_data.fProfileId, input );
   }
 
@@ -395,8 +395,65 @@ bool EntityManager::createEntityPrivate(const EntityID& id, const Entity::ClassT
     
     return created;
 
-}
+  }
 
+
+
+  bool EntityManager::createPyEntityonLP(const EntityID& id, const python::object& type, 
+					 const ProfileID profileId, const shared_ptr<Input>& input)
+  
+  {
+
+    // this variable should be static because it's reused many times
+    static const Control::LpPtrMap& lps = Control::getLpPtrMap();
+
+	    
+
+    //const BaseEntityCreator& creator = *fPyEntityCreator;
+
+
+    // run the pre-creating function, if any 
+    // (may not have been registered, in which case the call has no effect)
+    // - must be done before findEntityLpId, because the pre-creator may decide its output
+    fPyEntityCreator->preCreate( id, *input );
+
+    // find out which LP this entity will be created at:
+    LPID lpId = findEntityLpId( id );
+	
+    // now create it if it is supposed to be here
+    bool created = false;
+    Control::LpPtrMap::const_iterator lpIter = lps.find(lpId);
+    if( lpIter != lps.end() )
+    {
+        Logger::debug3() << "EntityManager: creating Entity " << id << endl;
+
+	created = true;
+
+        // the entity will reside on this LP
+        SMART_ASSERT( lpIter->second );
+	LP& lp = *(lpIter->second);
+
+	// actually create the entity:
+	boost::shared_ptr<Entity> entity = fPyEntityCreator->create( id, lp, *input, type);
+
+	// now remember where this entity is:
+	if( !fEntityPtrMap.insert( make_pair(
+		id,
+		entity
+	    ) ).second )
+	{
+	    Logger::warn() << "EntityManager: redefining entity " << id << endl;
+	}
+
+    } else
+    {
+    	Logger::debug3() << "EntityManager: NOT creating Entity " << id << endl;
+
+    }
+    
+    return created;
+
+}
 
 
 
