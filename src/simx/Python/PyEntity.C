@@ -173,8 +173,8 @@ void export_PyEntity() {
 
 
   python::docstring_options doc_st_opt;//(true,true,false);
-  doc_st_opt.disable_all();
-  //  doc_st_opt.disable_cpp_signatures();
+  //doc_st_opt.disable_all();
+  doc_st_opt.disable_cpp_signatures();
 
   python::class_<simx::EntityID>("EntityID","simx internal EntityID type",python::no_init);
   
