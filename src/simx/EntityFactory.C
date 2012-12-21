@@ -74,5 +74,16 @@ namespace simx {
     return e;
   }
   
+  
+   shared_ptr<Entity> PyEntityCreator::create( const EntityID& id, LP& lp, const Input& input, 
+					       const python::object& py_class ) const {
+    
+    //const EntityInput* in = dynamic_cast<const EntityInput*>(&input);
+    const Python::PyEntityInput* in = dynamic_cast<const Python::PyEntityInput*>(&input);
+    shared_ptr<Python::PyEntity> e = python::extract<shared_ptr<Python::PyEntity> >
+      (py_class(boost::ref(id),boost::ref(lp),boost::ref(in)));
+    return e;
+  }
+
     
 } // namespace

@@ -68,7 +68,6 @@ BOOST_PYTHON_MODULE(simx)
   
   boost::python::scope().attr("__doc__") = "SimX Documentation";
   PyEval_InitThreads();
-  
   export_SetConfigurationValue();
   export_init();
   export_Entity();

@@ -121,10 +121,17 @@ class PyEntityCreator : public BaseEntityCreator {
   void registerObject( const Entity::ClassType& name, 
 		       const boost::python::object& py_entity_class );
 
-  
+
+  // for creating objects from their class-name strings
   virtual boost::shared_ptr<Entity> create( const EntityID& id, LP& lp, 
 					    const Input& input, 
 					    const Entity::ClassType& type ) const;
+
+  // for creating objects directly from python class objects
+  virtual boost::shared_ptr<Entity> create( const EntityID& id, LP& lp,
+					    const Input& input,
+					    const boost::python::object& py_class ) const;
+
 
 };
 

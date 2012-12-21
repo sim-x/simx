@@ -172,9 +172,12 @@ using namespace boost::python;
 void export_PyEntity() {
 
 
-  python::docstring_options doc_st_opt;//(true,true,false);
+  python::docstring_options doc_st_opt(false);
+  doc_st_opt.disable_all();
+  //doc_st_opt.enable_py_signatures();
+  doc_st_opt.enable_user_defined();
   //doc_st_opt.disable_all();
-  doc_st_opt.disable_cpp_signatures();
+  //  doc_st_opt.disable_cpp_signatures();
 
   python::class_<simx::EntityID>("EntityID","simx internal EntityID type",python::no_init);
   
@@ -192,8 +195,14 @@ void export_PyEntity() {
       const simx::Python::
       PyEntityInput&,
       const python::object&>() )
-    .def("getId",&simx::Python::PyEntity::getPyId,"getId() -> Returns Entity ID","something here")
-    .def("send_info",&simx::Python::PyEntity::sendPyInfo)
+    .def("getId",&simx::Python::PyEntity::getPyId,
+	 "getId() -> tuple\n"
+	 "Returns Entity ID")
+    .def("send_info",&simx::Python::PyEntity::sendPyInfo,
+	 "send_info((python::object)info, (Time)delay,\n"
+	 "          (EntityID)dest_entity, (ServiceAddress)dest_service)->None\n\n"
+	 "schedules a message(info) to be sent after 'delay' time units to 'dest_entity'\n"
+	 "Message will be handled by service living at address given by 'dest_service'")
     .def("get_service",&simx::Python::PyEntity::getPyService,
 	 return_value_policy<copy_non_const_reference>())
     .def("create_services",&simx::Python::PyEntity::createPyServices)
