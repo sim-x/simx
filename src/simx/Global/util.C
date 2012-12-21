@@ -120,7 +120,7 @@ namespace {
 
   static void CatchSignal(int num) 
   {
-    struct sig_struct { int value; char *name; };
+    struct sig_struct { int value; const char *name; };
     const struct sig_struct sig_array[] = {
       { 1, "SIGHUP" },
       { 2, "SIGINT" },

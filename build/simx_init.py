@@ -104,7 +104,7 @@ def get_profile_id( profile_obj):
 
     """
     # todo (critical). This has to be fixed!
-    return int(id(profile_obj)/1000000)
+    return int(id(profile_obj)%1000000)
 
 
 def get_internal_service_name( serv_name ):

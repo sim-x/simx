@@ -16,10 +16,6 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
-#import sys
-
-
-
 import simx
 from simx_init import *
 from DebugStream import *
@@ -30,13 +26,10 @@ from OutputStream import *
 from Person import *
 from HelloHandler import *
 
-#import gc
-#gc.disable()
-
 ####### Initialize MPI and configuration framework#######
 init("HelloWorld")
 
-num_events = 2**17
+num_events = 2**10
 
 ##### set simulation configuration values ########
 simx.set_config_value("NUMBER_LPS","0")
@@ -60,9 +53,8 @@ hh = add_service('HelloHandlerPerson',None,[])
 # create an entity profile (optional)
 ep = { 'SERVICES':{eAddr_HelloHandlerPerson:hh}}
 
-num_entities = 2**15
 
-
+num_entities = 2**10
 for i in xrange(num_entities):
     # the third argument is a profile (should be dictionary (can be empty) or None)
     create_entity(('p',i),'Person',ep,[('p',1-i)])
@@ -70,16 +62,12 @@ for i in xrange(num_entities):
 ##### Schedule initial events, if any ###############
 import random
 for evt_time in xrange(num_events):
-    #j = random.choice([0,1,2,3])
-    #j = random.choice(xrange(1000))
-    #k = random.choice(xrange(1000))
-    #j =random.choice([0,1])
-    #k = 1 - j
-    #j = 0
-    j = random.choice(xrange(num_entities))
-    k = random.choice(xrange(num_entities))
-    schedule_event( evt_time, ('p',j), eAddr_HelloHandlerPerson, HelloMessage(source_id=('p',k)))
+    # pick a random entity for receiving hello
+    hello_rcpt = random.choice(xrange(num_entities))
+    # who should the reply be sent to ?
+    reply_rcpt = random.choice(xrange(num_entities))
+    schedule_event( evt_time, ('p',hello_rcpt), eAddr_HelloHandlerPerson, 
+                    HelloMessage(source_id=('p',reply_rcpt)))
 
 ##### Run Simulation #################
-#import cProfile
 simx.run()
