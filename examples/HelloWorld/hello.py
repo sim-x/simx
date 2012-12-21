@@ -36,11 +36,12 @@ from HelloHandler import *
 ####### Initialize MPI and configuration framework#######
 init("HelloWorld")
 
+num_events = 2**17
 
 ##### set simulation configuration values ########
 simx.set_config_value("NUMBER_LPS","0")
 simx.set_config_value("MINDELAY","10")
-simx.set_config_value("END_TIME","1000000")
+simx.set_config_value("END_TIME",str(num_events))
 simx.set_config_value("OUTPUT_FILE","output_HelloWorld.out")
 simx.set_config_value("LOG_COUT_LEVEL","warn")
 simx.set_config_value("LOG_LEVEL","info")
@@ -59,21 +60,25 @@ hh = add_service('HelloHandlerPerson',None,[])
 # create an entity profile (optional)
 ep = { 'SERVICES':{eAddr_HelloHandlerPerson:hh}}
 
+num_entities = 2**15
 
-for i in xrange(2):
+
+for i in xrange(num_entities):
     # the third argument is a profile (should be dictionary (can be empty) or None)
     create_entity(('p',i),'Person',ep,[('p',1-i)])
 
 ##### Schedule initial events, if any ###############
 import random
-for evt_time in xrange(1000000):
+for evt_time in xrange(num_events):
     #j = random.choice([0,1,2,3])
     #j = random.choice(xrange(1000))
     #k = random.choice(xrange(1000))
     #j =random.choice([0,1])
     #k = 1 - j
-    j = 0
-    schedule_event( evt_time, ('p',j), eAddr_HelloHandlerPerson, HelloMessage(source_id=('p',1-j)))
+    #j = 0
+    j = random.choice(xrange(num_entities))
+    k = random.choice(xrange(num_entities))
+    schedule_event( evt_time, ('p',j), eAddr_HelloHandlerPerson, HelloMessage(source_id=('p',k)))
 
 ##### Run Simulation #################
 #import cProfile
