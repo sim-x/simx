@@ -34,6 +34,7 @@
 #include "simx/LP.h"
 #include "simx/EntityManager.h"
 #include "simx/EventInfoManager.h"
+#include "simx/PyEventInfoManager.h"
 #include "simx/writers.h"
 #include "simx/constants.h"
 
@@ -42,11 +43,16 @@
 
 using namespace std;
 using namespace simx::Python;
-
+using namespace boost;
 namespace simx {
 
 //====================================================================
 // InfoWakeupInfoManager
+
+  InfoWakeupInfoManager::InfoWakeupInfoManager():
+    fPyEvent(false)
+  {}
+  
 
 void InfoWakeupInfoManager::pack(PackedData& dp) const
 {
@@ -90,6 +96,22 @@ InfoManager::InfoManager()
   const boost::python::object& InfoManager::getUnpacker() const {
 
     return fUnpacker;
+  }
+
+  void InfoManager::setPyEventScheduler(boost::python::object evt_scheduler) {
+    Logger::debug2() << "InfoManager setting Python event scheduler" << endl;
+    fPyEventScheduler  = evt_scheduler;
+    // infomanager destructor seg-faults if we do not increment
+    // reference to python object. - ST
+    Py_INCREF(evt_scheduler.ptr());
+
+  }
+
+  void InfoManager::processPyEventInfoManager() {
+    Logger::debug3() << "InfoManager received Python event info manager"  << endl;
+    //TODO: put in try-catch block
+    fPyEventScheduler.attr("process_scheduler_event")();
+    //assert(false);
   }
 
 
@@ -200,6 +222,23 @@ void InfoManager::readDataFile( int fid )
 	lp.sendEventInfoManager( eventMng );
       }
 }
+
+
+  // sets timer for python event scheduler; to expire just before given time
+  void InfoManager::setPyEventSchedulerTimer(Time time) {
+    /// these variables should be static because they will be reused may times
+    static const Control::LpPtrMap& lpMap = Control::getLpPtrMap();
+    SMART_ASSERT( lpMap.begin() != lpMap.end() );
+    SMART_ASSERT( lpMap.begin()->second );
+    static const LP& lp = *(lpMap.begin()->second); // get address of ANY lp on this computer node
+    Time now = lp.getNow();
+    
+    Logger::debug2() << "InfoManager: setting event scheduler time for Python" << endl;
+    Time delay = max (LOCAL_MINDELAY, time - now - 3*LOCAL_MINDELAY);
+    PyEventInfoManager eventMng( delay );
+    lp.sendPyEventInfoManager( eventMng );
+  }
+  
 
 
   void InfoManager::createInfoFromInfoData( InfoData& data ) {

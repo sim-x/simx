@@ -59,8 +59,11 @@ namespace simx {
     /// wakes up manager when time comes to read more input
     struct InfoWakeupInfoManager : public Info
     {
+      InfoWakeupInfoManager();
 	int	fFileId;	///< file id that has new data available
 	// pack and unpack these are NOT needed here, as the info must never travel to a different LP
+
+      bool fPyEvent;  //will be set to true if this is a wake-up for python event scheduler
 
 	virtual void pack(PackedData&) const;
 	virtual void unpack(PackedData&);
@@ -113,6 +116,11 @@ namespace simx {
     // TODO (Python) can we make infomanager oblivious to python?
     void createPyInfoFromInfoData( Python::PyInfoData& data );
 
+    void  setPyEventScheduler( boost::python::object evt_scheduler);
+    void processPyEventInfoManager() ;
+    // sets timer for python event scheduler; to expire just before given time
+    void setPyEventSchedulerTimer(Time time);
+
     /// provides access to InputHandler for Infos.... to be able to create infos from files in Controller
     InputHandler<Info::ClassType>& getInputHandler() { return fInputHandler; }
 
@@ -125,7 +133,8 @@ namespace simx {
   protected:
   private:
 
-    //TODO (Python, high): relocate
+    // for Python input events
+     boost::python::object fPyEventScheduler;
 
     
 

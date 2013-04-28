@@ -21,6 +21,10 @@ import sys
 import simx
 from DebugStream import *
 
+sys.path.append("/Library/Python/2.6/site-packages/greenlet-0.4.0-py2.6-macosx-10.6-universal.egg")
+
+from greenlet import greenlet
+
 """ 
 Provides simx intialization routines for 
 python applications. Logging and debug streams must have
@@ -29,7 +33,7 @@ already been initialized before calling functions here.
 """
 
 _service_names = {}
-
+#_evt_scheduler = None
 
 def init(prog_name=""):
     simx.init_mpi(prog_name);
@@ -149,9 +153,23 @@ def schedule_event(time,entity,address,event):
 
     """
     
+
+    #if is_set_evt_scheduler():
+    if not _evt_scheduler is None:
+       _evt_scheduler.schedule_next(time)
+
+
     info_data = simx.InfoData( time, entity, 
                                   address, 1000, 1, {}, event)
     simx.create_input_info( info_data )
+
+
+def is_set_evt_scheduler():
+    """
+    Returns true if the staggered event scheduler
+    has been created
+    """
+    return not _evt_scheduler is None
 
 
 def get_class_name(obj):
@@ -160,3 +178,41 @@ def get_class_name(obj):
 
     """
     return obj.__class__.__name__
+
+
+class EventScheduler:
+    """
+    Class for staggered creation of initial events.
+    External events will be scheduled upto a time in the future,
+    and this process will be repeated till there are no more
+    external events
+    
+    """
+
+    def __init__(self, event_creator):
+        global _evt_scheduler 
+        _evt_scheduler = self
+        simx.set_event_scheduler(self)
+        self.time_chunk = 1000 * simx.get_local_min_delay()
+        self.upto_time = simx.get_now() + self.time_chunk
+        self.event_creator = greenlet(event_creator)
+        self.event_creator.switch()
+
+    def schedule_next(self, time):
+        """
+        Schedules a timer for creating next chunk of events
+        """
+        if time <= self.upto_time:
+            return
+        #else
+        #schedule a timer just before this event and switch back to main "thread"
+        #print "SHOULD NOT"
+        simx.set_event_scheduler_timer(time)
+        greenlet.getcurrent().parent.switch()
+    # when switching back to this "thread", execution resumes from here
+    
+    def process_scheduler_event(self):
+        #print "NEW BATCH OF EVENTS BEING SCHEDULED"
+        self.upto_time = simx.get_now() + self.time_chunk
+        #switch to event_creator thread
+        self.event_creator.switch()

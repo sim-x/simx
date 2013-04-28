@@ -190,11 +190,15 @@ void Controller::processIncomingInfo( boost::shared_ptr<Info> info, const Servic
     {
 	// ... and it would be of the right kind
 	boost::shared_ptr<InfoWakeupInfoManager> info2 = boost::dynamic_pointer_cast<InfoWakeupInfoManager>( info );
-	if( info2 )
-	{
-	    // wakeup the InfoManager
+	if( info2 ) {
+	  
+	  //is this an infomanager event for python events?
+	  if ( info2->fPyEvent )
+	    theInfoManager().processPyEventInfoManager();
+	  else
+	    // wakeup the InfoManager for processing file input
 	    theInfoManager().readDataFile( info2->fFileId );
-	    return;
+	  return;
 	}
 	    
 	boost::shared_ptr<InfoControllerModifyEntity> info3 = boost::dynamic_pointer_cast<InfoControllerModifyEntity>( info );

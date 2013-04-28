@@ -36,7 +36,7 @@ from HelloHandler import *
 ####### Initialize MPI and configuration framework#######
 init("HelloWorld")
 
-end_time = 2**10
+end_time = 10*2**10
 
 ##### set simulation configuration values ########
 simx.set_config_value("NUMBER_LPS","0")
@@ -67,7 +67,8 @@ for i in xrange(num_entities):
 
 ##### Schedule initial events, if any ###############
 import random
-for evt_time in xrange(end_time):
+def create_events():
+ for evt_time in xrange(end_time):
     # pick a random entity for receiving hello
     hello_rcpt = random.choice(xrange(num_entities))
     # who should the reply be sent to ?
@@ -75,6 +76,9 @@ for evt_time in xrange(end_time):
     schedule_event( evt_time, ('p',hello_rcpt), eAddr_HelloHandlerPerson, 
                     HelloMessage(source_id=('p',reply_rcpt)))
 
+#schedule_events()
+es = EventScheduler(create_events)
+#create_events()
 ##### Run Simulation #################
 #import cProfile
 simx.run()

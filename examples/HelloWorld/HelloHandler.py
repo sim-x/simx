@@ -61,9 +61,9 @@ class HelloHandlerPerson(simx.PyService):
         output.write(self,200,"Random number:",
                      self.get_random().get_uniform() )
         #simulate some computation
-        x = int(random.expovariate(0.00001))
-        for i in xrange(x):
-            j = math.sqrt(i)
+        # x = int(random.expovariate(0.00001))
+        # for i in xrange(x):
+        #     j = math.sqrt(i)
         self.send_info(ReplyMessage(source_id=self.get_entity_id(),
                                     dest_id=msg.source_id),
                        simx.get_min_delay(), msg.source_id,eAddr_HelloHandlerPerson)

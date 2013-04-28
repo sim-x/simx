@@ -34,6 +34,7 @@ find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARIES})
 
+
 # simx	
 include_directories(${CMAKE_SOURCE_DIR} src src/simx) 
 #					${MPI_INCLUDE_PATH}
