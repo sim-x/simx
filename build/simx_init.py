@@ -33,7 +33,7 @@ already been initialized before calling functions here.
 """
 
 _service_names = {}
-#_evt_scheduler = None
+_evt_scheduler = None
 
 def init(prog_name=""):
     simx.init_mpi(prog_name);

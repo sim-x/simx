@@ -161,7 +161,7 @@ namespace simx {
     }
 //-------------------------------------------------------------------------
     
-    void unpackControlMessage( prime::ssf::ssf_compact* mesg )
+    void unpackControlMessage( minissf::CompactDataType* mesg )
     {
       PackedData pd( mesg );
       ControlInfoWrapper* cinfo = new ControlInfoWrapper;
@@ -174,23 +174,25 @@ namespace simx {
 
     void recvPackedMessage( int recv_size )
     {
-      static string where  = "simx::Messenger::recvPackedMessage()";
-      int pos = 0;
-      while ( pos < recv_size )
-	{
-	  LPID srcLP, destLP;
-	  handleMPIReturn( where, MPI_Unpack( fRecvBuf, recv_size, &pos,
-					      &srcLP, 1, MPI_INT, SIMX_WORLD ));
-	  handleMPIReturn( where, MPI_Unpack( fRecvBuf, recv_size, &pos, 
-					      &destLP, 1, MPI_INT, SIMX_WORLD ));
-	  SMART_ASSERT( destLP == getMessengerRank() )( destLP )( getMessengerRank() )
-	    .msg("simx::Messenger::recvPackedMessage(): destLP and Messenger rank do not match ");
+      //TODO: does not compile
+
+      // static string where  = "simx::Messenger::recvPackedMessage()";
+      // int pos = 0;
+      // while ( pos < recv_size )
+      // 	{
+      // 	  LPID srcLP, destLP;
+      // 	  handleMPIReturn( where, MPI_Unpack( fRecvBuf, recv_size, &pos,
+      // 					      &srcLP, 1, MPI_INT, SIMX_WORLD ));
+      // 	  handleMPIReturn( where, MPI_Unpack( fRecvBuf, recv_size, &pos, 
+      // 					      &destLP, 1, MPI_INT, SIMX_WORLD ));
+      // 	  SMART_ASSERT( destLP == getMessengerRank() )( destLP )( getMessengerRank() )
+      // 	    .msg("simx::Messenger::recvPackedMessage(): destLP and Messenger rank do not match ");
 	  
-	  prime::ssf::ssf_compact* packedMesg = new prime::ssf::ssf_compact;
-	  packedMesg->unpack( SIMX_WORLD, fRecvBuf, pos, recv_size );
-	  unpackControlMessage( packedMesg );
-	  delete packedMesg;
-	}
+      // 	  minissf::CompactDataType* packedMesg = new minissf::CompactDataType;
+      // 	  packedMesg->unpack( SIMX_WORLD, fRecvBuf, pos, recv_size );
+      // 	  unpackControlMessage( packedMesg );
+      // 	  delete packedMesg;
+      // 	}
     }
 
 
@@ -248,7 +250,7 @@ namespace simx {
 //-------------------------------------------------------------------------
 
     void packControlMessageForSending( ControlInfoWrapper& cinfo, 
-				       prime::ssf::ssf_compact* mesg )
+				       minissf::CompactDataType* mesg )
     {
       PackedData pd(mesg);
       cinfo.pack( pd );
@@ -268,29 +270,30 @@ namespace simx {
 //-------------------------------------------------------------------------
 
     void sendPackedMessage( LPID srcLP, LPID destLP, 
-			    prime::ssf::ssf_compact* mesg )
+			    minissf::CompactDataType* mesg )
     {
      
+      // TODO: Does not compile.
 
-      //TODO: consolidate all the packing functions in one place
-      assert( mesg );
-      static string where = "simx::Messenger::sendPackedMessage()";
-      int pos = 0;
-      boost::shared_array<char> sendBuf(new char[SND_MSG_BUF_SIZE]);
-      handleMPIReturn( where, MPI_Pack( &srcLP, 1, MPI_INT, sendBuf.get(), 
-					MSG_BUF_SIZE, &pos, SIMX_WORLD ));
-      handleMPIReturn( where, MPI_Pack( &destLP, 1, MPI_INT, sendBuf.get(),
-					MSG_BUF_SIZE, &pos, SIMX_WORLD ));
-      if ( mesg->pack( SIMX_WORLD, sendBuf.get(), pos, MSG_BUF_SIZE ) )
-	//TODO: 1 probably isn't the real MPI error code,
-	//TODO: but that's what ssf returns. To be fixed.
-	handleMPIReturn( where, 1 );
-      MPI_Request request;
-      handleMPIReturn( where, MPI_Isend( sendBuf.get(), pos, MPI_PACKED,
-					 destLP, SIMX_CONTROL_TAG,
-					 SIMX_WORLD, &request ));
-      pending_request_t pending( request, sendBuf );
-      fPending.push_back( pending );
+      //  //TODO: consolidate all the packing functions in one place
+      // assert( mesg );
+      // static string where = "simx::Messenger::sendPackedMessage()";
+      // int pos = 0;
+      // boost::shared_array<char> sendBuf(new char[SND_MSG_BUF_SIZE]);
+      // handleMPIReturn( where, MPI_Pack( &srcLP, 1, MPI_INT, sendBuf.get(), 
+      // 					MSG_BUF_SIZE, &pos, SIMX_WORLD ));
+      // handleMPIReturn( where, MPI_Pack( &destLP, 1, MPI_INT, sendBuf.get(),
+      // 					MSG_BUF_SIZE, &pos, SIMX_WORLD ));
+      // if ( mesg->pack( SIMX_WORLD, sendBuf.get(), pos, MSG_BUF_SIZE ) )
+      // 	//TODO: 1 probably isn't the real MPI error code,
+      // 	//TODO: but that's what ssf returns. To be fixed.
+      // 	handleMPIReturn( where, 1 );
+      // MPI_Request request;
+      // handleMPIReturn( where, MPI_Isend( sendBuf.get(), pos, MPI_PACKED,
+      // 					 destLP, SIMX_CONTROL_TAG,
+      // 					 SIMX_WORLD, &request ));
+      // pending_request_t pending( request, sendBuf );
+      // fPending.push_back( pending );
       
     }
 
@@ -313,11 +316,11 @@ namespace simx {
       SMART_ASSERT( srcLP == getMessengerRank() )( srcLP )( getMessengerRank() )
 	.msg(" simx::Messenger:: LP & Messenger Ranks do not match ");
       
-      prime::ssf::ssf_compact* packedMesg = new prime::ssf::ssf_compact;
+      minissf::CompactDataType* packedMesg = new minissf::CompactDataType;
       if ( ! packedMesg )
 	{
 	  Logger::error() << "simx::Messenger::sendMessage(): Unable to create"
-			  << " ssf_compact " << endl;
+			  << " CompactDataType " << endl;
 	  return false;
 	}
       packControlMessageForSending( cinfo, packedMesg );

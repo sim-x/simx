@@ -50,7 +50,7 @@ class DassfEventInfoManager : public DassfEvent
 
     public:
 	/// Construct an event from a data stream message
-	explicit DassfEventInfoManager(prime::ssf::ssf_compact* dp);
+	explicit DassfEventInfoManager(minissf::CompactDataType* dp);
 	/// constructor from EventInfoManager
 	explicit DassfEventInfoManager(const EventInfoManager&);
 
@@ -60,9 +60,15 @@ class DassfEventInfoManager : public DassfEvent
         virtual DassfEventInfoManager* clone() const;
   
 	/// pack EventInfoManager
-        virtual prime::ssf::ssf_compact* pack(prime::ssf::ssf_compact*);
+        virtual minissf::CompactDataType* pack(minissf::CompactDataType*);
+  
+  /// the real packing function for minissf
+  virtual int pack(char* bug,  int bufsize);
+
 	/// unpack EventInfoManager
-        static prime::ssf::Event* unpack(prime::ssf::ssf_compact*);
+        static minissf::Event* unpack(minissf::CompactDataType*);
+  static minissf::Event* unpack(char* buf, int bufsize);
+  
 
         /// Execute operation
         virtual void execute(LP& lp);
@@ -72,12 +78,11 @@ class DassfEventInfoManager : public DassfEvent
 
 	/// the actual EventInfoManager
 	EventInfoManager 	fEventInfoManager;	
-  
 };
 
 //==============================================================
 
-inline DassfEventInfoManager::DassfEventInfoManager(prime::ssf::ssf_compact* dp)
+inline DassfEventInfoManager::DassfEventInfoManager(minissf::CompactDataType* dp)
   : DassfEvent( dp ),
     fEventInfoManager()
 {
@@ -100,17 +105,33 @@ inline DassfEventInfoManager* DassfEventInfoManager::clone() const
     return new DassfEventInfoManager(*this);
 }
 
-inline prime::ssf::ssf_compact* DassfEventInfoManager::pack(prime::ssf::ssf_compact* dp)
+inline minissf::CompactDataType* DassfEventInfoManager::pack(minissf::CompactDataType* dp)
 {
     PackedData pd(dp);
     fEventInfoManager.pack( pd );
     return dp;
 }
+  
+  inline int DassfEventInfoManager::pack(char* buf, int bufsize)
+  {
+    SMART_ASSERT(false)("DassfEventInfoManager::pack should never be called");
+    return 0;
+    // PackedData pd(dp);
+    // fEventInfoManager.pack( pd );
+    // return dp;
+  }
 
-inline prime::ssf::Event* DassfEventInfoManager::unpack(prime::ssf::ssf_compact* dp)
+inline minissf::Event* DassfEventInfoManager::unpack(minissf::CompactDataType* dp)
 {
     return new DassfEventInfoManager(dp);
 }
+
+  inline minissf::Event* DassfEventInfoManager::unpack(char* buf, int bufsize)
+  {
+    SMART_ASSERT(false)("DassfEventInfoManager::unpack should never be called");
+    // return new DassfEventInfoManager(dp);
+    return NULL;
+  }
 
 inline void DassfEventInfoManager::execute(LP& lp)
 {

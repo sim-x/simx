@@ -58,7 +58,7 @@ namespace HelloWorld {
 
     void HelloHandlerPerson::receive( boost::shared_ptr< Hello > info ) {
         SMART_ASSERT( info );
-        Logger::debug3() << "HelloHandlerPerson::receive( Hello ): " << *info;
+        Logger::debug3() << "HelloHandlerPerson::receive( Hello ): " << *info << endl;
 
 	Output::output(*this, 100) << "Received a hello!";
 	Output::output(*this, 200) << "Random Number: " << getRandom().GetUniform();
@@ -66,10 +66,12 @@ namespace HelloWorld {
         boost::shared_ptr< Reply > reply;
         theInfoManager().createInfo( reply );
 
-        Logger::debug3() << "HelloHandlerPerson::receive( Hello ): Created Reply: " << *reply;
+        Logger::debug3() << "HelloHandlerPerson::resssceive( Hello ): Created Reply: " 
+			 << *reply << endl;
         /// Fill with data
         reply->fSrcPersonID = getEntityId();
         reply->fDstPersonID = info->fSrcPersonID;
+	Logger::debug3() << "hellohandler person. lp mindelay is " << LP::MINDELAY << endl;
         sendInfo( reply, LP::MINDELAY, info->fSrcPersonID, eAddr_HelloHandlerPerson);
     }
     

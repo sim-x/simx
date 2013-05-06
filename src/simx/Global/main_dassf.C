@@ -77,11 +77,16 @@ int main(int argc, char** argv)
       << std::endl;
     exit(EXIT_FAILURE);
   }
+
+  // initialize ssf
+  minissf::ssf_init(argc, argv);
+
   // Process and store rank number, if supplied.
   if (argc > 2) {
     Common::Values::SetRank( atoi(argv[2]) );
   } else {
-    Common::Values::SetRank( prime::ssf::ssf_machine_index() );
+    //Common::Values::SetRank( prime::ssf::ssf_machine_index() );
+    Common::Values::SetRank( minissf::ssf_machine_index() );
   }      
 
   // Set the suffix based on the rank, if supplied.
@@ -93,6 +98,7 @@ int main(int argc, char** argv)
   }
 
   // init configuration file.
+  
   Config::ConfigInit(argv[1]);
 
   // init logging

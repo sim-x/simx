@@ -20,7 +20,7 @@ namespace HelloWorld {
     void registerAll(); 
 }
 
-simx::Time  simx::LP::LP::MINDELAY;
+//simx::Time  simx::LP::LP::MINDELAY=5;
 
 using namespace simx;
 

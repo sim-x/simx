@@ -26,6 +26,8 @@
 //
 //--------------------------------------------------------------------------
 
+#ifndef SIMX_USE_PRIME
+
 #ifndef NISAC_SIMX_SIMENGINE
 #define NISAC_SIMX_SIMENGINE
 
@@ -85,3 +87,4 @@ void sendEventInfo( LPID destLP, const simx::EventInfo& e );
 
 #endif
 
+#endif

@@ -44,40 +44,45 @@ namespace simx {
 class EventInfo;
 
 /// Wrap around EventInfo to hide DaSSF internals
-class DassfEventInfo : public DassfEvent
-{
+  class DassfEventInfo : public DassfEvent
+  {
     SSF_DECLARE_EVENT(DassfEventInfo);
 
-    public:
-	/// Construct an event from a data stream message
-	explicit DassfEventInfo(prime::ssf::ssf_compact* dp);
-	/// constructor from EventInfo
-	explicit DassfEventInfo(const EventInfo&);
+  public:
+    /// Construct an event from a data stream message
+    explicit DassfEventInfo(minissf::CompactDataType* dp);
+    /// constructor from EventInfo
+    explicit DassfEventInfo(const EventInfo&);
 
-        virtual ~DassfEventInfo();
+    virtual ~DassfEventInfo();
 
-        /// Makes a copy
-        virtual DassfEventInfo* clone() const;
+    /// Makes a copy
+    virtual DassfEventInfo* clone() const;
   
-	/// pack EventInfo
-        virtual prime::ssf::ssf_compact* pack(prime::ssf::ssf_compact*);
-	/// unpack EventInfo
-        static prime::ssf::Event* unpack(prime::ssf::ssf_compact*);
+    /// pack EventInfo
+    virtual minissf::CompactDataType* pack(minissf::CompactDataType*);
+    /// the real packing function
+    virtual int pack(char* buf, int bufsize);
+  
 
-        /// Execute operation
-        virtual void execute(LP& lp);
+    /// unpack EventInfo
+    //static minissf::Event* unpack(minissf::CompactDataType*);
+    static minissf::Event* unpack(char* buf, int bufsize);
 
-    protected:
-    private:
+    /// Execute operation
+    virtual void execute(LP& lp);
 
-	/// the actual EventInfo
-	EventInfo 	fEventInfo;
+  protected:
+  private:
+
+    /// the actual EventInfo
+    EventInfo 	fEventInfo;
  
-};
+  };
 
 //==============================================================
 
-inline DassfEventInfo::DassfEventInfo(prime::ssf::ssf_compact* dp)
+inline DassfEventInfo::DassfEventInfo(minissf::CompactDataType* dp)
   : DassfEvent( dp ),
     fEventInfo()
 {
@@ -100,17 +105,35 @@ inline DassfEventInfo* DassfEventInfo::clone() const
     return new DassfEventInfo(*this);
 }
 
-inline prime::ssf::ssf_compact* DassfEventInfo::pack(prime::ssf::ssf_compact* dp)
+inline minissf::CompactDataType* DassfEventInfo::pack(minissf::CompactDataType* dp)
 {
+  Logger::debug3() << "DassfEventInfo: packing" << std::endl;
     PackedData pd(dp);
     fEventInfo.pack( pd );
     return dp;
 }
 
-inline prime::ssf::Event* DassfEventInfo::unpack(prime::ssf::ssf_compact* dp)
-{
-    return new DassfEventInfo(dp);
-}
+  /// the real packing function
+  inline int DassfEventInfo::pack(char* buf, int bufsize)
+  {
+    //int debug_wait = 1;
+    //while(debug_wait);
+    //Logger::debug3() << "DassfEventInfo::pack buffer size is " << bufsize << std::endl;
+    // PackedData pd(buf, bufsize);
+    minissf::CompactDataType* cdata = new minissf::CompactDataType; //create a byte stream
+    PackedData pd(cdata);
+    fEventInfo.pack(pd);
+    return cdata->pack_and_delete(buf, bufsize); //pack into buffer and reclaim memory
+  }
+
+  //inline minissf::Event* DassfEventInfo::unpack(minissf::CompactDataType* dp)
+  inline minissf::Event* DassfEventInfo::unpack(char* buf, int bufsize)
+  {
+    Logger::debug3() << "DassfEventInfo: unpacking" << std::endl;
+    minissf::CompactDataType* cdata = new minissf::CompactDataType; //create a byte stream
+    cdata->unpack(buf, bufsize);
+    return new DassfEventInfo(cdata);
+  }
 
 inline void DassfEventInfo::execute(LP& lp)
 {

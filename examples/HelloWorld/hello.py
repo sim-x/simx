@@ -36,11 +36,14 @@ from HelloHandler import *
 ####### Initialize MPI and configuration framework#######
 init("HelloWorld")
 
-end_time = 10*2**10
-
+#end_time = 2**10
+#end_time = 10*2**10
+end_time = 2**16
+#end_time = 10
+#end_time = 2
 ##### set simulation configuration values ########
 simx.set_config_value("NUMBER_LPS","0")
-simx.set_config_value("MINDELAY","10")
+simx.set_config_value("MINDELAY","1")
 simx.set_config_value("END_TIME",str(end_time))
 simx.set_config_value("OUTPUT_FILE","output_HelloWorld.out")
 simx.set_config_value("LOG_COUT_LEVEL","warn")
@@ -61,21 +64,28 @@ hh = add_service('HelloHandlerPerson',None,[])
 ep = { 'SERVICES':{eAddr_HelloHandlerPerson:hh}}
 
 num_entities = 2**5
+
+#num_entities = 2
+
 for i in xrange(num_entities):
     # the third argument is a profile (should be dictionary (can be empty) or None)
     create_entity(('p',i),Person,ep,[('p',1-i)])
 
-##### Schedule initial events, if any ###############
+########## Schedule initial events, if any ###############
 import random
 def create_events():
- for evt_time in xrange(end_time):
-    # pick a random entity for receiving hello
-    hello_rcpt = random.choice(xrange(num_entities))
-    # who should the reply be sent to ?
-    reply_rcpt = random.choice(xrange(num_entities))
-    schedule_event( evt_time, ('p',hello_rcpt), eAddr_HelloHandlerPerson, 
-                    HelloMessage(source_id=('p',reply_rcpt)))
-
+    for evt_time in xrange(end_time):
+        # pick a random entity for receiving hello
+        hello_rcpt = random.choice(xrange(num_entities))
+        # who should the reply be sent to ?
+        reply_rcpt = random.choice(xrange(num_entities))
+        schedule_event( evt_time, ('p',hello_rcpt), eAddr_HelloHandlerPerson, 
+                        HelloMessage(source_id=('p',reply_rcpt)))
+        
+# for evt_time in xrange(end_time):
+#     schedule_event( evt_time, ('p',0), eAddr_HelloHandlerPerson, 
+#                     HelloMessage(source_id=('p',1)))
+    
 #schedule_events()
 es = EventScheduler(create_events)
 #create_events()

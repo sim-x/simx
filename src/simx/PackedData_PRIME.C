@@ -17,7 +17,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
 //--------------------------------------------------------------------------
-// File:    PackedData.C
+// File:    PackedData_PRIME.C
 // Module:  simx
 // Author:  Lukas Kroc
 // Created: Feb 7 2005
@@ -38,10 +38,12 @@
 
 namespace simx {
 
-PackedData::PackedData(prime::ssf::ssf_compact* dp)
+PackedData::PackedData(minissf::CompactDataType* dp)
     :	fData( dp )
 {
-    SMART_ASSERT( fData );
+  // int debug_wait = 1;
+  //while(debug_wait);
+  SMART_ASSERT( fData );
 }
 
 
@@ -100,10 +102,10 @@ void PackedData::add(const long& x)
 void PackedData::add(const long long& x)
 { fData->add_long_long(x); }
 #endif
-#ifdef HAVE_LONG_DOUBLE
-void PackedData::add(const long double& x)
-{ fData->add_long_double(x); }
-#endif
+// #ifdef HAVE_LONG_DOUBLE
+// void PackedData::add(const long double& x)
+// { fData->add_long_double(x); }
+// #endif
 void PackedData::add(const short& x)
 { fData->add_short(x); }
 void PackedData::add(const unsigned char& x)
@@ -155,10 +157,10 @@ bool PackedData::get(long& x)
 bool PackedData::get(long long& x)
 { return fData->get_long_long(&x); }
 #endif
-#ifdef HAVE_LONG_DOUBLE
-bool PackedData::get(long double& x)
-{ return fData->get_long_double(&x); }
-#endif
+// #ifdef HAVE_LONG_DOUBLE
+// bool PackedData::get(long double& x)
+// { return fData->get_long_double(&x); }
+// #endif
 bool PackedData::get(short& x)
 { return fData->get_short(&x); }
 bool PackedData::get(unsigned char& x)

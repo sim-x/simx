@@ -356,7 +356,7 @@ void Controller::interpretCommand( const string& command, const string& arg )
 		pauseSimulation();
 	    } else
 	    {
-		ssarg >> fRunTill;
+	      ssarg >> fRunTill;
 		Logger::debug3() << "Controller::interpretCommand pausing the simulation at time " << fRunTill << endl;
 	    }
 	}

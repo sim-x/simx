@@ -32,8 +32,12 @@
 
 #include "simx/Python/PyService.h"
 #include "simx/InfoManager.h"
-#include "simx/Python/PyUtility.h"
 
+#include "simx/Python/PyUtility.h"
+#ifdef SIMX_USE_PRIME
+#include "simx/EntityManager.h"
+#include "simx/Python/PyRemoteInfo.h"
+#endif
 
 
 using namespace std;
@@ -43,9 +47,6 @@ using namespace boost;
 namespace simx {
 
   namespace Python {
-
-    
-    
 
     void PyService::receive( shared_ptr<PyInfo> info )
 
@@ -57,14 +58,24 @@ namespace simx {
 	if ( info->fPickled )
 	  //   fPyObj.attr("recv")(info->fPickledData,true);
 	  {
+#ifdef SIMX_USE_PRIME
+	    SMART_ASSERT(false)
+	      ("Pickled PyInfo should never be used with SSF. Only PyRemoteInfo may be used");
+#endif
 	    //info->fData = theInfoManager().getUnpacker()(info->fPickledData);
+	    
 	    info->setData( theInfoManager().
-	     		   getUnpacker()(
+			   getUnpacker()(
 					 info->fPickledData));
+	    
+	    //fPyObj.attr("recv")( theInfoManager().getUnpacker()( info->fPickledData ));
+	    
 	  }
 	//else
 	//fPyObj.attr("recv")(info->fData,false);
 	//fPyObj.attr("recv")(*(info->fData));
+	//assert(info->getData());
+	//else
 	fPyObj.attr("recv")(info->getData());
       }
       catch(...)
@@ -77,6 +88,32 @@ namespace simx {
       PyGILState_Release(gstate);
     }
 
+/////////////////////////////////////////////////////////////////////
+    
+#ifdef SIMX_USE_PRIME
+    void PyService::receive( shared_ptr<PyRemoteInfo> info )
+    {
+      Logger::debug3() << "Pyservice.C: Service " << getName() 
+		       << "PyRemoteInfo received" << endl;
+      try
+	{
+	  fPyObj.attr("recv")( theInfoManager().getUnpacker()
+			       ( info->fPickledData));
+	}
+      catch(...)
+	{
+	  Logger::error() << "Pyservice.C: Service " << getName()
+			  << ": error in handling incoming info" << endl;
+	  PyErr_Print();
+	  PyErr_Clear();
+	}
+      
+    }
+#endif
+    
+  
+    /////////////////////////////////////////////////////////////////////
+
     void PyService::sendPyInfo(const python::object& py_info,
 			       const Time time,
 			       const python::tuple& dest_ent,
@@ -84,14 +121,45 @@ namespace simx {
 
       EntityID e_id = py2EntityId( dest_ent );
       
-      shared_ptr<PyInfo> info;
-      theInfoManager().createInfo( info );
-      //info->fData = &py_info;
-      info->setData( py_info );
+#ifdef SIMX_USE_PRIME
+      if ( theEntityManager().findEntityLpId(e_id) !=
+	   Control::getRank() )
+	{
+	  Logger::debug3() << "PyService on Entity " << getEntityId()
+			   << " : Sending remotely, proceeding to pickle Python object" << endl;
+	  shared_ptr<PyRemoteInfo> info;
+	  theInfoManager().createInfo( info );
+	  if ( ! info->pickleData( py_info ) )
+	    {
+	      Logger::error() << "PyService.C: Service on entity " << getEntityId()
+			      << ": Error while pickling info. Not sending" << endl;
+	      return;
+	    }
+	  else // succesful pickling, send it off
+	    {
+	      sendInfo( info, time, e_id, 
+			static_cast<ServiceAddress>( dest_serv ) );
+	    }
+	}
+      else // destination entity lives on the same LP. Use regular PyInfo for sending
+	{
+#endif
+	  // either we are using SimEngine -- in which case sending local 
+	  // and remote infos use the same procedure -- or
+	  // we are using SSF and sending locally.
+
+	  shared_ptr<PyInfo> info;
+	  theInfoManager().createInfo( info );
+	  info->setData( py_info );
+	  sendInfo( info, time, e_id, 
+		    static_cast<ServiceAddress>( dest_serv ) );
+#ifdef SIMX_USE_PRIME
+	} //close-out else block
+#endif
+      
       //info->fData = boost::make_shared<boost::python::object>(py_info);
-      sendInfo( info, time, e_id, 
-		static_cast<ServiceAddress>( dest_serv ) );
     }
+
 
     void PyService::print_i() {
       std::cout << "i is " << i << std::endl;
