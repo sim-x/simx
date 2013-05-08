@@ -52,8 +52,8 @@ namespace simx {
 
     {
       Logger::debug3() << "PyService.C: Service " << getName() << " PyInfo received" << endl;
-      PyGILState_STATE gstate;
-      gstate = PyGILState_Ensure();
+      //PyGILState_STATE gstate;
+      //gstate = PyGILState_Ensure();
       try {
 	if ( info->fPickled )
 	  //   fPyObj.attr("recv")(info->fPickledData,true);
@@ -85,7 +85,7 @@ namespace simx {
 	  PyErr_Print();
 	  PyErr_Clear();
 	}
-      PyGILState_Release(gstate);
+      //PyGILState_Release(gstate);
     }
 
 /////////////////////////////////////////////////////////////////////
