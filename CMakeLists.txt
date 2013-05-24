@@ -37,9 +37,9 @@ link_directories(${PYTHON_LIBRARIES})
 
 # for SSF
 ADD_DEFINITIONS("-DSIMX_USE_PRIME")
-include_directories("/Users/sunil/Downloads/minissf")
-link_directories("/Users/sunil/Downloads/minissf")
-link_directories("/Users/sunil/Downloads/minissf/kernel/metis")
+include_directories("/Users/sunil/work/minissf")
+link_directories("/Users/sunil/work/minissf")
+link_directories("/Users/sunil/work/minissf/kernel/metis")
 
 # simx	
 include_directories(${CMAKE_SOURCE_DIR} src src/simx) 

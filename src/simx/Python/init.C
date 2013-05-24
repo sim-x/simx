@@ -88,8 +88,9 @@ int die( const string& emsg );
   // scanf, etc).
   ios_base::sync_with_stdio(false);
 #ifdef SIMX_USE_PRIME
-  
-  minissf::ssf_init(0, NULL);
+
+  int i = 0;
+  minissf::ssf_init(i, NULL);
   //set rank of this process
   Common::Values::SetRank( minissf::ssf_machine_index() );
   //Common::Values::SetRank( 0 );

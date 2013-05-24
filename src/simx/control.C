@@ -78,7 +78,20 @@ using namespace std;
 void simx_messaging()
 {
   simx::Messenger::checkStatus();
+
 }
+
+namespace simx {
+
+  PyThreadState* py_main_thread_state = NULL;
+  
+  void simx_restore_py_main_thread_state()
+  {
+    //assert(false);
+    //PyEval_RestoreThread( py_main_thread_state );
+  }
+}
+
 #endif
 
 //--------------------------------------------------------------------------
@@ -102,6 +115,13 @@ namespace {
 
   
   eSimPhase fPhase = kPhaseInit;
+
+  //#ifdef SIMX_USE_PRIME
+  
+
+
+  //#endif
+
   
   /// initilizes global variables
   void initGlobals(const std::string& modulename)
@@ -385,6 +405,10 @@ namespace simx {
       //minissf::Entity::joinAll();
       Time endTime;
       gConfig.GetConfigurationValueRequired(ky_END_TIME, endTime);
+      
+      //if (minissf::ssf_num_machines() > 1)
+      //py_main_thread_state = PyEval_SaveThread();
+      
       minissf::ssf_start(endTime);
 #else
 	SimEngine::run();
