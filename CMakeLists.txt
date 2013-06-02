@@ -8,7 +8,7 @@ enable_language(CXX)
 #set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
 set(CMAKE_CXX_FLAGS "-g -fpermissive")
 
-# for mpich
+# for MPI
 find_package(MPI REQUIRED)
 if (MPI_CXX_FOUND)
    include_directories(${MPI_CXX_INCLUDE_PATH})
@@ -36,10 +36,13 @@ include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARIES})
 
 # for SSF
+add_subdirectory(src/minissf)
 ADD_DEFINITIONS("-DSIMX_USE_PRIME")
-include_directories("/Users/sunil/work/minissf")
-link_directories("/Users/sunil/work/minissf")
-link_directories("/Users/sunil/work/minissf/kernel/metis")
+include_directories("${CMAKE_SOURCE_DIR}/src/minissf")
+# below include to make sure ssf_config.h is visible
+include_directories("${CMAKE_BINARY_DIR}/src/minissf")
+link_directories("${CMAKE_BINARY_DIR}/minissf")
+link_directories("${CMAKE_BINARY_DIR}/minissf/metis")
 
 # simx	
 include_directories(${CMAKE_SOURCE_DIR} src src/simx) 

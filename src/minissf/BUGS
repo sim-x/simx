@@ -1,0 +1,19 @@
+On Ubuntu 11.10, gcc has a bug related to preprocessing (with -E -C option). If we see an error like the following when compiling a model (e.g., the muxtree example), it means the gcc version you're using is problematic. 
+
+liux@ubuntu:~/minissf/examples/muxtree$ make
+/usr/bin/perl '/home/liux/minissf'/bin/cppcxx.pl -DAUTOXLATE_REQUIRED=no -DSSFCMDDEBUG=yes -I.  muxtree.cc -o muxtree.o
+> g++ -E -C -g -O2 -I'/home/liux/minissf' -I. -o _tmp_0.cc muxtree.cc
+In file included from /usr/include/c++/4.6/i686-linux-gnu/./bits/gthr.h:162:0,
+                 from /usr/include/c++/4.6/ext/atomicity.h:34,
+                 from /usr/include/c++/4.6/bits/basic_string.h:41,
+                 from /usr/include/c++/4.6/string:54,
+                 from /home/liux/minissf/ssfapi/ssf_common.h:23,
+                 from /home/liux/minissf/ssf.h:15,
+                 from muxtree.h:18,
+                 from muxtree.cc:3:
+/usr/include/c++/4.6/i686-linux-gnu/./bits/gthr-default.h:251:1: error: pasting "__gthrw_" and "/* Android's C library does not provide pthread_cancel, check for
+   `pthread_create' instead.  */" does not give a valid preprocessing token
+Died at /home/liux/minissf/bin/cppcxx.pl line 50.
+make: *** [muxtree.o] Error 1
+
+There's an easy fix with this problem, as long as you have root privilege. Just delete the comment at line 244 in /usr/include/c++/4.6/i686-linux-gnu/bits/gthr-default.h. This comment is useless and simply makes gcc unhappy.

@@ -43,7 +43,7 @@ end_time = 2**16
 #end_time = 2
 ##### set simulation configuration values ########
 simx.set_config_value("NUMBER_LPS","0")
-simx.set_config_value("MINDELAY","1")
+simx.set_config_value("MINDELAY","10")
 simx.set_config_value("END_TIME",str(end_time))
 simx.set_config_value("OUTPUT_FILE","output_HelloWorld.out")
 simx.set_config_value("LOG_COUT_LEVEL","warn")
