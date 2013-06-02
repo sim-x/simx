@@ -33,6 +33,7 @@
 #include "simx/DassfEvent.h"
 #include "simx/DassfEventInfo.h"
 #include "simx/DassfEventInfoManager.h"
+#include "simx/DassfPyEventInfoManager.h"
 #include "simx/EntityManager.h"
 #include "simx/PackedData.h"
 #include "simx/logger.h"
@@ -66,7 +67,7 @@ using namespace boost;
 
 // Initialize static variable MINDELAY to zero. 
 // Correct value will by set by LP constructor from config file.
-simx::Time  simx::LP::MINDELAY;
+simx::Time  simx::LP::MINDELAY = 1000;
 #endif
 
 namespace simx {
@@ -79,7 +80,10 @@ LP::LP(LPID id)
     fRandom(id)
 {
 //  SMART_ASSERT( fDassfLP );
+
   Config::gConfig.GetConfigurationValueRequired( ky_MINDELAY, MINDELAY );
+  Logger::debug3() << "LP.C setting mindelay to " << MINDELAY << endl;
+  fDassfLP->mapChannels();
 }
 
 LP::~LP()
@@ -119,8 +123,11 @@ void LP::sendEventInfo(EventInfo& e) const
 
     if( delay < LP::MINDELAY )
     {
-	Logger::error() << "LP.C on " << getId() << ": too late sending event with delay "
+     
+	Logger::error() << "LP.C on LP " << getId() << ": too late sending event with delay "
 	    << delay << " at time " << getNow() << ", will be delivered later" << endl;
+	Logger::error() << "setting delay to LP::MINDELAY of " << LP::MINDELAY;
+	delay = LP::MINDELAY;
     }
 
 
@@ -185,7 +192,7 @@ void LP::sendPyEventInfoManager(PyEventInfoManager& e) const
     e.setTime(eventTime);
 
 #ifdef SIMX_USE_PRIME
-    fDassfLP->sendDassfEvent(destLP, new DassfEventInfoManager(e), e.getDelay() );
+    fDassfLP->sendDassfEvent(destLP, new DassfPyEventInfoManager(e), e.getDelay() );
 #else
     // simEngine handles this differently: uses an event to Controller
     // TODO: this should really be happining in InfoManager when it is scheduling this

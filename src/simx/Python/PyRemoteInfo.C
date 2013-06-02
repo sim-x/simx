@@ -1,4 +1,4 @@
-// Copyright (c) 2012. Los Alamos National Security, LLC. 
+// Copyright (c) 2012, 2013 Los Alamos National Security, LLC. 
 
 // This material was produced under U.S. Government contract DE-AC52-06NA25396
 // for Los Alamos National Laboratory (LANL), which is operated by Los Alamos 
@@ -16,75 +16,68 @@
 // it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
+// $Id$
 //--------------------------------------------------------------------------
-// File:    simEngine.h
-// Module:  simx
-// Author:  Lukas Kroc
-// Created: Feb 25 2010
 //
+// File:        PyRemoteInfo.C
+// Module:      Python
+// Author:      Sunil Thulasidasan
+// Created:     May 5 2013
+// Description: Only for SSF. This class will be used for Infos that have to be sent to
+//              entitities living in a diffrent memory space
 // @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef SIMX_USE_PRIME
+#ifdef SIMX_USE_PRIME
 
-#ifndef NISAC_SIMX_SIMENGINE
-#define NISAC_SIMX_SIMENGINE
+#include "simx/Python/PyRemoteInfo.h"
+#include "simx/InfoManager.h"
 
-
-#include <iostream>
-#include <algorithm>
-
-#include "mpi.h"
-
-#include "simx/type.h"
-#include "simx/EventInfo.h"
-
-#include <assert.h>
-
+using namespace boost;
+using namespace boost::python;
+using namespace std;
 
 namespace simx {
+  
+  namespace Python {
+    
+    PyRemoteInfo::PyRemoteInfo() {}
+    
+    PyRemoteInfo::~PyRemoteInfo() {}
+    
+    void PyRemoteInfo::pack( PackedData& pd ) const
+    {
+      pd.add( fPickledData );
+    }
+    
+    
+    void PyRemoteInfo::unpack(PackedData& pd ) 
+    {
+      assert( pd.get( fPickledData ));
+      
+    }
+    
+    
+    bool PyRemoteInfo::pickleData( const python::object& py_obj )
+    {
+      try 
+	{
+	  fPickledData = python::extract<string>(theInfoManager().
+						 getPacker()(py_obj));
+	  return true;
+	}
+      catch(...)
+	{
+	  PyErr_Print();
+	  PyErr_Clear();
+	  return false;
+	}
+	
+    }
 
-namespace SimEngine {
 
-//=======================================================
-// control functions
-//=======================================================
-
-// initializes MPI
-void init();
-
-// returns the number of machines in the MPI world
-int getNumMachs();	
-
-// returns the rank of this machine
-int getRank();
-
-// 'prepares' for the simulation to be started
-void prepare(Time start, Time end);
-
-// runs the simulation, does not return untill the end
-void run();
-
-// shuts down MPI
-void finalize();
-
-
-//=======================================================
-// utility functions
-//=======================================================
-
-// returns the current simulation time
-Time getNow();
-
-// packs an event, and sends it off
-void sendEventInfo( LPID destLP, const simx::EventInfo& e );
-
-
-} // namespace SimEngine
-
-} // namespace simx
-
-#endif
+  }
+}
 
 #endif

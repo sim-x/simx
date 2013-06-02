@@ -78,7 +78,20 @@ using namespace std;
 void simx_messaging()
 {
   simx::Messenger::checkStatus();
+
 }
+
+namespace simx {
+
+  PyThreadState* py_main_thread_state = NULL;
+  
+  void simx_restore_py_main_thread_state()
+  {
+    //assert(false);
+    //PyEval_RestoreThread( py_main_thread_state );
+  }
+}
+
 #endif
 
 //--------------------------------------------------------------------------
@@ -102,6 +115,13 @@ namespace {
 
   
   eSimPhase fPhase = kPhaseInit;
+
+  //#ifdef SIMX_USE_PRIME
+  
+
+
+  //#endif
+
   
   /// initilizes global variables
   void initGlobals(const std::string& modulename)
@@ -110,8 +130,8 @@ namespace {
     // do global initialization
 
 #ifdef SIMX_USE_PRIME
-    fNumMachs = prime::ssf::ssf_num_machines();	
-    fRank = prime::ssf::ssf_machine_index();
+    fNumMachs = minissf::ssf_num_machines();	
+    fRank = minissf::ssf_machine_index();
 #else
     SimEngine::init();
     fNumMachs = SimEngine::getNumMachs();	
@@ -256,21 +276,22 @@ namespace simx {
 	<< simx::LP::MINDELAY << endl;
 
 #ifdef SIMX_USE_PRIME
-      bool ob_mesging;
-      if ( gConfig.GetConfigurationValue(ky_OUT_OF_BAND_MESSAGING,ob_mesging )
-	   && ob_mesging )
-	{
-	  if ( getNumLPs() < 2 )
-	    {
-	      Logger::error() << " Control: init(): Out-of-band Messaging "
-			      << " cannot be activated in serial simulations " << endl;
-	    }
-	  else
-	    {
-	      Messenger::initCommunicator();
-	      MPI_Barrier(MPI_COMM_WORLD);
-	    }
-	}
+      // TODO: Out-of-band messaging does not work with minissf.
+      // bool ob_mesging;
+      // if ( gConfig.GetConfigurationValue(ky_OUT_OF_BAND_MESSAGING,ob_mesging )
+      // 	   && ob_mesging )
+      // 	{
+      // 	  if ( getNumLPs() < 2 )
+      // 	    {
+      // 	      Logger::error() << " Control: init(): Out-of-band Messaging "
+      // 			      << " cannot be activated in serial simulations " << endl;
+      // 	    }
+      // 	  else
+      // 	    {
+      // 	      Messenger::initCommunicator();
+      // 	      MPI_Barrier(MPI_COMM_WORLD);
+      // 	    }
+      // 	}
 #endif
 
 
@@ -287,7 +308,8 @@ namespace simx {
       // go to negative beginning to allow infos for time 0 to be delivered on time
       // prime ssf does not allow negative time!
 #ifdef SIMX_USE_PRIME
-      prime::ssf::Entity::startAll(Time(0), endTime);
+      //minissf::Entity::startAll(Time(0), endTime);
+      //minissf::ssf_start(endTime);
 #else
 	SimEngine::prepare(0, endTime);
 #endif
@@ -360,6 +382,8 @@ namespace simx {
     /// starts the simulation (reads in Info files, needs created Entities)
     void startSimulation()
     {
+      //int debug_wait = 1;
+      //while(debug_wait);
 #ifndef NDEBUG
 #ifndef __APPLE__
       Logger::info() << "MEM_MIDDLE: " 
@@ -378,7 +402,14 @@ namespace simx {
 
       // this doesn't return until the simulation is finished
 #ifdef SIMX_USE_PRIME
-      prime::ssf::Entity::joinAll();
+      //minissf::Entity::joinAll();
+      Time endTime;
+      gConfig.GetConfigurationValueRequired(ky_END_TIME, endTime);
+      
+      //if (minissf::ssf_num_machines() > 1)
+      //py_main_thread_state = PyEval_SaveThread();
+      
+      minissf::ssf_start(endTime);
 #else
 	SimEngine::run();
 #endif
@@ -387,7 +418,8 @@ namespace simx {
 
 #ifdef SIMX_USE_PRIME
       //settle out-of-channel Messenger
-      Messenger::finalize();
+      // TODO: out-of-band messaging does not work with minissf
+      // Messenger::finalize();
 #endif 
      
       Logger::info() << "Control: Simulation finished" << endl;
@@ -402,6 +434,7 @@ namespace simx {
 #endif
 
 #ifdef SIMX_USE_PRIME
+      minissf::ssf_finalize();
 #else
 	SimEngine::finalize();
 #endif

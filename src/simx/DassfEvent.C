@@ -21,7 +21,7 @@
 //--------------------------------------------------------------------------
 // File:    DassfEvent.C
 // Module:  simx
-// Author:  K. Bisset
+// Author:  K. Bisset, Sunil Thulasidasan
 // Created: June 25 2004
 //
 // @@
@@ -31,6 +31,7 @@
 #include "simx/DassfEvent.h"
 #include "simx/DassfEventInfo.h"
 #include "simx/DassfEventInfoManager.h"
+#include "simx/DassfPyEventInfoManager.h"
 #include "simx/logger.h"
 
 #ifdef SIMX_USE_PRIME
@@ -45,18 +46,19 @@ namespace simx {
   /// register all derived DassfEvent classes:
   SSF_REGISTER_EVENT(DassfEventInfo, DassfEventInfo::unpack);
   SSF_REGISTER_EVENT(DassfEventInfoManager, DassfEventInfoManager::unpack);
+  SSF_REGISTER_EVENT(DassfPyEventInfoManager, DassfPyEventInfoManager::unpack);
 
   DassfEvent::DassfEvent()
-    : prime::ssf::Event()
+    : minissf::Event()
   {
   }
 
   DassfEvent::DassfEvent(const DassfEvent& e)
-    : prime::ssf::Event(e)
+    : minissf::Event(e)
   {
   }
 
-  DassfEvent::DassfEvent(prime::ssf::ssf_compact* dp)
+  DassfEvent::DassfEvent(minissf::CompactDataType* dp)
   {
   }
 
@@ -64,19 +66,26 @@ namespace simx {
   {
   }
 
-  prime::ssf::ssf_compact* DassfEvent::pack()
+  minissf::CompactDataType* DassfEvent::pack()
   {
-    prime::ssf::ssf_compact* dp = new prime::ssf::ssf_compact;
+    minissf::CompactDataType* dp = new minissf::CompactDataType;
     return pack(dp);
   }
 
-  prime::ssf::ssf_compact* DassfEvent::pack(prime::ssf::ssf_compact* dp)
+  minissf::CompactDataType* DassfEvent::pack(minissf::CompactDataType* dp)
   {
     SMART_ASSERT( dp );
     return dp;
   }
 
-  prime::ssf::Event* DassfEvent::unpack(prime::ssf::ssf_compact*)
+  int DassfEvent::pack(char* buf, int bufsize)
+  {
+    SMART_ASSERT(false)("DassfEvent can only be used as a base class; pack should never be called");
+
+  }
+
+  //minissf::Event* DassfEvent::unpack(minissf::CompactDataType*)
+  minissf::Event* DassfEvent::unpack(char* buf, int bufsize)
   {
     SMART_VERIFY(0)("DassfEvent can only be used as a base class, therefore unpack should never get called");
     return NULL;

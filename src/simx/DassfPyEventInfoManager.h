@@ -17,10 +17,10 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
 //--------------------------------------------------------------------------
-// File:    DassfEventInfoManager.h
+// File:    DassfPyEventInfoManager.h
 // Module:  simx
-// Author:  Lukas Kroc
-// Created: Feb 8 2005
+// Author:  Sunil Thulasidasan
+// Created: April 29 2013
 //
 // Description: 
 //	Event for Info deliveries, DaSSF internals wrap
@@ -29,113 +29,108 @@
 //
 //--------------------------------------------------------------------------
 
-#ifndef NISAC_SIMX_DASSFEVENTINFOMANAGER
-#define NISAC_SIMX_DASSFEVENTINFOMANAGER
+#ifndef NISAC_SIMX_DASSF_PY_EVENT_INFO_MANAGER
+#define NISAC_SIMX_DASSF_PY_EVENT_INFO_MANAGER
 
 #include "simx/type.h"
 #include "simx/DassfEvent.h"
-#include "simx/EventInfoManager.h"
+#include "simx/PyEventInfoManager.h"
 
 #ifdef SIMX_USE_PRIME
 
 
 namespace simx {
 
-class EventInfoManager;
+class PyEventInfoManager;
 
-/// Wrap around EventInfoManager to hide DaSSF internals
-class DassfEventInfoManager : public DassfEvent
+/// Wrap around PyEventInfoManager to hide DaSSF internals
+class DassfPyEventInfoManager : public DassfEvent
 {
-    SSF_DECLARE_EVENT(DassfEventInfoManager);
+    SSF_DECLARE_EVENT(DassfPyEventInfoManager);
 
     public:
 	/// Construct an event from a data stream message
-	explicit DassfEventInfoManager(minissf::CompactDataType* dp);
-	/// constructor from EventInfoManager
-	explicit DassfEventInfoManager(const EventInfoManager&);
+	explicit DassfPyEventInfoManager(minissf::CompactDataType* dp);
+	/// constructor from PyEventInfoManager
+	explicit DassfPyEventInfoManager(const PyEventInfoManager&);
 
-        virtual ~DassfEventInfoManager();
+        virtual ~DassfPyEventInfoManager();
 
         /// Makes a copy
-        virtual DassfEventInfoManager* clone() const;
+        virtual DassfPyEventInfoManager* clone() const;
   
-	/// pack EventInfoManager
+	/// pack PyEventInfoManager
         virtual minissf::CompactDataType* pack(minissf::CompactDataType*);
+        virtual int pack(char* buf, int bufsize);
   
-  /// the real packing function for minissf
-  virtual int pack(char* bug,  int bufsize);
-
-	/// unpack EventInfoManager
+	/// unpack PyEventInfoManager
         static minissf::Event* unpack(minissf::CompactDataType*);
-  static minissf::Event* unpack(char* buf, int bufsize);
-  
-
+        static minissf::Event* unpack(char* buf, int bufsize);
         /// Execute operation
         virtual void execute(LP& lp);
 
     protected:
     private:
 
-	/// the actual EventInfoManager
-	EventInfoManager 	fEventInfoManager;	
+	/// the actual PyEventInfoManager
+	PyEventInfoManager 	fPyEventInfoManager;	
 };
 
 //==============================================================
 
-inline DassfEventInfoManager::DassfEventInfoManager(minissf::CompactDataType* dp)
+inline DassfPyEventInfoManager::DassfPyEventInfoManager(minissf::CompactDataType* dp)
   : DassfEvent( dp ),
-    fEventInfoManager()
+    fPyEventInfoManager()
 {
     PackedData pd(dp);
-    fEventInfoManager.unpack( pd );
+    fPyEventInfoManager.unpack( pd );
 }
 
-inline DassfEventInfoManager::DassfEventInfoManager(const EventInfoManager& e)
+inline DassfPyEventInfoManager::DassfPyEventInfoManager(const PyEventInfoManager& e)
   : DassfEvent(),
-    fEventInfoManager( e )
+    fPyEventInfoManager( e )
 {
 }
 
-inline DassfEventInfoManager::~DassfEventInfoManager()
+inline DassfPyEventInfoManager::~DassfPyEventInfoManager()
 {
 }
 
-inline DassfEventInfoManager* DassfEventInfoManager::clone() const
+inline DassfPyEventInfoManager* DassfPyEventInfoManager::clone() const
 {
-    return new DassfEventInfoManager(*this);
+    return new DassfPyEventInfoManager(*this);
 }
 
-inline minissf::CompactDataType* DassfEventInfoManager::pack(minissf::CompactDataType* dp)
+inline minissf::CompactDataType* DassfPyEventInfoManager::pack(minissf::CompactDataType* dp)
 {
     PackedData pd(dp);
-    fEventInfoManager.pack( pd );
+    fPyEventInfoManager.pack( pd );
     return dp;
 }
-  
-  inline int DassfEventInfoManager::pack(char* buf, int bufsize)
+
+  inline int DassfPyEventInfoManager::pack(char* buf, int bufsize)
   {
-    SMART_ASSERT(false)("DassfEventInfoManager::pack should never be called");
+    SMART_ASSERT(false)("DassfPyEventInfoManager::pack should never be called");
     return 0;
-    // PackedData pd(dp);
-    // fEventInfoManager.pack( pd );
-    // return dp;
   }
 
-inline minissf::Event* DassfEventInfoManager::unpack(minissf::CompactDataType* dp)
+
+inline minissf::Event* DassfPyEventInfoManager::unpack(minissf::CompactDataType* dp)
 {
-    return new DassfEventInfoManager(dp);
+    return new DassfPyEventInfoManager(dp);
 }
 
-  inline minissf::Event* DassfEventInfoManager::unpack(char* buf, int bufsize)
+  inline minissf::Event* DassfPyEventInfoManager::unpack(char* buf, int bufsize)
   {
     SMART_ASSERT(false)("DassfEventInfoManager::unpack should never be called");
     // return new DassfEventInfoManager(dp);
     return NULL;
   }
 
-inline void DassfEventInfoManager::execute(LP& lp)
+
+inline void DassfPyEventInfoManager::execute(LP& lp)
 {
-    fEventInfoManager.execute();
+    fPyEventInfoManager.execute();
 }
 
 
@@ -144,5 +139,3 @@ inline void DassfEventInfoManager::execute(LP& lp)
 #endif //SIMX_USE_PRIME
 
 #endif 
-
-

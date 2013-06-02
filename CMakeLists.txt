@@ -5,7 +5,8 @@ project(simx)
 cmake_minimum_required(VERSION 2.6)
 enable_language(CXX)
 #set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
+#set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
+set(CMAKE_CXX_FLAGS "-g -fpermissive")
 
 # for mpich
 find_package(MPI REQUIRED)
@@ -34,6 +35,11 @@ find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARIES})
 
+# for SSF
+ADD_DEFINITIONS("-DSIMX_USE_PRIME")
+include_directories("/Users/sunil/work/minissf")
+link_directories("/Users/sunil/work/minissf")
+link_directories("/Users/sunil/work/minissf/kernel/metis")
 
 # simx	
 include_directories(${CMAKE_SOURCE_DIR} src src/simx) 
@@ -54,11 +60,13 @@ set_target_properties(simx PROPERTIES PREFIX "" SUFFIX ".so")
 target_link_libraries(simx
         ${Boost_LIBRARIES}
         ${PYTHON_LIBRARIES}
-	${MPI_CXX_LIBRARIES})
+	${MPI_CXX_LIBRARIES}
+	ssf metis)
 
 #add_library(simx_static ${SIMX_SOURCES} src/simx/Global/main_MPI.C)
 
 include_directories(examples/HelloWorld/cpp)
-file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_MPI.C)
+#file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_MPI.C)
+file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_dassf.C)
 add_executable(HelloWorld ${HELLOWORLD_SOURCES})
 target_link_libraries(HelloWorld simx)

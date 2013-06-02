@@ -38,7 +38,9 @@
 #include "simx/InfoManager.h"
 #include "simx/userIO.h"
 #include "simx/Python/PyInfo.h"
-
+#ifdef SIMX_USE_PRIME
+#include "simx/Python/PyRemoteInfo.h"
+#endif
 using namespace boost;
 using namespace std;
 
@@ -49,6 +51,9 @@ namespace simx {
     // TODO (python , high. should not need a numerical value for registration
     void registerInfos() {
       theInfoManager().registerInfo< PyInfo >(1000);
+#ifdef SIMX_USE_PRIME
+      theInfoManager().registerInfo< PyRemoteInfo >(2000);
+#endif
     }
 
     void PyRegisterEntity( //const Entity::ClassType& name,

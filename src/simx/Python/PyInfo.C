@@ -56,6 +56,46 @@ namespace simx {
     // };
 
 
+    struct PyObjHolder {
+      
+      // PyObjHolder(const boost::python::object& data):
+      // 	fObj( data) {}
+      
+      virtual ~PyObjHolder() {}
+      
+      //const boost::python::object* fObj;
+      boost::python::object fObj;
+      //PyObject* pop;
+    };
+
+
+    //TODO (critical) this needs to be inlined
+    const boost::python::object PyInfo::getData() const
+    {
+      //assert(fDataPtr->fObj);
+      //assert(fDataPtr->pop);
+      //return *(fDataPtr->fObj);
+      //boost::python::api::object( fDataPtr->pop);
+      return fDataPtr->fObj;
+    }
+    
+    //TODO (critical) this needs to be inlined 
+    void PyInfo::setData( const boost::python::object& data )
+    {
+      //fDataPtr = boost::shared_ptr<PyObjHolder>(new PyObjHolder( data ));
+      fDataPtr = boost::shared_ptr<PyObjHolder>(new PyObjHolder);
+      //fDataPtr = new PyObjHolder;
+     
+      //fDataPtr->fObj = &data;
+      fDataPtr->fObj = data;
+      //Py_INCREF(data.ptr());
+      //fDataPtr->pop = data.ptr();
+
+      
+
+    }
+    
+
     PyInfo::PyInfo() {
       fPickled = false;
       //fData2 = python::api::object();
@@ -82,6 +122,10 @@ namespace simx {
   
     void PyInfo::pack( PackedData& pd ) const
     {
+#ifdef SIMX_USE_PRIME
+      SMART_ASSERT(false)
+	("PyInfo::pack() method must never get called when using SSF. Only PyRemoteInfo may be used");
+#else
       //cout << "inside pack" << endl;
       //std::ostringstream os;
       // save data to archive
@@ -110,20 +154,30 @@ namespace simx {
       //gstate = PyGILState_Ensure();
       //Py_INCREF(fData.ptr());
       //assert(fData.ptr());
-      pd.add( /*python::extract<python::str>*/
+     
+      /*      pd.add( 
+	     //python::extract<python::str>
 	     //(theInfoManager().getPacker()(*fData)));
 	     python::extract<string>
-	     (theInfoManager().getPacker()(getData())));
+	     (theInfoManager().getPacker()(getData())));*/
+      pd.add( fPickledData );
+
       //pd.add(theInfoManager().getPacker()(fData));
       //PyGILState_Release(gstate);
       
       //pd.add( theInfoManager().getPacker()(fData) );
+#endif
     }
 
+
     void PyInfo::unpack( PackedData& pd ) {
+#ifdef SIMX_USE_PRIME
+      SMART_ASSERT(false)
+	("PyInfo::unpack() method must never get called when using SSF. Only PyRemoteInfo may be used");
+#else
       //cout << "Inside unpack" << endl;
       fPickled = true;
-      pd.get( fPickledData );
+      assert(pd.get( fPickledData ));
       //pd.get(fData);
       //assert(pd.getAnything( fData ));
 
@@ -148,7 +202,7 @@ namespace simx {
       //string name =  python::extract<string>( up.attr("__name__") );
       //assert(o);
       //cout << name << endl;*/
-
+#endif
     }
 
 
