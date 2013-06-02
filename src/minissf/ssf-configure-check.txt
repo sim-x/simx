@@ -1,0 +1,87 @@
+
+#project(minissf)
+#cmake_minimum_required(VERSION 2.6)
+#enable_language(C)
+#enable_language(CXX)
+
+#################################################
+# Check presence of header files
+include(CheckIncludeFiles)
+
+check_include_files(fcntl.h HAVE_FCNTL_H)
+check_include_files(inttypes.h HAVE_INTTYPES_H)
+check_include_files(limits.h HAVE_LIMITS_H)
+check_include_files(malloc.h  HAVE_MALLOC_H)
+check_include_files(memory.h  HAVE_MEMORY_H)
+
+find_package(MPI)
+if (MPI_FOUND)
+  set(HAVE_MPI_H 1)
+endif()
+#check_include_files(mpi.h  HAVE_MPI_H)
+check_include_files(pthread.h  HAVE_PTHREAD_H)
+check_include_files(stdbool.h HAVE_STDBOOL_H)
+check_include_files(stdint.h  HAVE_STDINT_H)
+check_include_files(stdlib.h HAVE_STDLIB_H)
+check_include_files(strings.h HAVE_STRINGS_H)
+check_include_files(string.h HAVE_STRING_H)
+check_include_files(sys/param.h HAVE_SYS_PARAM_H)
+check_include_files(sys/stat.h HAVE_SYS_STAT_H)
+check_include_files(sys/time.h HAVE_SYS_TIME_H)
+check_include_files(sys/types.h HAVE_SYS_TYPES_H)
+check_include_files(sys/wait.h HAVE_SYS_WAIT_H)
+check_include_files(unistd.h HAVE_UNISTD_H)
+check_include_files("sys/time.h;time.h" TIME_WITH_SYS_TIME)
+
+# check for ANSI C Headers.
+message(STATUS "Checking whether system has ANSI C header files")
+check_include_files("stdlib.h;stdarg.h;string.h;float.h" STDC_HEADERS)
+if(STDC_HEADERS)
+  message(STATUS "ANSI C headers found")
+else()
+  message(STATUS "ANSI C headers not found")
+endif()
+
+
+##################################################
+# Check presence of functions
+include(CheckFunctionExists)
+check_function_exists(floor HAVE_FLOOR)
+check_function_exists(gethostname HAVE_GETHOSTNAME)
+check_function_exists(gethrtime HAVE_GETHRTIME)
+check_function_exists(gettimeofday  HAVE_GETTIMEOFDAY)
+check_function_exists(malloc HAVE_MALLOC)
+if (NOT HAVE_MALLOC)
+  set(HAVE_MALLOC 0)
+endif()
+check_function_exists(memset HAVE_MEMSET)
+check_function_exists(pow HAVE_POW)
+check_function_exists(realloc HAVE_REALLOC)
+check_function_exists(select HAVE_SELECT)
+check_function_exists(sqrt HAVE_SQRT)
+check_function_exists(stime HAVE_STIME)
+check_function_exists(strcasecmp HAVE_STRCASECMP)
+check_function_exists(strchr HAVE_STRCHR)
+check_function_exists(strdup HAVE_STRDUP)
+check_function_exists(strerror HAVE_STRERROR)
+
+
+
+#################################################
+# Check presence of types
+include(CheckTypeSize)
+check_type_size(NOT "pid_t" pid_t)
+check_type_size(NOT "size_t" size_t)
+check_type_size(NOT "ssize_t" ssize_t)
+check_type_size("long long int" HAVE_LONG_LONG_INT)
+
+include(CheckSymbolExists)
+#TODO:  this test fails for some reason
+CHECK_SYMBOL_EXISTS(_Bool "stdbool.h" HAVE__BOOL)
+
+#set(HEADER_FILE "ssf_config.cmake.h")
+set(HEADER_FILE "ssf_config.h")
+
+CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/ssf_config.cmake.h.in ${CMAKE_CURRENT_BINARY_DIR}/${HEADER_FILE})
+
+file(APPEND  ${CMAKE_CURRENT_BINARY_DIR}/${HEADER_FILE} "#define HAVE_MALLOC ${HAVE_MALLOC}\n")
