@@ -27,7 +27,7 @@ void BinQueue::settle(VirtualTime bs, int nb, VirtualTime now)
 BinQueue::~BinQueue()
 {
   while(tmp_holder) {
-    ChannelEvent* nxt = tmp_holder->get_next_event();
+    ChannelEvent* nxt = (ChannelEvent*)tmp_holder->get_next_event();
     delete tmp_holder;
     tmp_holder = nxt;
   }
@@ -36,7 +36,7 @@ BinQueue::~BinQueue()
     for(int i=0; i<nbins; i++) {
       ChannelEvent* e = bin_array[i];
       while(e) {
-	ChannelEvent* nxt = e->get_next_event();
+	ChannelEvent* nxt = (ChannelEvent*)e->get_next_event();
 	delete e;
 	e = nxt;
       }
@@ -135,7 +135,7 @@ ChannelEvent* BinQueue::retrieve_events(VirtualTime upper_time)
     // training of the thresholds), prepend them all, as well
     while(tmp_holder) {
       ChannelEvent* evt = tmp_holder;
-      tmp_holder = evt->get_next_event();
+      tmp_holder = (ChannelEvent*)evt->get_next_event();
       evt->get_next_event() = evtlist;
       evtlist = evt;
     }

@@ -18,16 +18,23 @@
    USER WHO ALSO USES MPI FOR COMMUNICATION MUST NOT USE THIS TAG. */
 #define CHANNEL_EVENT_TAG 100
 
+// namespace simx
+// {
+//   extern void simx_restore_py_main_thread_state();
+// }
+
+
+
 namespace minissf {
 
 /* We record the wall clock time when the simulation starts, so that
    we can pace simulation relative to real time. */
-double Universe::start_wallclock_time;
+int64 Universe::start_wallclock_time;
 
 /* We record these times for reporting simulation init and run time. */
-double Universe::time0;
-double Universe::time1;
-double Universe::time2;
+int64 Universe::time0;
+int64 Universe::time1;
+int64 Universe::time2;
 
 /* This is the mininum of all synchronous channel link delays. */
 VirtualTime Universe::epoch_length;
@@ -47,8 +54,8 @@ ChannelEvent*** Universe::switch_board = 0;
    producer(s) and the consumer. */
 ssf_thread_mutex_t Universe::remote_mailbox_mutex;
 ssf_thread_cond_t Universe::remote_mailbox_cond;
-ChannelEvent* Universe::remote_mailbox = 0;
-ChannelEvent* Universe::remote_mailbox_tail = 0;
+ChainedEvent* Universe::remote_mailbox = 0;
+ChainedEvent* Universe::remote_mailbox_tail = 0;
 
 /* There is one send buffer (sendbuf) of size MPIBUF_SIZE created for
    each remote machine by the writer thread only when there is a
@@ -84,10 +91,13 @@ extern pthread_key_t thread_id;
 static void rw_thread_start(void* data) 
 { 
   // the new thread should become thread 0
-  //Universe::rw_thread(); 
-  Universe* univ = (Universe*)data;
-  pthread_setspecific(thread_id, univ);
-  univ->run_continuation();
+  Universe::rw_thread(); 
+  
+  // Universe* univ = (Universe*)data;
+  // pthread_setspecific(thread_id, univ);
+  // //restore simx python thread
+  // simx::simx_restore_py_main_thread_state();
+  // univ->run_continuation();
 }
 
 static void reader_thread_start(void* data) { Universe::reader_thread(); }
@@ -110,7 +120,7 @@ void Universe::synchronize_events()
     ChannelEvent* local_evts = local_binque->retrieve_events(next_decade);
     while(local_evts) {
       ChannelEvent* e = local_evts;
-      local_evts = e->get_next_event();
+      local_evts = (ChannelEvent*)e->get_next_event();
       int pid = e->stargate->target_timeline->universe->processor_id;
       assert(processor_id != pid);
       e->stargate->source_timeline->record_stats_shmem_messages();
@@ -123,7 +133,7 @@ void Universe::synchronize_events()
       switch_board[i][processor_id] = 0;
       while(local_evts) {
 	ChannelEvent* e = local_evts;
-	local_evts = e->get_next_event();
+	local_evts = (ChannelEvent*)e->get_next_event();
 	//e->get_next_event() = 0;
 	/*
 	printf("[%d:%d]   e=%lg from p%d\n", args_rank, processor_id, 
@@ -148,7 +158,7 @@ void Universe::synchronize_events()
     // number of messages being sent
     while(evts) {
       ChannelEvent* e = evts;
-      evts = e->get_next_event();
+      evts = (ChannelEvent*)e->get_next_event();
       assert(e->stargate && e->stargate->source_timeline);
       assert(!e->stargate->target_timeline);
       transport_message(e);
@@ -181,6 +191,7 @@ void Universe::synchronize_events()
 #endif
 }
 
+
 void Universe::run()
 {
   // wait for ALL universes to complete the initialization phrase
@@ -193,6 +204,7 @@ void Universe::run()
     // initialize the variables, set up the send and receive buffers,
     // and spawn the reader and writer threads (or one r/w thread)
     // only when we detect there are more than one mpi processes
+    
     if(args_nmachs > 1) {
       ssf_thread_mutex_init(&remote_mailbox_mutex);
       ssf_thread_cond_init(&remote_mailbox_cond);
@@ -221,9 +233,12 @@ void Universe::run()
 	ssf_thread_create(&writer_thread_id, &writer_thread_start, this);
       } else {
 	ssf_thread_create(&rw_thread_id, &rw_thread_start, this); // which will assume the role of thread 0
-	rw_thread(); // the old thread 0 becomes the i/o thread
-	run_end(); // then, it switches back to thread 0
-	return; 
+	//rw_thread(); // the old thread 0 becomes the i/o thread
+	//run_end(); // then, it switches back to thread 0
+	run_continuation();
+	run_end();
+	return;
+	//return; 
       }
     }
 #endif
@@ -272,7 +287,7 @@ void Universe::run_continuation()
   // set up local and global training (only used by processor 0)
   VirtualTime l_opt, g_opt;
   int l_idx, g_idx;
-  double t0, t_l_opt = 1e38, t_g_opt = 1e38;
+  int64 t0, t_l_opt = 0, t_g_opt = 0;
   if(!processor_id) {
     training_finished = global_channel_reclassified = 
       local_channel_reclassified = false;
@@ -381,9 +396,9 @@ void Universe::run_continuation()
 
     if(decade_sync) {
       if(synpoint == local_roundup && !processor_id) {
-	double t1 = ssf_wallclock_in_nanoseconds();
-	double dt = t1-t0; t0 = t1;
-	if(dt < t_l_opt) {
+	int64 t1 = ssf_wallclock_in_nanoseconds();
+	int64 dt = t1-t0; t0 = t1;
+	if(!t_l_opt || dt < t_l_opt) {
 	  t_l_opt = dt;
 	  l_opt = local_training_thresholds[l_idx];
 	}
@@ -440,9 +455,9 @@ void Universe::run_continuation()
 	    t0 = ssf_wallclock_in_nanoseconds();
 	  }
 	} else {
-	  double t1 = ssf_wallclock_in_nanoseconds();
-	  double dt = t1-t0;  t0 = t1;
-	  if(dt < t_g_opt) {
+	  int64 t1 = ssf_wallclock_in_nanoseconds();
+	  int64 dt = t1-t0;  t0 = t1;
+	  if(!t_g_opt || dt < t_g_opt) {
 	    t_g_opt = dt;
 	    g_opt = global_training_thresholds[g_idx];
 	  }
@@ -544,7 +559,8 @@ void Universe::run_continuation()
       // as long as there are timelines waiting to run, we pick the one
       // with the highest priority (minimum simulation clock) and run it
       while(!runnable_timelines.empty()) {
-	Timeline* tmln = (Timeline*)runnable_timelines.deleteMin();
+	Timeline* tmln = pace_out_timeline();
+	if(!tmln) tmln = (Timeline*)runnable_timelines.deleteMin();
 	tmln->retrieve_incoming_and_calculate_lowerbound();
 	record_stats_timeline_context_switches();
 
@@ -569,13 +585,13 @@ void Universe::run_continuation()
 	  if(clock < newclock) // if time has advanced, we propagate the new time
 	    tmln->update_subsequent_timelines();
 	  clock = newclock;
-	  if(clock < tmln->lbts) break; // if the timeline is being paced, we break out
+	  if(clock < tmln->lbts) break; // if the timeline is being paced or interrupted, we break out
 
 	  handle_io_events(false); // handle i/o events, no blocking
 	  tmln->retrieve_incoming_and_calculate_lowerbound();
 	}
 
-	if(clock == tmln->lbts) { // the timeline is not paced
+	if(clock == tmln->lbts) { // the timeline is not paced or interrupted
 	  if(clock < next_window) block_timeline(tmln); // if it's not done, we put it in the wait queue (waiting for lbts to advance)
 	  else { // it is done for this window
 	    if(next_window >= args_endtime) { // if there's no tomorrow (no more windows)
@@ -670,14 +686,14 @@ VirtualTime Universe::get_wallclock_time()
   // speedup ratio); if the speedup is zero (which means infinity),
   // the simulation time ought to be infinity
   if(args_speedup > 0) {
-    return VirtualTime((ssf_wallclock_in_nanoseconds()-start_wallclock_time)*args_speedup,
-		       VirtualTime::NANOSECOND);
+    return VirtualTime((ssf_wallclock_in_nanoseconds()-start_wallclock_time)*args_speedup);
   } else return VirtualTime::INFINITY;
 }
 
 void Universe::make_timeline_runnable(Timeline* tmln) 
 {
   assert(tmln->state == Timeline::STATE_START || 
+	 tmln->state == Timeline::STATE_RUNNING || // this is possible due to time slicing
 	 tmln->state == Timeline::STATE_ROUND || 
 	 tmln->state == Timeline::STATE_WAITING);
   if(tmln->simclock < tmln->lbts) {
@@ -714,7 +730,7 @@ void Universe::block_timeline(Timeline* tmln)
   }
 }
 
-bool Universe::pace_timeline(Timeline* tmln, VirtualTime untiltime)
+bool Universe::pace_in_timeline(Timeline* tmln, VirtualTime untiltime)
 {
   assert(tmln->state == Timeline::STATE_RUNNING);
   VirtualTime t = get_wallclock_time();
@@ -727,8 +743,23 @@ bool Universe::pace_timeline(Timeline* tmln, VirtualTime untiltime)
 	     args_rank, processor_id, tmln->serialno, tmln->simclock.second(),
 	     t.second(), tmln->lbts.second(), untiltime.second());
     }
+    record_stats_timeline_pacing();
     return true; // meaning the timeline is paced
   } else return false; // meaning it is not paced
+}
+
+Timeline* Universe::pace_out_timeline()
+{
+  if(!paced_timelines.empty()) {
+    Timeline* tmln = (Timeline*)paced_timelines.getMin();
+    VirtualTime t = get_wallclock_time();
+    if(tmln->time() <= t) {
+      paced_timelines.deleteMin();
+      tmln->state = Timeline::STATE_RUNNING;
+      return tmln;
+    }
+  }
+  return 0;
 }
 
 #ifdef HAVE_MPI_H
@@ -761,7 +792,7 @@ void Universe::transport_message(ChannelEvent* evt)
 
 void Universe::transport_terminal_message()
 {
-  ChannelEvent* evt = new ChannelEvent(Timestamp(0,0,0), 0, false, (int)0); // terminal
+  ChannelEvent* evt = new ChannelEvent(Timestamp(0,0,0), 0, (int)0); // terminal
   ssf_thread_mutex_lock(&remote_mailbox_mutex);
   if(!remote_mailbox) ssf_thread_cond_signal(&remote_mailbox_cond);
   evt->append_to_list(&remote_mailbox, &remote_mailbox_tail);
@@ -782,7 +813,7 @@ void Universe::transport_reduce_message()
 
   if(mpi_thread_support != MPI_THREAD_MULTIPLE) {
     //printf("before %d: rcvcnt=%lld, rcvcnt_target=%lld\n", args_rank, rcvcnt, rcvcnt_target); fflush(0);
-    ChannelEvent* evt = new ChannelEvent(Timestamp(0,0,0), 0, false, (int)1); // reduce
+    ChannelEvent* evt = new ChannelEvent(Timestamp(0,0,0), 0, (int)1); // reduce
     ssf_thread_mutex_lock(&remote_mailbox_mutex);
     if(!remote_mailbox) ssf_thread_cond_signal(&remote_mailbox_cond);
     evt->append_to_list(&remote_mailbox, &remote_mailbox_tail);
@@ -814,7 +845,7 @@ void Universe::transport_barrier_message()
   assert(!processor_id);
   
   if(mpi_thread_support != MPI_THREAD_MULTIPLE) {
-    ChannelEvent* evt = new ChannelEvent(Timestamp(0,0,0), 0, false, (int)2); // barrier
+    ChannelEvent* evt = new ChannelEvent(Timestamp(0,0,0), 0, (int)2); // barrier
     ssf_thread_mutex_lock(&remote_mailbox_mutex);
     if(!remote_mailbox) ssf_thread_cond_signal(&remote_mailbox_cond);
     evt->append_to_list(&remote_mailbox, &remote_mailbox_tail);
@@ -849,8 +880,7 @@ void Universe::handle_incoming_events(int rbfsz)
       // all except the last one uses a cloned event
       ChannelEvent* myevt;
       if(i+1 < (int)vec->size()) myevt = new ChannelEvent
-	   (evt->time(), evt->event?evt->event->clone():0, 
-	    evt->emulated, evt->outportno);
+	   (evt->time(), evt->event?evt->event->clone():0, evt->outportno);
       else myevt = evt;
 
       myevt->inport = vec->at(i).first;
@@ -887,6 +917,15 @@ void Universe::handle_incoming_events(int rbfsz)
   assert(pos == rbfsz);
 }
 
+void Universe::insert_emulated_event(Timeline* tmln, EmulatedEvent* myevt)
+{
+  Universe* univ = tmln->universe;
+  ssf_thread_mutex_lock(&univ->mailbox_mutex);
+  if(!univ->mailbox) ssf_thread_cond_signal(&univ->mailbox_cond);
+  myevt->append_to_list(&univ->mailbox, &univ->mailbox_tail);
+  ssf_thread_mutex_unlock(&univ->mailbox_mutex);
+}
+
 bool Universe::handle_outgoing_events(ChannelEvent* evt)
 {
   SET(int) rankset; // contains the ranks of remote machines that we'll send messages to
@@ -897,8 +936,10 @@ bool Universe::handle_outgoing_events(ChannelEvent* evt)
   // as a linked list
   bool finished = false;
 
-  ChannelEvent* nullevt = 0;
-  ChannelEvent* nullevt_tail = 0;
+  ChainedEvent* nullevt = 0;
+  ChainedEvent* nullevt_tail = 0;
+  bool do_reduce_scatter = false;
+  bool do_barrier = false;
   while(evt) {
     if(!evt->stargate) {
       if(evt->outportno == 0) { // terminal
@@ -906,48 +947,29 @@ bool Universe::handle_outgoing_events(ChannelEvent* evt)
 	// it for the moment
 	finished = true;
       } else if(evt->outportno == 1) { // reduce scatter
-	// if the main thread wants to do a reduce scatter (this only
-	// happens when we use a single r/w thread)
-	//printf("%d => about to reduce scatter!\n", args_rank); fflush(0);
-	int64 to_recv;
-	ssf_mpi_reduce_scatter(sndcnt[0], &to_recv, rscnt, MPI_LONG_LONG_INT, 
-			       MPI_SUM, MPI_COMM_WORLD);
-  
-	ssf_thread_mutex_lock(&rcvcnt_mutex);
-	rcvcnt_target = to_recv; assert(rcvcnt <= rcvcnt_target);
-	if(rcvcnt == rcvcnt_target) {
-	  //printf("SIGNALED!!!\n"); fflush(0);
-	  scatter_reduce_carry_on = true;
-	  ssf_thread_cond_signal(&rcvcnt_cond); //XXX
-	}
-	ssf_thread_mutex_unlock(&rcvcnt_mutex);
-	//printf("%d => [%lld..%lld] done reduce scatter at %lg\n", args_rank, rcvcnt, rcvcnt_target, VirtualTime(evt->time()).second()); fflush(0);
+	do_reduce_scatter = true;
       } else { // barrier
-	//printf("%d => about to barrier!\n", args_rank); fflush(0);
-	ssf_mpi_barrier(MPI_COMM_WORLD);
-	
-	ssf_thread_mutex_lock(&rcvcnt_mutex);
-	barrier_carry_on = true;
-	ssf_thread_cond_signal(&bar_cond); //XXX
-	ssf_thread_mutex_unlock(&rcvcnt_mutex);
-	//printf("%d => done barrier!\n", args_rank); fflush(0);
+	do_barrier = true;
       }
-      ChannelEvent* nxt = evt->get_next_event();
+      ChannelEvent* nxt = (ChannelEvent*)evt->get_next_event();
       delete evt;
       evt = nxt;
     } else if(!evt->event) { 
+      //printf("%d => null event!\n", args_rank); fflush(0);
       // if this is a null event, we put it in the linked list for
       // now; we'll send them later
-      ChannelEvent* nxt = evt->get_next_event();
+      ChannelEvent* nxt = (ChannelEvent*)evt->get_next_event();
       evt->append_to_list(&nullevt, &nullevt_tail);
       evt = nxt;
     } else if(args_endtime <= evt->time()) { 
+      //printf("%d => regular event beyond end time!\n", args_rank); fflush(0);
       // if a regular event is beyond the simulation end time,
       // there's no need to send it, we simply delete it
-      ChannelEvent* nxt = evt->get_next_event();
+      ChannelEvent* nxt = (ChannelEvent*)evt->get_next_event();
       delete evt;
       evt = nxt;
     } else {
+      //printf("%d => regular event!\n", args_rank); fflush(0);
       // for any other regular event, we find the target machine
       // rank, and pack the event into the send buffer
       assert(!evt->stargate->target_timeline);
@@ -960,7 +982,7 @@ bool Universe::handle_outgoing_events(ChannelEvent* evt)
       }
       evt->pack(MPI_COMM_WORLD, sendbuf[rank], sendpos[rank], MPIBUF_SIZE);
 
-      ChannelEvent* nxt = evt->get_next_event();
+      ChannelEvent* nxt = (ChannelEvent*)evt->get_next_event();
       delete evt;
       evt = nxt;
 
@@ -982,17 +1004,18 @@ bool Universe::handle_outgoing_events(ChannelEvent* evt)
   while(nullevt) {
     // for each null event, we find its target machine rank, and
     // pack the event into the send buffer
-    assert(!nullevt->stargate->target_timeline);
-    int rank = timeline_to_machine(nullevt->stargate->target_timeline_id);
+    assert(!((ChannelEvent*)nullevt)->stargate->target_timeline);
+    int rank = timeline_to_machine(((ChannelEvent*)nullevt)->stargate->target_timeline_id);
     assert(rank != args_rank);
     rankset.insert(rank);
     if(!sendbuf[rank]) {
       sendbuf[rank] = new char[MPIBUF_SIZE]; assert(sendbuf[rank]);
       sendpos[rank] = 0;
     }
-    nullevt->pack(MPI_COMM_WORLD, sendbuf[rank], sendpos[rank], MPIBUF_SIZE);
+    //printf("%d: PACKING for sending null event to rank %d\n", args_rank, rank);
+    ((ChannelEvent*)nullevt)->pack(MPI_COMM_WORLD, sendbuf[rank], sendpos[rank], MPIBUF_SIZE);
 
-    ChannelEvent* nxt = nullevt->get_next_event();
+    ChannelEvent* nxt = (ChannelEvent*)nullevt->get_next_event();
     delete nullevt;
     nullevt = nxt;
 
@@ -1025,6 +1048,36 @@ bool Universe::handle_outgoing_events(ChannelEvent* evt)
     sendpos[rank] = 0; // reset to the beginning of the buffer
   }
   rankset.clear();
+
+  if(do_reduce_scatter) {
+    // if the main thread wants to do a reduce scatter (this only
+    // happens when we use a single r/w thread)
+    //printf("%d => about to reduce scatter!\n", args_rank); fflush(0);
+    int64 to_recv;
+    ssf_mpi_reduce_scatter(sndcnt[0], &to_recv, rscnt, MPI_LONG_LONG_INT, 
+			   MPI_SUM, MPI_COMM_WORLD);
+    
+    ssf_thread_mutex_lock(&rcvcnt_mutex);
+    rcvcnt_target = to_recv; assert(rcvcnt <= rcvcnt_target);
+    if(rcvcnt == rcvcnt_target) {
+      //printf("SIGNALED!!!\n"); fflush(0);
+      scatter_reduce_carry_on = true;
+      ssf_thread_cond_signal(&rcvcnt_cond); //XXX
+    }
+    ssf_thread_mutex_unlock(&rcvcnt_mutex);
+    //printf("%d => [%lld..%lld] done reduce scatter at %lg\n", args_rank, rcvcnt, rcvcnt_target, VirtualTime(evt->time()).second()); fflush(0);
+  }
+
+  if(do_barrier) {
+    //printf("%d => about to barrier!\n", args_rank); fflush(0);
+    ssf_mpi_barrier(MPI_COMM_WORLD);
+	
+    ssf_thread_mutex_lock(&rcvcnt_mutex);
+    barrier_carry_on = true;
+    ssf_thread_cond_signal(&bar_cond); //XXX
+    ssf_thread_mutex_unlock(&rcvcnt_mutex);
+    //printf("%d => done barrier!\n", args_rank); fflush(0);
+  }
 
   return finished;
 }
@@ -1072,7 +1125,7 @@ void Universe::writer_thread()
     ssf_thread_mutex_lock(&remote_mailbox_mutex);
     while(!remote_mailbox)
       ssf_thread_cond_wait(&remote_mailbox_cond, &remote_mailbox_mutex);
-    ChannelEvent* evt = remote_mailbox; 
+    ChannelEvent* evt = (ChannelEvent*)remote_mailbox; 
     remote_mailbox = remote_mailbox_tail = 0;
     ssf_thread_mutex_unlock(&remote_mailbox_mutex);
 
@@ -1163,8 +1216,6 @@ void Universe::rw_thread()
     } else { 
       // wait on the conditional variable, until there are one or more
       // events have been deposited in the remote mailbox
-      ssf_thread_mutex_lock(&remote_mailbox_mutex);
-
       struct timeval tv;
       gettimeofday(&tv, 0);
       struct timespec ts;
@@ -1174,12 +1225,11 @@ void Universe::rw_thread()
 	ts.tv_nsec -= 1000000000;
 	ts.tv_sec++;
       }
+      ssf_thread_mutex_lock(&remote_mailbox_mutex);
       int rc = 0;
-
       while(!remote_mailbox && !rc)
 	rc = ssf_thread_cond_timedwait(&remote_mailbox_cond, &remote_mailbox_mutex, &ts);
-
-      ChannelEvent* evt = remote_mailbox; 
+      ChannelEvent* evt = (ChannelEvent*)remote_mailbox; 
       if(evt) remote_mailbox = remote_mailbox_tail = 0;
       ssf_thread_mutex_unlock(&remote_mailbox_mutex);
 
@@ -1213,26 +1263,76 @@ void Universe::handle_io_events(bool blocking)
   }
 
   record_stats_handle_io_events();
-  ssf_thread_mutex_lock(&mailbox_mutex);
   if(blocking) {
-    while(!mailbox) ssf_thread_cond_wait(&mailbox_cond, &mailbox_mutex);
-  }
-  ChannelEvent* evt = mailbox; 
+    if(paced_timelines.empty()) {
+      //printf("empty\n");
+      ssf_thread_mutex_lock(&mailbox_mutex);
+      while(!mailbox) 
+	ssf_thread_cond_wait(&mailbox_cond, &mailbox_mutex);
+    } else {
+      Timeline* tmln = (Timeline*)paced_timelines.getMin();
+      VirtualTime t2 = tmln->time();
+      VirtualTime t1 = get_wallclock_time();
+      //printf("paced timeline real=%lld, now=%lld\n", t1.get_ticks(), t2.get_ticks());
+      if(t2 <= t1) { // a paced timeline is ready
+	//printf("ready\n");
+	paced_timelines.deleteMin();
+	tmln->state = Timeline::STATE_RUNNING;
+	tmln->setTime(tmln->next_emulation_due_time()); // set the priority here!
+	runnable_timelines.insert(tmln);
+	ssf_thread_mutex_lock(&mailbox_mutex);
+      } else {
+	//struct timeval tv;
+	//gettimeofday(&tv, 0);
+	//printf("wait now   %ld %09d\n", tv.tv_sec, tv.tv_usec*1000);
+
+	int64 ticks = start_wallclock_time+t2.get_ticks();
+	struct timespec ts;
+	ts.tv_sec = ticks/1000000000;
+	ts.tv_nsec = ticks-ts.tv_sec*1000000000;
+	//printf("wait until %ld %09ld %lld\n", ts.tv_sec, ts.tv_nsec, ticks);
+	ssf_thread_mutex_lock(&mailbox_mutex);
+	int rc = 0;
+	while(!mailbox && !rc)
+	  rc = ssf_thread_cond_timedwait(&mailbox_cond, &mailbox_mutex, &ts);
+      }
+    }
+  } else ssf_thread_mutex_lock(&mailbox_mutex);
+  ChainedEvent* evt = mailbox; 
   mailbox = mailbox_tail = 0;
   ssf_thread_mutex_unlock(&mailbox_mutex);
 
   // handle the null events
   while(evt) {
-    ChannelEvent* nxt = evt->get_next_event();
-    assert(evt->stargate); 
-    assert(evt->stargate->target_timeline->universe == this);
-    //assert(!evt->event || evt->stargate->in_sync); // must be null message or the event is supposed going through synchronous channel
-    if(!evt->event) {
-      evt->stargate->set_time(evt->time(), false);
-      delete evt;
+    ChainedEvent* nxt = evt->get_next_event();
+    if(evt->is_channel_event()) {
+      ChannelEvent* chevt = (ChannelEvent*)evt;
+      assert(chevt->stargate); 
+      assert(chevt->stargate->target_timeline->universe == this);
+      //assert(!chevt->event || chevt->stargate->in_sync); // must be null message or the event is supposed going through synchronous channel
+      if(!chevt->event) {
+	chevt->stargate->set_time(chevt->time(), false);
+	delete chevt;
+      } else {
+	assert(!chevt->stargate->source_timeline);
+	chevt->stargate->target_timeline->insert_event(chevt);
+      }
     } else {
-      assert(!evt->stargate->source_timeline);
-      evt->stargate->target_timeline->insert_event(evt);
+      EmulatedEvent* eevt = (EmulatedEvent*)evt;
+      Timeline* tmln = eevt->entity->timeline;
+      VirtualTime herenow = get_wallclock_time();
+      // this means out of order arrival of emulated events; in other
+      // words, simulation is getting ahead of the real time since
+      // simulated events are not pinned down to real time; to avoid
+      // this, one has to set a pacing timer with a good enough
+      // resolution resolution (that'll be the max time an emulated
+      // event could be artificially delayed for this)
+      if(herenow < tmln->simclock) herenow = tmln->simclock; 
+      eevt->setTime(Timestamp(herenow, eevt->entity->serialno, 
+			      eevt->entity->get_next_event_id()));
+      tmln->insert_event(eevt);
+      tmln->setTime(tmln->next_emulation_due_time());
+      /* will be paced out in the next round if it is */
     }
     evt = nxt;
   }

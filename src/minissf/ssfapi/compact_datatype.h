@@ -174,6 +174,7 @@ public:
   static void serialize(int64 data,  char* buf, int bufsiz, int* pos = 0); ///< Pack a 64-bit signed integer.
   static void serialize(float data,  char* buf, int bufsiz, int* pos = 0); ///< Pack a floating point number.
   static void serialize(double data, char* buf, int bufsiz, int* pos = 0); ///< Pack a double floating point number.
+  static void serialize(const char* str, char* buf, int bufsiz, int* pos = 0); ///< Pack a null-terminated string.
   /** @} */
 
   /** @name Generic "static" methods for deserializing primitives (of given size).
@@ -194,6 +195,7 @@ public:
   static void deserialize(int64& data,  char* buf, int bufsiz, int* pos = 0); ///< Unpack a 64-bit signed integer.
   static void deserialize(float& data,  char* buf, int bufsiz, int* pos = 0); ///< Unpack a floating point number.
   static void deserialize(double& data, char* buf, int bufsiz, int* pos = 0); ///< Unpack a double floating point number.
+  static void deserialize(char* str, int n, char* buf, int bufsiz, int* pos = 0); ///< Unpack a string of a given max size (including the ending null character).
   /** @} */
 
  protected:

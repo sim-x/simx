@@ -26,7 +26,7 @@ extern void ssf_fork_children(int num, void (*child)(int));
 extern void ssf_join_children();
 extern void ssf_thread_create(ssf_thread_t* tid, void (*child)(void*), void* data);
 extern void ssf_thread_yield();
-extern double ssf_wallclock_in_nanoseconds();
+extern int64 ssf_wallclock_in_nanoseconds();
 
 inline void ssf_thread_join(ssf_thread_t* tid)
   { pthread_join(*tid, 0); }

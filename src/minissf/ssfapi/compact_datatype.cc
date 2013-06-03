@@ -521,6 +521,15 @@ void CompactDataType::serialize(double data, char* buf, int bufsiz, int* pos) {
   tmp.ddata = data; 
   *(int64*)(buf+*pos) = SSF_BYTE_ORDER_64(tmp.idata); *pos += sizeof(int64);
 }
+void CompactDataType::serialize(const char* str, char* buf, int bufsiz, int* pos) 
+{
+  int x = 0; if(!pos) pos = &x;
+  if(!buf) SSF_THROW("serialize empty buffer");
+  if(!str) SSF_THROW("serialize null string");
+  int len = strlen(str)+1;
+  if(*pos+len > bufsiz) SSF_THROW("serialize buffer overflow");
+  memcpy(buf+*pos, str, len); *pos += len;
+}
 
 void CompactDataType::deserialize(uint8& data, char* buf, int bufsiz, int* pos) {
   int x = 0; if(!pos) pos = &x;
@@ -599,6 +608,18 @@ void CompactDataType::deserialize(double& data, char* buf, int bufsiz, int* pos)
   int64 tmp = SSF_BYTE_ORDER_64(*(int64*)(buf+*pos)); 
   *pos += sizeof(int64);
   memcpy(&data, &tmp, sizeof(int64));
+}
+void CompactDataType::deserialize(char* str, int n, char* buf, int bufsiz, int* pos) {
+  int x = 0; if(!pos) pos = &x;
+  if(!buf) SSF_THROW("deserialize empty buffer");
+  if(!str) SSF_THROW("deserialize null string");
+  if(n < 1) SSF_THROW("deserialize string insufficient space");
+  int len = 0, maxlen = bufsiz-*pos;
+  while(len < maxlen && buf[*pos+len]) len++;
+  if(len == maxlen) SSF_THROW("deserialize buffer overflow");
+  len++; // counting the terminating null character
+  if(len <= n) { memcpy(str, buf+*pos, len); *pos += len; }
+  else { if(n>1) memcpy(str, buf+*pos, n-1); str[n-1] = '\0'; *pos += n; }
 }
 
 void CompactDataType::compact_reset() {

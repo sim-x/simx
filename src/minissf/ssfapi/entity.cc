@@ -4,13 +4,23 @@
 
 namespace minissf {
 
-Entity::Entity(bool emulation) : 
-  timeline(0), emulated(emulation), serialno(0), nxtevtid(0) 
+#define MIN_RESPONSIVENESS VirtualTime(10, VirtualTime::MICROSECOND)
+
+Entity::Entity(bool emulation, VirtualTime resp) : 
+  timeline(0), serialno(0), nxtevtid(0), 
+  responsiveness(resp), emulated(emulation)
 {
   // the entity's timeline and serial number are not yet settled at this moment
   if(!Universe::is_initializing()) 
     SSF_THROW("entity can only be created during simulation initialization");
   Universe::register_orphan_entity(this);
+
+  // we can't allow this responsiveness value to be too small; if
+  // processing the emulated timer event takes more time than the time
+  // value itself, the simulator will do nothing other than
+  // rescheduling the timer
+  if(responsiveness < MIN_RESPONSIVENESS) 
+    responsiveness = MIN_RESPONSIVENESS;
 }
 
 Entity::~Entity()
@@ -63,6 +73,7 @@ void Entity::alignto(Entity* entity)
   if(!Universe::is_initializing())
     SSF_THROW("alignment allowed during simulation initialization");
   if(!entity) SSF_THROW("null entity");
+  if(this == entity) return;
 
   if(timeline && !entity->timeline) {
     timeline->add_entity(entity);
@@ -146,6 +157,25 @@ void Entity::schedule_init_events()
   }
   init_writes.clear();
 }
+
+VirtualTime Entity::realNow() 
+{
+  return Universe::get_wallclock_time();
+}
+
+void Entity::insertEmulatedEvent(Event*& evt)
+{
+  if(!emulated) SSF_THROW("emulate called on non-emulated entity");
+  if(!evt) SSF_THROW("null event");
+
+  EmulatedEvent* ee = new EmulatedEvent(this, evt);
+  timeline->insert_emulated_event(ee);
+
+  // explicitly sever the reference so that the user will not access it!
+  evt = 0;
+}
+
+void Entity::emulate(Event* evt) { if(evt) delete evt; }
 
 }; /*namespace minissf*/
 

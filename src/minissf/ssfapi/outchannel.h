@@ -115,8 +115,8 @@ class outChannel {
    * scheduled to arrive at its destination after the sum of the
    * channel delay, the mapping delay, and the per-write delay (given
    * by the second argument). The event will be taken by the system
-   * and the user should not access it (the write_delay will be forced
-   * to null reference) after the function returns
+   * and the user should not access it (it will be forced to null)
+   * after the function returns.
    *
    * \param evt a reference of the pointer to the event to be sent out
    * \param write_delay the per-write delay that will be added to the event's total transfer delay

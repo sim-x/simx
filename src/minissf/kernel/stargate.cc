@@ -53,7 +53,7 @@ Stargate::~Stargate()
 {
   // in case there should be left-over events, reclaim them
   while(mailbox) { 
-    ChannelEvent* evt = mailbox;
+    ChainedEvent* evt = mailbox;
     mailbox = mailbox->get_next_event();
     delete evt;
   }
@@ -85,7 +85,7 @@ void Stargate::set_time(VirtualTime t, bool called_by_sender)
     if(!target_timeline) { // if it's going to remote machine, we deliver a null message via mpi
 #ifdef HAVE_MPI_H
       source_timeline->record_stats_remote_null_messages();
-      ChannelEvent* evt = new ChannelEvent(Timestamp(time,0,0), 0, false, outportno); // null message
+      ChannelEvent* evt = new ChannelEvent(Timestamp(time,0,0), 0, outportno); // null message
       evt->stargate = this;
       if((Universe::args_debug_mask&Universe::DEBUG_FLAG_LPSCHED) != 0) {
 	printf(">> [%d:%d] stargate [%d->%d]: set_time(t=%lg, true): remote null message, time=%lg->%lg\n",
@@ -122,7 +122,7 @@ void Stargate::set_time(VirtualTime t, bool called_by_sender)
 		 source_timeline->universe->args_rank, source_timeline->universe->processor_id,
 		 source_timeline_id, target_timeline_id, t.second(), beforetime.second(), time.second());
 	}
-	ChannelEvent* evt = new ChannelEvent(Timestamp(time,0,0), 0, false, outportno); // null message
+	ChannelEvent* evt = new ChannelEvent(Timestamp(time,0,0), 0, outportno); // null message
 	evt->stargate = this;
 	ssf_thread_mutex_lock(&target_timeline->universe->mailbox_mutex);
 	if(!target_timeline->universe->mailbox) 
@@ -235,7 +235,7 @@ void Stargate::receive_messages()
     // stargate's mailbox is used only when it's connected from
     // another machine or from another processor on the same machine
     ssf_thread_mutex_lock(&mailbox_mutex);
-    ChannelEvent* evt = mailbox; 
+    ChannelEvent* evt = (ChannelEvent*)mailbox; 
     mailbox = mailbox_tail = 0;
     ssf_thread_mutex_unlock(&mailbox_mutex);
     if((Universe::args_debug_mask&Universe::DEBUG_FLAG_LPSCHED) != 0 && evt) {
@@ -248,7 +248,7 @@ void Stargate::receive_messages()
 	printf(">> [%d:%d]   event at %lg\n", target_timeline->universe->args_rank, 
 	       target_timeline->universe->processor_id, ((VirtualTime)evt->time()).second());
       }
-      ChannelEvent* nxt = evt->get_next_event();
+      ChannelEvent* nxt = (ChannelEvent*)evt->get_next_event();
       target_timeline->insert_event(evt);
       evt = nxt;
     }

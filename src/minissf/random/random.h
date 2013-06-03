@@ -201,6 +201,10 @@ class Random {
   //protected:
   static int make_new_seed(); // make one from current machine time
 
+ protected:
+  // calculate log(n!), used by poisson()
+  double logfactorial(int n);
+
 }; /*class Random*/
 
 }; /*namespace minissf*/
