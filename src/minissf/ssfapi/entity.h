@@ -51,11 +51,17 @@ class Entity : public ProcedureContainer {
    * which means that events associated with this entity will be
    * 'pinned down' to real time; for an entity that does not handle
    * emulation events, nor does it care about real time issues, this
-   * flag should be false (as the default).
+   * flag should be false (as the default). 
+   *
+   * Also, if the entity is accepting events from external systems,
+   * the user usually needs to specify the "responsiveness" of the
+   * entity, which is defined to be the maximum delay allowed for the
+   * entity to respond to the arrival of an external event.
    *
    * \param emulated whether this entity is an emulated entity
+   * \param responsiveness the max delay allowed to respond to an external event
    */
-  Entity(bool emulated = false);
+  Entity(bool emulated = false, VirtualTime responsiveness = VirtualTime::INFINITY);
 
   /**
    * \brief The entity destructor.
@@ -65,9 +71,6 @@ class Entity : public ProcedureContainer {
    * simulation is finished.
    */
   virtual ~Entity();
-
-  /** \brief Return whether this entity is an emulated entity. */
-  bool isEmulated() const { return emulated; }
 
  /**
    * \brief Initialize a newly created entity.
@@ -91,7 +94,6 @@ class Entity : public ProcedureContainer {
    * methods will be called one by one then.
    */
   virtual void wrapup() {}
-
 
   /**
    * \brief Return the current simulation time of this entity.
@@ -122,6 +124,8 @@ class Entity : public ProcedureContainer {
    * want to align B to C, then all four entities should be
    * coaligned. Once two or more entities are aligned together, they
    * cannot back out.
+   *
+   * \param entity the entity to which this one should be aligned
    */
   void alignto(Entity* entity);
 
@@ -136,6 +140,52 @@ class Entity : public ProcedureContainer {
 
   /** \brief Return the set of outchannels of this entity. */ 
   inline const SET(outChannel*)& getOutChannels() { return outchannels; }
+
+  /** @name Emulation Functions. */
+  /** @{ */
+
+  /** \brief Return whether this entity is an emulated entity. */
+  bool isEmulated() const { return emulated; }
+
+  /**
+   * \brief Return the real time elapsed since the start of simulation. 
+   *
+   * This method is designed for emulation. It returns the current
+   * wall-clock time since to the start of the simulation. If the
+   * entity is emulated, its simulation time advances corresponding to
+   * the real time (more or less) depending on the emulation speed
+   * (which is provided as an argument to the ssf_start function).
+   */
+  static VirtualTime realNow();
+
+  /**
+   * \brief Insert an emulation event into the simulation system.
+   *
+   * This method is prepared for the external system to inject an
+   * emulated event into the simulation system. The event is expected
+   * to happen at right away. Once it's in simulation, the callback
+   * method emulate() will be invoked to handle the event.  The event
+   * will be taken by the simulator and the user shall not access it
+   * further (it will be forced to null) after the function returns.
+   *
+   * \param evt a reference of the pointer to the event to be injected into simulation
+   */
+  void insertEmulatedEvent(Event*& evt);
+
+  /**
+   * \brief Callback method for handling emulated events injected into simulation.
+   *
+   * By default, this method does nothing other than reclaiming the
+   * event. The user is expected to override this method if the entity
+   * is supposed to accepting emulated events from an external
+   * system. An emulated event is inserted by the external system
+   * using the insertEmulatedEvent() method. This callback method is
+   * called by the simulator to really handle the emulated event once
+   * the event is indeed in the simulation system.
+   */
+  virtual void emulate(Event* evt);
+
+  /** @} */
 
  private:
   friend class ent;
@@ -152,9 +202,10 @@ class Entity : public ProcedureContainer {
   friend class Universe;
 
   Timeline* timeline; // the owning timeline
-  bool emulated; // indicate whether this entity is emulated
   int serialno; // globally unique serial number
   int nxtevtid; // all events from this entity are numbered sequentially
+  VirtualTime responsiveness; // max delay allowed to respond to an external event (only if emulated)
+  bool emulated; // indicate whether this entity is emulated
  
   SET(inChannel*) inchannels; // set of inchannels defined for this entity
   SET(outChannel*) outchannels; // set of outchannels defined for this entity

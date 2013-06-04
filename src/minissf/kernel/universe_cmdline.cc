@@ -24,6 +24,7 @@ STRING Universe::args_outfile;
 VirtualTime Universe::args_progress_interval;
 VirtualTime Universe::args_endtime;
 double Universe::args_speedup;
+VirtualTime Universe::args_time_slice;
 
 int Universe::total_num_procs = 0;
 
@@ -50,6 +51,8 @@ Universe::CommandLineOptionStruct Universe::command_option_array[] = {
     "--set-local-thresh <M> <t> : manually set local synchronization threshold on machine M" },
   { Universe::OPTION_SET_TRAINING_LEN, "--set-training-len",
     "--set-training-len <L> : set min threshold training duration (default is 5% of simulation time)" },
+  { Universe::OPTION_TIMESLICE, "-e",
+    "-e <E> : set time slice for scheduling timelines" },
   { Universe::OPTION_ENDOFOPT, "--",
     "-- : end of parsing minissf command-line (after which user options may start without conflicts)" },
   { Universe::OPTION_NONE, 0, "" }
@@ -63,15 +66,20 @@ static bool ISINT(char* str) { for(char* myp=str; *myp; myp++) if(!isdigit(*myp)
 int Universe::parse_command_line(int& argc, char**& argv)
 {
   int i, offset = 1;
-  int a_n = 1, a_s = 54321, a_d = 1;
-  MAP(int,int) a_m;
-  STRING a_f;
-  VirtualTime a_i = 0;
-  VirtualTime a_T = VirtualTime::INFINITY, a_t = VirtualTime::INFINITY;
-  VirtualTime a_l = 0;
-  bool set_a_T = false, set_a_t = false;
-  MAP(int,VirtualTime) a_u;
-  int a_a = 1;
+  int a_n = 1; // # procs per machine
+  MAP(int,int) a_m; // #procs on specific machines
+  int a_s = 54321; // random seed
+  int a_d = 1; // debug level
+  STRING a_f; // output file
+  VirtualTime a_i = 0; // progress interval
+  VirtualTime a_T = VirtualTime::INFINITY; // global thresh
+  bool set_a_T = false; // global set (automatic if not set)
+  VirtualTime a_t = VirtualTime::INFINITY; // local thresh
+  bool set_a_t = false; // local set (automatic if not set)
+  MAP(int,VirtualTime) a_u; // local thresh on specific machines
+  VirtualTime a_l = 0; // training length
+  int a_a = 1; // auto alignment
+  VirtualTime a_e = VirtualTime::INFINITY; // time slice
 
   for(i=1; i<argc; i++) {
     CommandLineOptionStruct* p;
@@ -175,6 +183,13 @@ int Universe::parse_command_line(int& argc, char**& argv)
       OPTCHECK(a_a>=0, "invalid auto-alignment factor");
       break;
     }
+    case OPTION_TIMESLICE: {
+      ++i;
+      OPTCHECK(i<argc, "argument missing");
+      a_e.fromString(argv[i]);
+      OPTCHECK(a_e>0, "invalid time slice");
+      break;
+    }
     case OPTION_ENDOFOPT: {
       ++i;
       goto stop;
@@ -189,7 +204,7 @@ int Universe::parse_command_line(int& argc, char**& argv)
   // arrange the rest (unparsed) arguments
   for(int j=i; j<argc; j++)
     argv[offset++] = argv[j];
-  if ( argc > 0 && argv != NULL )
+  if (argc > 0 && argv != NULL )
     {
       argv[offset] = 0;
       argc = offset;
@@ -236,6 +251,7 @@ int Universe::parse_command_line(int& argc, char**& argv)
 
   args_progress_interval = a_i;
   args_outfile = a_f;
+  args_time_slice = a_e;
 
   if(!args_outfile.empty()) {
     std::stringstream ss(std::stringstream::in | std::stringstream::out);

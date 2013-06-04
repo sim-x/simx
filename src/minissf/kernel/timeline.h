@@ -44,6 +44,9 @@ class Timeline : public TimelineQueueNode {
   void insert_event(KernelEvent* evt);
   void cancel_event(KernelEvent* evt);
 
+  // called by entity to insert an emulation event
+  void insert_emulated_event(EmulatedEvent* evt);
+
   // for getting the next event from the event list
   bool no_more_events();
   KernelEvent* peek_next_event();
@@ -96,13 +99,16 @@ class Timeline : public TimelineQueueNode {
   Universe* universe; // where does this timeline reside?
   int serialno; // each timeline is uniquely identified
   int state; // which queue is this timeline currently located?
-  bool emulated; // whether this time needs to be pinned down in real time
-  bool emulated_set; // true if whether this time is emulated has been determined
+  bool emulated; // whether this timeline needs to be pinned down in real time
+  bool emulated_set; // true if this timeline is emulated has been determined
+  bool emulated_timer_set; // true if the emulated timer has been scheduled
+  VirtualTime responsiveness; // min responsiveness of all emulated entities
   VirtualTime lbts; // lower bound on timestamp
   VirtualTime simclock; // current simulation time increases monotonically
 
-  KernelEventList simlist; // eventlist containing all future simulation events
-  KernelEventList emulist; // eventlist containing all future emulation events
+  KernelEventList evtlist; // eventlist containing all future events (simulated and emulated)
+  //KernelEventList simlist; // eventlist containing all future simulation events
+  //KernelEventList emulist; // eventlist containing all future emulation events
   SET(Entity*) entities; // list of entities defined in this timeline
   DEQUE(Process*) active_processes; // list of processes ready to run
   VECTOR(Stargate*) inbound; // incoming portals to receive events from other timelines
@@ -124,10 +130,12 @@ class Timeline : public TimelineQueueNode {
   unsigned long stats_lbts_calculations;
   unsigned long stats_subsequent_updates;
 
+  friend class Entity;
   friend class outChannel;
   friend class Universe;
   friend class Stargate;
   friend class TickEvent;
+  friend class EmulatedTimerEvent;
 }; /*class Timeline*/
 
 }; /*namespace minissf*/

@@ -14,7 +14,7 @@ typedef SplayTreeNode<Timestamp> KernelEventNode;
 
 // this is the base class for all kernel events
 class KernelEvent : public KernelEventNode {
- public:
+public:
   KernelEvent(Entity* entity, VirtualTime t);
   KernelEvent(Timestamp t); // used by channel event
   virtual ~KernelEvent() {}
@@ -22,26 +22,22 @@ class KernelEvent : public KernelEventNode {
   // does this event needs to be pinned down to real time
   virtual bool is_emulated() = 0;
 
-  // emulation time may be smaller than time for simulated event if
-  // we consider real-time lookahead (or slackness)
-  VirtualTime emulation_time();
-
   // process the event dispatched by the given timeline
   virtual void process_event(Timeline* timeline) = 0;
 }; /*class KernelEvent*/
 
 // this is the event for progress ticking
 class TickEvent : public KernelEvent {
- public:
+public:
   TickEvent(VirtualTime t);
   virtual ~TickEvent() {}
-  virtual bool is_emulated() { return false; }
+  virtual bool is_emulated() { return true; } // it's ok; on a non-emulated timeline, it's not paced
   virtual void process_event(Timeline* timeline);
 }; /*class TickEvent*/
 
 // this is the event for timers
 class TimerEvent : public KernelEvent {
- public:
+public:
   TimerEvent(VirtualTime timeout, Timer* tmr);
   virtual ~TimerEvent() {}
 
@@ -54,13 +50,13 @@ class TimerEvent : public KernelEvent {
   // process this event
   virtual void process_event(Timeline* timeline);
 
- protected:
+protected:
   Timer* timer;
 }; /*class TimerEvent*/
 
 // this is the event for process wait statements
 class HoldEvent : public KernelEvent {
- public:
+public:
   HoldEvent(VirtualTime timeout, Process* p);
   virtual ~HoldEvent() {}
 
@@ -70,8 +66,8 @@ class HoldEvent : public KernelEvent {
   // process the event
   virtual void process_event(Timeline* timeline);
 
- protected:
-   Process* process;
+protected:
+  Process* process;
 }; /*class HoldEvent*/
 
 // this is the event generated for each new process
@@ -86,13 +82,13 @@ class ProcessEvent : public KernelEvent {
   // process the event
   virtual void process_event(Timeline* timeline);
 
- protected:
-   Process* process;
+protected:
+  Process* process;
 }; /*class ProcessEvent*/
 
 // this is the event to wait up the process for signal()
 class SemaphoreEvent : public KernelEvent {
- public:
+public:
   SemaphoreEvent(Process* p);
   virtual ~SemaphoreEvent() {}
 
@@ -102,13 +98,75 @@ class SemaphoreEvent : public KernelEvent {
   // process the event
   virtual void process_event(Timeline* timeline);
 
- protected:
-   Process* process;
+protected:
+  Process* process;
 }; /*class SemaphoreEvent*/
 
+class ChainedEvent : public KernelEvent {
+protected:
+  Event* event;
+  ChainedEvent* nextevt;
+
+  ChainedEvent(Entity* ent, VirtualTime vt, Event* evt);
+  ChainedEvent(Timestamp ts, Event* evt);
+
+public:
+  virtual ~ChainedEvent();
+  virtual bool is_channel_event() { return false; }
+
+  // return the ssf event carried by this kernel event
+  inline Event* get_event() { return event; }
+  inline Event* delete_event() { Event* retevt = event; event = 0; return retevt; }
+
+  // chained events are stored at the mailboxes as linked lists, also
+  // in the binque as well; the difference is that in the mailboxes,
+  // the events need to keep the FIFO order (so that it won't cause
+  // synchronization issue); in the binque it doesn't matter as they
+  // are sorted using all the three keys
+  inline ChainedEvent*& get_next_event() { return nextevt; }
+
+  inline void append_to_list(ChainedEvent** head, ChainedEvent** tail) { 
+    nextevt = 0; // must reset to null
+    if(*head) { (*tail) = (*tail)->nextevt = this; }
+    else { (*head) = (*tail) = this; }
+  }
+};
+
+// encapsulate an emulated event
+class EmulatedEvent : public ChainedEvent {
+public:
+  EmulatedEvent(Entity* ent, Event* evt);
+  virtual ~EmulatedEvent() {}
+
+  // an emulated event is always emulated
+  virtual bool is_emulated() { return true; }
+
+  // process the event
+  virtual void process_event(Timeline* timeline);
+
+protected:
+  Entity* entity;
+  friend class Universe;
+};
+
+// this is the event for an emulated timer (to guarantee responsiveness)
+class EmulatedTimerEvent : public KernelEvent {
+public:
+  EmulatedTimerEvent(VirtualTime timeout, VirtualTime delay);
+  virtual ~EmulatedTimerEvent() {}
+
+  // an emulated timer event is always emulated
+  virtual bool is_emulated() { return true; }
+
+  // process this event
+  virtual void process_event(Timeline* timeline);
+protected:
+  VirtualTime delay;
+}; /*class EmulatedTimerEvent*/
+
 // this is the event that's got to sent across channel
-class ChannelEvent : public KernelEvent {
- public:
+class ChannelEvent : public ChainedEvent {
+public:
   // the constructor of a channel event to be sent to the same
   // machine (either on the same or a different processor)
   ChannelEvent(outChannel* oc, VirtualTime arrival, Event* evt, MapInport* inport);
@@ -118,32 +176,18 @@ class ChannelEvent : public KernelEvent {
 
   // the constructor of a channel event as it "snakes" through the
   // inport chain (see process_event method)
-  ChannelEvent(Timestamp t, Event* evt, bool emulated, MapInport* inport);
+  ChannelEvent(Timestamp t, Event* evt, MapInport* inport);
 
   // the constructor of a channel event from a remote machine
-  ChannelEvent(Timestamp t, Event* evt, bool emulated, int outportno);
+  ChannelEvent(Timestamp t, Event* evt, int outportno);
 
   // the destructor
-  virtual ~ChannelEvent();
+  virtual ~ChannelEvent() {}
 
-  // if a channel event needs to be pinned down?
-  virtual bool is_emulated() { return emulated; }
+  virtual bool is_channel_event() { return true; }
 
-  // channel events are stored at the mailboxes as linked lists, also
-  // in the binque as well; the difference is that in the mailboxes,
-  // the events need to keep the FIFO order (so that it won't cause
-  // synchronization issue); in the binque it doesn't matter as they
-  // are sorted using all the three keys
-  inline ChannelEvent*& get_next_event() { return nextevt; }
-  inline void append_to_list(ChannelEvent** head, ChannelEvent** tail) { 
-    nextevt = 0; // must reset to null
-    if(*head) { (*tail) = (*tail)->nextevt = this; }
-    else { (*head) = (*tail) = this; }
-  }
-
-  // return the ssf event carried by this kernel event
-  inline Event* get_event() { return event; }
-  inline Event* delete_event() { Event* retevt = event; event = 0; return retevt; }
+  // a channel event is pinned down only at the destination
+  virtual bool is_emulated();
 
   // process the event
   virtual void process_event(Timeline* timeline);
@@ -152,14 +196,17 @@ class ChannelEvent : public KernelEvent {
   void pack(MPI_Comm comm, char* buffer, int& pos, int bufsiz);
   static ChannelEvent* unpack(MPI_Comm comm, char* buffer, int& pos, int bufsiz);
 #endif
-
- protected:
-  Event* event;
+  
+protected:
   MapInport* inport;
-  Stargate* stargate; // this field is used by writer thread to infer target machine when the event is to be sent to another machine; and also used by the receiving timeline at a different universe to infer the stargate it needs to update the time; also used by switch board to record the stargate for delivery the message 
-  bool emulated;
+  Stargate* stargate; // this field is used by writer thread to infer
+		      // target machine when the event is to be sent
+		      // to another machine; and also used by the
+		      // receiving timeline at a different universe to
+		      // infer the stargate it needs to update the
+		      // time; also used by switch board to record the
+		      // stargate for delivery the message
   int outportno;
-  ChannelEvent* nextevt;
 
   friend class Stargate;
   friend class Universe;

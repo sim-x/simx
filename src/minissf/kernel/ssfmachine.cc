@@ -88,21 +88,21 @@ void ssf_thread_yield()
 #ifdef _POSIX_PRIORITY_SCHEDULING
   sched_yield();
 #else
-  usleep(0); // force it to sleep if possible
+#warning "WARNING: can't use sched_yield()"
 #endif
 }
 
 #if defined(HAVE_GETHRTIME)
 // wall time clock is available in nanosecond resolution; it's as good
 // as it gets for most platforms
-double ssf_wallclock_in_nanoseconds() { return (double)gethrtime(); }
+int64 ssf_wallclock_in_nanoseconds() { return (int64)gethrtime(); }
 #elif defined(HAVE_GETTIMEOFDAY)
 // wall time clock is only in microseconds; it's the best precision we
 // can get from the gettimeofday function
-double ssf_wallclock_in_nanoseconds() {
+int64 ssf_wallclock_in_nanoseconds() {
   struct timeval tv;
   gettimeofday(&tv, 0);
-  return tv.tv_sec*1e9+tv.tv_usec*1e3;
+  return tv.tv_sec*1000000000LL+tv.tv_usec*1000LL;
 }
 #else
 #error "ERROR: missing timing support!"

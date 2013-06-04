@@ -9,9 +9,6 @@
 
 namespace minissf {
 
-// XXX: what to use here? and how to set programmatically?
-#define REALTIME_LOOKAHEAD VirtualTime(1.0, VirtualTime::MILLISECOND)
-
 /* base class for all kernel events */
 
 KernelEvent::KernelEvent(Entity* entity, VirtualTime t) :
@@ -19,22 +16,23 @@ KernelEvent::KernelEvent(Entity* entity, VirtualTime t) :
 
 KernelEvent::KernelEvent(Timestamp t) : KernelEventNode(t) {}
 
-VirtualTime KernelEvent::emulation_time()
-{
-  if(is_emulated()) return time();
-  else return time()-REALTIME_LOOKAHEAD;
-}
-
 /* event for ticking progress mark */
 
-TickEvent::TickEvent(VirtualTime t) : 
-  KernelEvent(Timestamp(t,0,0)) {}
+TickEvent::TickEvent(VirtualTime t) : KernelEvent(Timestamp(t,0,0)) {}
 
 void TickEvent::process_event(Timeline* timeline)
 {
-  printf(">> %lg: timeline[%d] tick: %lu events\n", 
-	 timeline->simclock.second(), timeline->serialno, 
-	 --timeline->stats_processed_events); // this event should not be counted
+  // tick event should not be counted toward total processed events
+  if(timeline->is_emulated()) {
+    VirtualTime rt = timeline->universe->get_wallclock_time();
+    printf(">> %lg: timeline[%d]: %lu events (slowdown=%g)\n", 
+	   timeline->simclock.second(), timeline->serialno, 
+	   --timeline->stats_processed_events, rt/timeline->simclock); 
+  } else {
+    printf(">> %lg: timeline[%d]: %lu events\n", 
+	   timeline->simclock.second(), timeline->serialno, 
+	   --timeline->stats_processed_events); // this event should not be counted
+  }
   VirtualTime t = timeline->simclock+Universe::args_progress_interval;
   if(t < Universe::args_endtime) {
     TickEvent* evt = new TickEvent(t);
@@ -111,28 +109,61 @@ void SemaphoreEvent::process_event(Timeline* timeline)
   timeline->activate_process(process);
 }
 
+/* chained event */
+
+ChainedEvent::ChainedEvent(Entity* ent, VirtualTime vt, Event* evt) :
+  KernelEvent(ent, vt), event(evt), nextevt(0) {}
+
+ChainedEvent::ChainedEvent(Timestamp ts, Event* evt) :
+  KernelEvent(ts), event(evt), nextevt(0) {}
+
+ChainedEvent::~ChainedEvent() {
+  if(event) delete event;
+}
+
+/* emulated event */
+
+EmulatedEvent::EmulatedEvent(Entity* ent, Event* evt) :
+  ChainedEvent(ent, 0, evt), entity(ent) {}
+
+void EmulatedEvent::process_event(Timeline* timeline) 
+{
+  Event* evt = delete_event(); assert(evt);
+  entity->emulate(evt);
+}
+
+/* emulated timer event */
+
+EmulatedTimerEvent::EmulatedTimerEvent(VirtualTime t, VirtualTime d) :
+  KernelEvent(Timestamp(t,0,0)), delay(d) {}
+
+void EmulatedTimerEvent::process_event(Timeline* timeline)
+{
+  //printf("%lg\n", timeline->simclock.second());
+  EmulatedTimerEvent* newevt = new EmulatedTimerEvent(timeline->simclock+delay, delay);
+  timeline->insert_event(newevt);
+}
+
 /* channel event for communications between entities */
 
 ChannelEvent::ChannelEvent(outChannel* oc, VirtualTime arrival, Event* evt, MapInport* ip) :
-  KernelEvent(oc->entity_owner, arrival), event(evt), 
-  inport(ip), stargate(0), emulated(oc->entity_owner->isEmulated()), 
-  outportno(0), nextevt(0) {}
+  ChainedEvent(oc->entity_owner, arrival, evt), 
+  inport(ip), stargate(0), outportno(0) {}
 
 ChannelEvent::ChannelEvent(outChannel* oc, VirtualTime arrival, Event* evt, int pno) :
-  KernelEvent(oc->entity_owner, arrival), event(evt),
-  inport(0), stargate(0), emulated(oc->entity_owner->isEmulated()), 
-  outportno(pno), nextevt(0) {}
+  ChainedEvent(oc->entity_owner, arrival, evt),
+  inport(0), stargate(0), outportno(pno) {}
 
-ChannelEvent::ChannelEvent(Timestamp t, Event* evt, bool emu, MapInport* ip) :
-  KernelEvent(t), event(evt), inport(ip), stargate(0), emulated(emu),
-  outportno(0), nextevt(0) {}
+ChannelEvent::ChannelEvent(Timestamp t, Event* evt, MapInport* ip) :
+  ChainedEvent(t, evt), inport(ip), stargate(0), outportno(0) {}
 
-ChannelEvent::ChannelEvent(Timestamp t, Event* evt, bool emu, int pno) :
-  KernelEvent(t), event(evt), inport(0), stargate(0), emulated(emu),
-  outportno(pno), nextevt(0) {}
+ChannelEvent::ChannelEvent(Timestamp t, Event* evt, int pno) :
+  ChainedEvent(t, evt), inport(0), stargate(0), outportno(pno) {}
 
-ChannelEvent::~ChannelEvent() {
-  if(event) delete event;
+bool ChannelEvent::is_emulated()
+{ 
+  if(inport) return inport->ic->entity_owner->isEmulated();
+  else return false;
 }
 
 void ChannelEvent::process_event(Timeline* timeline) 
@@ -143,7 +174,7 @@ void ChannelEvent::process_event(Timeline* timeline)
     Timestamp ts = time();
     ts.key1 += int64(inport->next->extra_delay);
     ChannelEvent* chevt = new ChannelEvent
-      (ts, evt->clone(), is_emulated(), inport->next);
+      (ts, evt->clone(), inport->next);
     timeline->insert_event(chevt);
   }
   inport->ic->schedule_arrival(evt);
@@ -160,8 +191,8 @@ void ChannelEvent::pack(MPI_Comm comm, char* buffer, int& pos, int bufsiz)
 
   ssf_mpi_pack(&outportno, 1, MPI_UNSIGNED, buffer, bufsiz, &pos, comm);
 
-  int32 emu = emulated ? 1 : 0;
-  ssf_mpi_pack(&emu, 1, MPI_INT, buffer, bufsiz, &pos, comm);
+  //int32 emu = emulated ? 1 : 0;
+  //ssf_mpi_pack(&emu, 1, MPI_INT, buffer, bufsiz, &pos, comm);
 
   int32 event_ident, data_size;
   char* sbuf = 0;
@@ -189,8 +220,8 @@ ChannelEvent* ChannelEvent::unpack(MPI_Comm comm, char* buffer, int& pos, int bu
   uint32 outportno;
   ssf_mpi_unpack(buffer, bufsiz, &pos, &outportno, 1, MPI_UNSIGNED, comm);
 
-  int32 emu;
-  ssf_mpi_unpack(buffer, bufsiz, &pos, &emu, 1, MPI_INT, comm);
+  //int32 emu;
+  //ssf_mpi_unpack(buffer, bufsiz, &pos, &emu, 1, MPI_INT, comm);
 
   int32 event_ident;
   int32 data_size;
@@ -209,7 +240,7 @@ ChannelEvent* ChannelEvent::unpack(MPI_Comm comm, char* buffer, int& pos, int bu
     if(!event) SSF_THROW("unable to create event with id=" << event_ident);
   }
   if(sbuf) delete[] sbuf; /*QuickObject::quick_delete(sbuf);*/
-  return new ChannelEvent(ts, event, emu, outportno);
+  return new ChannelEvent(ts, event, outportno);
 }
 #endif
 

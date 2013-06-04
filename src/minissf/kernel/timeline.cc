@@ -8,7 +8,9 @@ namespace minissf {
 
 Timeline::Timeline() : 
   TimelineQueueNode(VirtualTime(0)), universe(0), serialno(0), 
-  state(STATE_START), emulated(false), emulated_set(false), 
+  state(STATE_START), 
+  emulated(false), emulated_set(false), emulated_timer_set(false),
+  responsiveness(VirtualTime::INFINITY), 
   lbts(0), simclock(0), 
   stats_processed_events(0),
   stats_process_context_switches(0),
@@ -37,7 +39,7 @@ Timeline::~Timeline()
   }
   entities.clear();
   assert(active_processes.empty());
-  simlist.clear(); emulist.clear(); // remaining events will be reclaimed here
+  evtlist.clear(); //simlist.clear(); emulist.clear(); // remaining events will be reclaimed here
   inbound.clear(); outbound.clear(); // stargates will be reclaimed by universe
   inbound_async.clear(); outbound_async.clear(); // stargates will be reclaimed by universe
 }
@@ -46,9 +48,15 @@ bool Timeline::is_emulated()
 {
   if(!emulated_set) {
     emulated_set = true;
+    emulated = false; responsiveness = VirtualTime::INFINITY;
     for(SET(Entity*)::iterator iter = entities.begin();
-	!emulated && iter != entities.end(); iter++) 
-      emulated = (*iter)->isEmulated();
+	iter != entities.end(); iter++) {
+      if((*iter)->isEmulated()) {
+	emulated = true;
+	if((*iter)->responsiveness < responsiveness)
+	  responsiveness = (*iter)->responsiveness;
+      }
+    }
   }
   return emulated;
 }
@@ -58,6 +66,7 @@ void Timeline::add_entity(Entity* entity)
   assert(entity && !entity->timeline);
   entity->timeline = this;
   entities.insert(entity);
+  emulated_set = false; // make sure its emulate-ability is recounted
 }
 
 void Timeline::delete_entity(Entity* entity)
@@ -70,6 +79,7 @@ void Timeline::delete_entity(Entity* entity)
 void Timeline::merge_timeline(Timeline* timeline)
 {
   assert(timeline);
+  if(this == timeline) return;
   /*
   for(SET(Entity*)::iterator iter = timeline->entities.begin();
       iter != timeline->entities.end(); iter++) {
@@ -121,9 +131,6 @@ int Timeline::settle_portno(int id)
 
 void Timeline::insert_event(KernelEvent* evt)
 {
-  // note that emulation events may end up in simulation event list
-  // (if the timeline is not emulated)
-  //if(now() > evt->time()) printf("-> %lg %lg\n", now().second(), evt->time().key1/1e9);
   assert(evt);
   if(now() > evt->time()) {
     printf("ERROR: [%d:%d] timeline=%d => now=%lg evt=%lg\n", 
@@ -132,53 +139,75 @@ void Timeline::insert_event(KernelEvent* evt)
     abort();
   }
   //assert(now() <= evt->time());
-  if(is_emulated() && evt->is_emulated()) emulist.insert(evt);
+  evtlist.insert(evt);
+  /*
+  if(evt->is_emulated()) emulist.insert(evt);
   else simlist.insert(evt);
+  */
 }
 
 void Timeline::cancel_event(KernelEvent* evt)
 {
   assert(evt && now() <= evt->time());
-  if(is_emulated() && evt->is_emulated()) emulist.cancel(evt);
+  evtlist.cancel(evt);
+  /*
+  if(evt->is_emulated()) emulist.cancel(evt);
   else simlist.cancel(evt);
+  */
+}
+
+void Timeline::insert_emulated_event(EmulatedEvent* ee)
+{
+  universe->insert_emulated_event(this, ee);
 }
 
 VirtualTime Timeline::run()
 {
-  // process events all the way up to and include lbts
-  while(simclock <= lbts) {
+  if(is_emulated() && !emulated_timer_set) {
+    emulated_timer_set = true;
+    if(responsiveness <= Universe::args_endtime &&
+       responsiveness <= Universe::args_time_slice)
+      insert_event(new EmulatedTimerEvent(responsiveness, responsiveness));
+  }
+
+  // process events all the way up to (and include) the event horizon,
+  // which is the LBTS limited to be within a time slice
+  VirtualTime horizon = simclock + Universe::args_time_slice;
+  if(lbts < horizon) horizon = lbts;
+
+  while(simclock <= horizon) {
     KernelEvent* evt = peek_next_event();
+    if(!evt || evt->time() > horizon) break;
 
-    // pacing time is required only for emulated timelines
-    if(is_emulated()) {
-      // if no more simulation events until lbts; this timeline shall
-      // be paced until real time reachese lbts!  the method
-      // Universe::pace_timeline() returns true if the timeline is
-      // indeed put on hold, in which case we return the current
-      // simulation clock (which is smaller than lbts) so that
-      // scheduler knows it is put on hold; otherwise, if
-      // Universe::pace_timeline() returns false, we know we have
-      // already reached lbts, we return lbts so that the schedule
-      // knows the timeline has done processing the event until the
-      // event horizon
-      if(!evt || evt->emulation_time() > lbts) {
-	if(universe->pace_timeline(this, lbts)) return simclock;
-	else return simclock=lbts;
-      }
+    // pacing time is required only for an emulated timeline, and only
+    // for an emulated event, and only when the simclock is not yet at
+    // event horizon (to avoid the case that emulated event is right
+    // at event horizon); pacing is needed so that the emulation event
+    // can happen at the expected real time; if the timeline is put on
+    // hold for that (pacing_timeline() returns true in this case), we
+    // return prematurely (i.e., with the current simclock, which must
+    // be smaller than event horizon), so that the scheduler knows it
+    // is put on the pacing timeline list; otherwise, if the timeline
+    // is not emulated, or the event is not emulated, or the current
+    // time is already at event horizon, or the real time has already
+    // passed over the time of the emulated event, we shall go ahead
+    // processing the event normally (the control will fall through
+    // the following statement)
+    if(is_emulated() && evt->is_emulated() && simclock < horizon &&
+       universe->pace_in_timeline(this, evt->time()))
+      return simclock;
 
-      // events (emulated or simulated) must be paced to happen at the
-      // exact time; if the timeline is put on hold, we return
-      // prematurely (i.e., with simclock smaller than lbts) so that
-      // the scheduler knows it's put on hold
-      if(universe->pace_timeline(this, evt->emulation_time())) 
-	return simclock;
-    }
-
-    // remove the event from the event list
-    if(!evt || evt->time() > lbts) break;
+    // remove the event from the event list and update simulation clock
     pop_next_event(evt);
     simclock = evt->time();
 
+    /*
+    printf("event real=%lld now=%lld (%s)\n", 
+	   universe->get_wallclock_time().get_ticks(),
+	   simclock.get_ticks(), 
+	   evt->is_emulated()?"yes":"no");
+    */
+    
     // process the event and reclaim it
     record_stats_processed_events();
     evt->process_event(this);
@@ -197,7 +226,9 @@ VirtualTime Timeline::run()
     }
   }
 
-  return simclock=lbts;
+  if(horizon < lbts) universe->make_timeline_runnable(this);
+  //ssf_thread_yield();
+  return simclock=horizon;
 }
 
 void Timeline::activate_process(Process* p)
@@ -236,11 +267,14 @@ void Timeline::deactivate_process(int newstate)
 
 bool Timeline::no_more_events()
 {
-  return simlist.empty() && emulist.empty();
+  return evtlist.empty();
+  //return simlist.empty() && emulist.empty();
 }
 
 KernelEvent* Timeline::peek_next_event()
 {
+  return (KernelEvent*)evtlist.getMin();
+  /*
   KernelEvent* simevt = (KernelEvent*)simlist.getMin();
   if(!simevt) return (KernelEvent*)emulist.getMin();
   else {
@@ -248,17 +282,25 @@ KernelEvent* Timeline::peek_next_event()
     if(!emuevt || simevt->time() < emuevt->time()) return simevt;
     else return emuevt;
   }
+  */
 }
 
 void Timeline::pop_next_event(KernelEvent* evt)
 {
-  assert(evt);
+  assert(evt == (KernelEvent*)evtlist.getMin());
+  evtlist.deleteMin();
+  /*
+  if(evt->is_emulated()) emulist.deleteMin();
+  else simlist.deleteMin();
+  */
+  /*
   if(evt == (KernelEvent*)simlist.getMin())
     simlist.deleteMin();
   else {
     assert(evt == (KernelEvent*)emulist.getMin());
     emulist.deleteMin();
   }
+  */
 }
 
 void Timeline::add_inbound_stargate(Stargate* sg)
@@ -324,21 +366,21 @@ void Timeline::update_subsequent_timelines()
 
 VirtualTime Timeline::next_emulation_due_time()
 {
-  if(is_emulated()) {
-    KernelEvent* simevt = (KernelEvent*)simlist.getMin();
-    KernelEvent* emuevt = (KernelEvent*)emulist.getMin();
-    if(simevt) {
-      if(emuevt) {
-	VirtualTime x = simevt->emulation_time();
-	VirtualTime y = emuevt->emulation_time();
-	if(x < y) return x;
-	else return y;
-      } else return simevt->emulation_time();
-    } else {
-      if(emuevt) return emuevt->emulation_time();
-      else return VirtualTime::INFINITY;
-    }
-  } else return VirtualTime::INFINITY;
+  // this function is used by scheduler to calculate *ready*
+  // timelines' priority (the smaller timestamp, the higher the
+  // priority to be scheduled); the "right" way to calculate the
+  // priority should be to consider the number of simulated events
+  // that need to be processed before the emulated event, but we can't
+  // get that information easily; here if a timeline has a most
+  // pressing event, it needs to be processed first.
+  KernelEvent* evt = (KernelEvent*)evtlist.getMin();
+  if(evt) return evt->time();
+  else return VirtualTime::INFINITY;
+  /*
+  KernelEvent* emuevt = (KernelEvent*)emulist.getMin();
+  if(emuevt) return emuevt->emulation_time();
+  else return VirtualTime::INFINITY;
+  */
 }
 
 }; /*namespace minissf*/

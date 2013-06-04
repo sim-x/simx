@@ -126,7 +126,7 @@ void Universe::local_init()
 }
 
 #define REPORT_ARRAYSIZE_1 13
-#define REPORT_ARRAYSIZE_2 6
+#define REPORT_ARRAYSIZE_2 7
 #define REPORT_ARRAYSIZE 13 // larger of the two
 
 void Universe::local_wrapup() 
@@ -232,11 +232,12 @@ void Universe::local_wrapup()
       ssf_barrier();
       for(int p=0; p<args_nprocs; p++) {
 	if(p == processor_id) {
-	  if(!p) printf("[%d:0] TLCTX     IOEVT     SMSG      SBYTE     RMSG      RBYTE\n", args_rank);
-	  printf("[%d:%d] %-9lu %-9lu", args_rank, processor_id, 
-		 stats_timeline_context_switches, stats_handle_io_events);
+	  if(!p) printf("[%d:0] TLCTX     PACING    IOEVT     SMSG      SBYTE     RMSG      RBYTE\n", args_rank);
+	  printf("[%d:%d] %-9lu %-9lu %-9lu", args_rank, processor_id, 
+		 stats_timeline_context_switches, stats_timeline_pacing, stats_handle_io_events);
 	  x[0] = stats_timeline_context_switches;
-	  x[1] = stats_handle_io_events;
+	  x[1] = stats_timeline_pacing;
+	  x[2] = stats_handle_io_events;
 	  if(!p) printf(" %-9lu %-9lu %-9lu %-9lu\n", stats_mpi_sent_messages,
 			stats_mpi_sent_bytes, stats_mpi_rcvd_messages, stats_mpi_rcvd_bytes);
 	  else printf(" *         *         *         *\n");
@@ -245,10 +246,11 @@ void Universe::local_wrapup()
       }
       x[0] = ssf_sum_reduction(x[0]);
       x[1] = ssf_sum_reduction(x[1]);
-      x[2] = stats_mpi_sent_messages;
-      x[3] = stats_mpi_sent_bytes;
-      x[4] = stats_mpi_rcvd_messages;
-      x[5] = stats_mpi_rcvd_bytes;
+      x[2] = ssf_sum_reduction(x[2]);
+      x[3] = stats_mpi_sent_messages;
+      x[4] = stats_mpi_sent_bytes;
+      x[5] = stats_mpi_rcvd_messages;
+      x[6] = stats_mpi_rcvd_bytes;
 
 #ifdef HAVE_MPI_H
       if(args_nmachs > 1 && !processor_id) {
@@ -258,17 +260,19 @@ void Universe::local_wrapup()
       }
 #endif
       if(!ssf_total_processor_index()) {
-	printf("[*:*] %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu\n",
-	       x[0], x[1], x[2], x[3], x[4], x[5]);
+	printf("[*:*] %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu\n",
+	       x[0], x[1], x[2], x[3], x[4], x[5], x[6]);
       }
     }
 
     if(!ssf_total_processor_index()) {
-      printf("[ EPOCH LENGTH: %lg (s) ]\n", epoch_length.second());
-      printf("[ DECADE LENGTH (on 1st machine): %lg (s) ]\n", decade_length.second());
-      printf("[ INIT TIME: %lg (s) ]\n", (time1-time0)*1e-9);
-      printf("[ RUN TIME: %lg (s) ]\n", (time2-time1)*1e-9);
-      printf("[ EVENT RATE: %lg (evts/s) ]\n", nevts/(time2-time0)*1e9);
+      if(args_nmachs > 1) 
+	printf("[ EPOCH LENGTH: %lg (s) ]\n", epoch_length.second());
+      if(args_nprocs > 1)
+	printf("[ DECADE LENGTH (on 1st machine): %lg (s) ]\n", decade_length.second());
+      printf("[ INIT TIME: %lg (s) ]\n", VirtualTime(time1-time0).second());
+      printf("[ RUN TIME: %lg (s) ]\n", VirtualTime(time2-time1).second());
+      printf("[ EVENT RATE: %lg (evts/s) ]\n", nevts/VirtualTime(time2-time0).second());
     }
   }
 }
@@ -591,7 +595,8 @@ void Universe::enumerate_channel_delays()
       global_training_length *= f;
     }
   }
-  if(!args_rank && (args_debug_mask&DEBUG_FLAG_BRIEF) != 0) {
+  if(!args_rank && (args_debug_mask&DEBUG_FLAG_BRIEF) != 0 &&
+     local_training_length+global_training_length > 0) {
     printf("[ TRAINING LENGTH: %lg (s) ]\n",  
 	   (local_training_length+global_training_length).second());
   }
@@ -763,6 +768,7 @@ Universe::Universe(int id) :
   global_binque(0), local_binque(0), 
   mailbox(0), mailbox_tail(0),
   stats_timeline_context_switches(0),
+  stats_timeline_pacing(0),
   stats_handle_io_events(0)
 {
   parallel_universe[processor_id] = this;
@@ -783,7 +789,7 @@ Universe::~Universe()
 
   //assert(!mailbox); // must have no left-over events
   while(mailbox) {
-    ChannelEvent* evt = mailbox;
+    ChainedEvent* evt = mailbox;
     mailbox = mailbox->get_next_event();
     delete evt;
   }

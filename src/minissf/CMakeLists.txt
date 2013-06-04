@@ -75,5 +75,5 @@ list(APPEND MINISSF_SOURCES ${SSF_RANDOM_SOURCES}
 
 add_library(ssf SHARED ${MINISSF_SOURCES})
 
-#link_directories("/metis/build")
-target_link_libraries(ssf ${MPI_CXX_LIBRARIES})
+link_directories("${CMAKE_CURRENT_BINARY_DIR}/metis")
+target_link_libraries(ssf ${MPI_CXX_LIBRARIES} metis)

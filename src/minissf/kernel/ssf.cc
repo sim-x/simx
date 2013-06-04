@@ -77,6 +77,7 @@ void ssf_init(int argc, char** argv)
 {
 #ifdef HAVE_MPI_H
   ssf_mpi_init_thread(&argc, &argv, MPI_THREAD_MULTIPLE, &Universe::mpi_thread_support);
+  std::cerr << "thread support is " << Universe::mpi_thread_support << std::endl;
 #endif
   
   if(Universe::parse_command_line(argc, argv))

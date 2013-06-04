@@ -107,8 +107,8 @@ class Stargate {
   VirtualTime min_delay; // min among all channel mappings from the source to the target timeline
   VirtualTime time; // time of this channel (updated by the source timeline)
   ssf_thread_mutex_t mailbox_mutex; // protect simultaneous access to the mailbox
-  ChannelEvent* mailbox; // a linked list of channel events sent from source to target timeline
-  ChannelEvent* mailbox_tail; // points to the end of the linked list for appending new events
+  ChainedEvent* mailbox; // a linked list of channel events sent from source to target timeline
+  ChainedEvent* mailbox_tail; // points to the end of the linked list for appending new events
 
   void constructor(); // do the common work for all constructors
 

@@ -35,6 +35,7 @@ class Universe {
     OPTION_LT,
     OPTION_SET_LOCAL_THRESH,
     OPTION_SET_TRAINING_LEN,
+    OPTION_TIMESLICE,
     OPTION_TOTAL // total number of options
   };
   struct CommandLineOptionStruct {
@@ -73,6 +74,7 @@ class Universe {
   static bool args_local_thresh_set;
   static VirtualTime args_endtime; // set by ssf_start()
   static double args_speedup; // simtime/realtime; set by ssf_start()
+  static VirtualTime args_time_slice;
 
   static int total_num_procs; // this is to cache the total number of processors for all machines
 
@@ -176,8 +178,8 @@ class Universe {
   /****** timeline scheduling: universe_sched.cc ******/
 
  protected:
-  static double start_wallclock_time;
-  static double time0, time1, time2;
+  static int64 start_wallclock_time;
+  static int64 time0, time1, time2;
 
   static VirtualTime epoch_length; // global synchronization window size
   static VirtualTime decade_length; // local synchronization window size
@@ -203,14 +205,14 @@ class Universe {
   // processors on the same machine to be sent to remote machines
   ssf_thread_mutex_t mailbox_mutex;
   ssf_thread_cond_t mailbox_cond;
-  ChannelEvent* mailbox;
-  ChannelEvent* mailbox_tail;
+  ChainedEvent* mailbox;
+  ChainedEvent* mailbox_tail;
 
 #ifdef HAVE_MPI_H
   static ssf_thread_mutex_t remote_mailbox_mutex;
   static ssf_thread_cond_t remote_mailbox_cond;
-  static ChannelEvent* remote_mailbox;
-  static ChannelEvent* remote_mailbox_tail;
+  static ChainedEvent* remote_mailbox;
+  static ChainedEvent* remote_mailbox_tail;
 
   static char** sendbuf;
   static int* sendpos;
@@ -246,7 +248,7 @@ class Universe {
   static void trim_channel_delays(MAP(VirtualTime,int)&, VECTOR(VirtualTime)&, int);
 
   // get the wallclock time relative to the beginning of simulation
-  VirtualTime get_wallclock_time();
+  static VirtualTime get_wallclock_time();
 
   // add a timeline to the runnable list (with correct priority)
   void make_timeline_runnable(Timeline* timeline);
@@ -257,7 +259,13 @@ class Universe {
   // the timeline needs to put on hold until the given time; if the
   // time has already been reached, this method will return false; if
   // the timeline indeed needs to be put on hold, return true
-  bool pace_timeline(Timeline* timeline, VirtualTime until);
+  bool pace_in_timeline(Timeline* timeline, VirtualTime until);
+
+  // if the timeline is done waiting, wake it up
+  Timeline* pace_out_timeline();
+
+  // insert an emulated event at the designated timeline
+  static void insert_emulated_event(Timeline* tmln, EmulatedEvent* evt);
 
 #ifdef HAVE_MPI_H
   void transport_message(ChannelEvent* evt); // transport event from one machine to another; get it to writer thread
@@ -299,6 +307,7 @@ class Universe {
  public:
   //  collect statistics
   inline void record_stats_timeline_context_switches() { stats_timeline_context_switches++; }
+  inline void record_stats_timeline_pacing() { stats_timeline_pacing++; }
   inline void record_stats_handle_io_events() { stats_handle_io_events++; }
   inline static void record_stats_mpi_sent_messages(unsigned long bytes) { 
     stats_mpi_sent_messages++; stats_mpi_sent_bytes += bytes; }
@@ -306,6 +315,7 @@ class Universe {
     stats_mpi_rcvd_messages++; stats_mpi_rcvd_bytes += bytes; }
 
   unsigned long stats_timeline_context_switches;
+  unsigned long stats_timeline_pacing;
   unsigned long stats_handle_io_events;
   static unsigned long stats_mpi_sent_messages;
   static unsigned long stats_mpi_sent_bytes;

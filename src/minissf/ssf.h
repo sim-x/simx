@@ -77,17 +77,16 @@ extern void ssf_finalize();
  * \param speedup the expected ratio of progress in simulation time over real time.
  *
  * The function runs the simulation over the interval from time zero
- * to the given endtime, \b inclusive of both endpoints. This function
- * is normalled called in the main function after the simulation
- * entities have been created. speedup is used to indicate the
- * emulation speed, which is defined by the simulation time divided by
- * the wall-clock time. If ignored, speedup will be set to zero by
- * default, which means that the emulation speed is infinite. In this
- * case, we run simulation independent from the wall-clock time. That
- * is, the simulation will be run as fast as possible. If speedup is
- * five, the simulation time progresses five times as fast as the
- * wall-clock time. Setting speedup to be one means we run the
- * simulation in real time.
+ * up to the given endtime. This function is normalled called in the
+ * main function after the simulation entities have been
+ * created. speedup is used to indicate the emulation speed, which is
+ * defined by the simulation time divided by the wall-clock time. If
+ * ignored, speedup will be set to zero by default, which means that
+ * the emulation speed is infinite. In this case, we run simulation
+ * independent from the wall-clock time. That is, the simulation will
+ * be run as fast as possible. If speedup is five, the simulation time
+ * progresses five times as fast as the wall-clock time. Setting
+ * speedup to be one means we run the simulation in real time.
  *
  * @see ssf_init(), @see ssf_finalize() and @see ssf_abort().
  */

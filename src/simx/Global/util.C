@@ -120,7 +120,7 @@ namespace {
 
   static void CatchSignal(int num) 
   {
-    struct sig_struct { int value; char *name; };
+    struct sig_struct { int value; std::string name; };
     const struct sig_struct sig_array[] = {
       { 1, "SIGHUP" },
       { 2, "SIGINT" },
@@ -162,8 +162,10 @@ namespace {
 
     for (ii = 0; ii < arr_size; ++ii) {
       if (sig_array[ii].value == num) {
-	sprintf(msg,"Caught signal %d: %s; Aborting.",
-		num,sig_array[ii].name);
+	//sprintf(msg,"Caught signal %d: %s; Aborting.",
+	//num,sig_array[ii].name);
+	std::cerr << "Caught signal " << num << ": " 
+		  << sig_array[ii].name << "; Aborting." << std::endl;
 	break;
       }
     }
