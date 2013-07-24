@@ -21,7 +21,7 @@ import sys
 import simx
 from DebugStream import *
 
-sys.path.append("/Library/Python/2.6/site-packages/greenlet-0.4.0-py2.6-macosx-10.6-universal.egg")
+#sys.path.append("/Library/Python/2.6/site-packages/greenlet-0.4.0-py2.6-macosx-10.6-universal.egg")
 
 from greenlet import greenlet
 
@@ -112,7 +112,7 @@ def get_profile_id( profile_obj):
 
     """
     # todo (critical). This has to be fixed!
-    return int(id(profile_obj)/1000000)
+    return int(id(profile_obj) % 1000000)
 
 
 def get_internal_service_name( serv_name ):
