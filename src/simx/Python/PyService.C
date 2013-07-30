@@ -119,45 +119,53 @@ namespace simx {
 			       const python::tuple& dest_ent,
 			       const long dest_serv ) {
 
-      EntityID e_id = py2EntityId( dest_ent );
-      
-#ifdef SIMX_USE_PRIME
-      if ( theEntityManager().findEntityLpId(e_id) !=
-	   Control::getRank() )
-	{
-	  Logger::debug3() << "PyService on Entity " << getEntityId()
-			   << " : Sending remotely, proceeding to pickle Python object" << endl;
-	  shared_ptr<PyRemoteInfo> info;
-	  theInfoManager().createInfo( info );
-	  if ( ! info->pickleData( py_info ) )
-	    {
-	      Logger::error() << "PyService.C: Service on entity " << getEntityId()
-			      << ": Error while pickling info. Not sending" << endl;
-	      return;
-	    }
-	  else // succesful pickling, send it off
-	    {
-	      sendInfo( info, time, e_id, 
-			static_cast<ServiceAddress>( dest_serv ) );
-	    }
-	}
-      else // destination entity lives on the same LP. Use regular PyInfo for sending
-	{
-#endif
-	  // either we are using SimEngine -- in which case sending local 
-	  // and remote infos use the same procedure -- or
-	  // we are using SSF and sending locally.
+      Logger::debug3() << "PyService: (" << getName() <<  ") on Entity" 
+		       << getEntityId() << "sending PyInfo" << endl;
+      fPyEnt.sendPyInfo( py_info, time, dest_ent, dest_serv);
+     //  return;
 
-	  shared_ptr<PyInfo> info;
-	  theInfoManager().createInfo( info );
-	  info->setData( py_info );
-	  sendInfo( info, time, e_id, 
-		    static_cast<ServiceAddress>( dest_serv ) );
-#ifdef SIMX_USE_PRIME
-	} //close-out else block
-#endif
+//       EntityID e_id = py2EntityId( dest_ent );
       
-      //info->fData = boost::make_shared<boost::python::object>(py_info);
+// #ifdef SIMX_USE_PRIME
+//       if ( theEntityManager().findEntityLpId(e_id) !=
+// 	   Control::getRank() )
+// 	{
+// 	  Logger::debug3() << "PyService on Entity " << getEntityId()
+// 			   << " : Sending remotely, proceeding to pickle Python object" << endl;
+// 	  shared_ptr<PyRemoteInfo> info;
+// 	  theInfoManager().createInfo( info );
+// 	  if ( ! info->pickleData( py_info ) )
+// 	    {
+// 	      Logger::error() << "PyService.C: Service on entity " << getEntityId()
+// 			      << ": Error while pickling info. Not sending" << endl;
+// 	      return;
+// 	    }
+// 	  else // succesful pickling, send it off
+// 	    {
+// 	      sendInfo( info, time, e_id, 
+// 			static_cast<ServiceAddress>( dest_serv ) );
+// 	    }
+// 	}
+//       else // destination entity lives on the same LP. Use regular PyInfo for sending
+// 	{
+// 	   Logger::debug3() << "PyService on Entity " << getEntityId()
+// 			    << " : Sending locally" << endl;
+// #endif
+// 	  // either we are using SimEngine -- in which case sending local 
+// 	  // and remote infos use the same procedure -- or
+// 	  // we are using SSF and sending locally.
+
+
+// 	  shared_ptr<PyInfo> info;
+// 	  theInfoManager().createInfo( info );
+// 	  info->setData( py_info );
+// 	  sendInfo( info, time, e_id, 
+// 		    static_cast<ServiceAddress>( dest_serv ) );
+// #ifdef SIMX_USE_PRIME
+// 	} //close-out else block
+// #endif
+      
+//       //info->fData = boost::make_shared<boost::python::object>(py_info);
     }
 
 

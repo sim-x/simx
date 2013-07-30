@@ -38,7 +38,7 @@ init("HelloWorld")
 
 #end_time = 2**10
 #end_time = 10*2**10
-end_time = 2**16
+end_time = 2**10
 #end_time = 10
 #end_time = 2
 ##### set simulation configuration values ########
@@ -47,7 +47,7 @@ simx.set_config_value("MINDELAY","10")
 simx.set_config_value("END_TIME",str(end_time))
 simx.set_config_value("OUTPUT_FILE","output_HelloWorld.out")
 simx.set_config_value("LOG_COUT_LEVEL","warn")
-simx.set_config_value("LOG_LEVEL","info")
+simx.set_config_value("LOG_LEVEL","debug3")
 simx.set_config_value("LOG_FILE","helloworld.log")
 
 ####### Initialize environment (logging, output etc) ###########

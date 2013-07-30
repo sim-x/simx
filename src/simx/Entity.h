@@ -19,7 +19,7 @@
 //--------------------------------------------------------------------------
 // File:    Entity.h
 // Module:  simx
-// Author:  Lukas Kroc
+// Author:  Lukas Kroc, Sunil Thulasidaasan
 // Created: Jan 11 2005
 //
 // Description:
@@ -99,6 +99,22 @@ class Entity
 
 	/// returns current simulation time (calls LP::getNow())
 	Time getNow() const;
+
+	/// does not actually send an info, but prepares it to  be sent for the 
+	/// processOutgoingInfo function
+	/// By default, INVALIDATES (reset()) the pointer that it is given!
+	/// does NOT copy the Info object, only the pointer
+	/// the Info should not be altered after calling this 
+	/// (even if another pointer to is exists so that we could)
+	///
+	/// \param Info to send (WILL BE INVALIDATED by default) must not be NULL
+	/// \param Delay after which the Info is delivered (should be >= MINDELAY)
+	/// \param Entity to deliver it to
+	/// \param Service to deliver it to
+	/// \param whether or not to invalidate the pointer (warns if the pointer is not unique and is true) (default true)
+	template<typename InfoClass>
+	  void sendInfo(boost::shared_ptr<InfoClass>&, const Time&, const EntityID&, const ServiceAddress&, const bool = true) const;
+
 
 	/// sends an Info
 	/// \param Info to send, must not be NULL
@@ -195,6 +211,37 @@ bool Entity::getService(ServiceAddress servAddr, boost::shared_ptr<ServiceClass>
     }
 }
 
+
+template<typename InfoClass>
+void Entity::sendInfo(boost::shared_ptr<InfoClass>& info, const Time& delay, const EntityID& dest, const ServiceAddress& serv, const bool invalidate) const
+{
+    /// see that we have valid input
+    if( !info )
+    {
+      Logger::error() << "Entity: " << fId
+		      << " cannot send NULL info" << std::endl;
+      return;
+    }
+    SMART_ASSERT( info );
+    
+    /// warn about non-uniqueness of the Info pointer, if not disabled
+    if( invalidate && !info.unique() )
+    {
+      Logger::warn() << "Entity: " << fId
+		     << " sending an Info that is not unique " << info << std::endl;
+    }
+    Logger::debug3() << "Entity: " << fId << ","
+		     << ": sending Info " << info << std::endl;
+
+    // send it off, and invalidate if not disabled
+    if( invalidate )
+    {
+      processOutgoingInfo(giveup_smart_ptr(info), delay, dest, serv);
+    } else
+    {
+      processOutgoingInfo(info, delay, dest, serv);
+    }
+}
 //============================================================================================
 // various helper functons (not methods of Entity)
 
