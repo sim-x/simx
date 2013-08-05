@@ -16,23 +16,53 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
-import sys
-from cStringIO import StringIO
+_service_names = {}
 
-import simx
+"""
 
-# Define output streams
-class OutputStream:
-    def __init__(self):
-        self.output_str = StringIO()
-         # define output stream writer method   
-    # sim_obj should be derived from either PyEntity or PyService    
-    def write(self,sim_obj,record_type,*message):
-        for token in message:
-            self.output_str.write(str(token));
-            self.output_str.write(" ");
-        simx.output(sim_obj,record_type,self.output_str.getvalue())    
-        self.output_str.truncate(0)
+Provides commonly used utility functions 
 
-# create output stream
-output = OutputStream()
+"""
+
+def get_profile_id( profile_obj):
+    """
+    Returns an integer id for a dictionary profile that will be used
+    to identify this profile inside core
+
+    """
+    # todo (critical). This has to be fixed!
+    return int(id(profile_obj) % 1000000)
+
+
+def get_internal_service_name( serv_name ):
+    """
+    Creates and returns a core internal service name for serv_name
+    
+    Keyword Arguments:
+    serv_name -- A service name for which an internal name will be generated
+    
+    Output:
+    A string having the format 'eServ_<serv_name>.<id>'
+    where id starts at 0 and is incremented for each  
+    entry of serv_name.
+    
+    """ 
+    global _service_names
+    if _service_names.has_key(serv_name):
+        s_id = _service_names[serv_name]
+    else:
+        s_id = 0
+    int_service_name = 'eServ_'+serv_name+'.'+str(s_id)
+    _service_names[serv_name] = s_id+1
+    return int_service_name
+
+
+
+
+def get_class_name(obj):
+    """
+    Returns class name of given object
+
+    """
+    return obj.__class__.__name__
+

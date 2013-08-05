@@ -1,22 +1,22 @@
 # Author: Sunil Thulasidasan
 # Date Created: May 7 2013
 
-project(minissf)
-cmake_minimum_required(VERSION 2.6)
-enable_language(C)
-enable_language(CXX)
+#project(minissf)
+#cmake_minimum_required(VERSION 2.6)
+#enable_language(C)
+#enable_language(CXX)
 
 add_subdirectory(metis)
 
 include(ssf-configure-check.txt)
 
-set(CMAKE_CXX_FLAGS "-O2")
+#set(CMAKE_CXX_FLAGS "-O2")
 
 #for MPI
-find_package(MPI REQUIRED)
-if (MPI_CXX_FOUND)
-  include_directories(${MPI_CXX_INCLUDE_PATH})
-endif()
+# find_package(MPI REQUIRED)
+# if (MPI_CXX_FOUND)
+#   include_directories(${MPI_CXX_INCLUDE_PATH})
+# endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} metis)
 
@@ -69,11 +69,17 @@ file(GLOB SSF_KERNEL_SOURCES
   kernel/ssf.cc
   )
 
-list(APPEND MINISSF_SOURCES ${SSF_RANDOM_SOURCES} 
-  ${SSF_API_SOURCES} ${SSF_EVTLIST_SOURCES} 
-  ${SSF_KERNEL_SOURCES})
+# list(APPEND MINISSF_SOURCES ${SSF_RANDOM_SOURCES} 
+#   ${SSF_API_SOURCES} ${SSF_EVTLIST_SOURCES} 
+#   ${SSF_KERNEL_SOURCES})
 
-add_library(ssf SHARED ${MINISSF_SOURCES})
+ list(APPEND ALL_SOURCES ${SSF_RANDOM_SOURCES} 
+   ${SSF_API_SOURCES} ${SSF_EVTLIST_SOURCES} 
+   ${SSF_KERNEL_SOURCES} )
 
-link_directories("${CMAKE_CURRENT_BINARY_DIR}/metis")
-target_link_libraries(ssf ${MPI_CXX_LIBRARIES} metis)
+set(ALL_SOURCES "${ALL_SOURCES}" PARENT_SCOPE)
+
+#add_library(ssf SHARED ${MINISSF_SOURCES})
+
+#link_directories("${CMAKE_CURRENT_BINARY_DIR}/metis")
+#target_link_libraries(ssf ${MPI_CXX_LIBRARIES} metis)

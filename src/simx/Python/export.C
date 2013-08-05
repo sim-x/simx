@@ -63,7 +63,7 @@ void export_PyOutput();
 void export_Random();
 //void export_X();
 
-BOOST_PYTHON_MODULE(simx)
+BOOST_PYTHON_MODULE(core)
 {
   
   boost::python::scope().attr("__doc__") = "SimX Documentation";

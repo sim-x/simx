@@ -35,6 +35,12 @@ find_package(PythonLibs REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS})
 link_directories(${PYTHON_LIBRARIES})
 
+file(GLOB_RECURSE SIMX_SOURCES src/simx/*.C)
+file(GLOB_RECURSE NOT_SIMX_SOURCES src/simx/main*.C)
+list(REMOVE_ITEM SIMX_SOURCES ${NOT_SIMX_SOURCES})
+
+set(ALL_SOURCES ${SIMX_SOURCES})
+
 # for SSF
 add_subdirectory(src/minissf)
 ADD_DEFINITIONS("-DSIMX_USE_PRIME")
@@ -51,20 +57,18 @@ include_directories(${CMAKE_SOURCE_DIR} src src/simx)
 #					${PYTHON_INCLUDE_DIR})
 
 
-file(GLOB_RECURSE SIMX_SOURCES src/simx/*.C)
-file(GLOB_RECURSE NOT_SIMX_SOURCES src/simx/main*.C)
-list(REMOVE_ITEM SIMX_SOURCES ${NOT_SIMX_SOURCES})
+message(STATUS "ALL_SOURCES = ${ALL_SOURCES}")
 
 add_library(simx SHARED
-		    ${SIMX_SOURCES})
+		    ${ALL_SOURCES})
 
 set_target_properties(simx PROPERTIES PREFIX "" SUFFIX ".so")
 
 target_link_libraries(simx
         ${Boost_LIBRARIES}
         ${PYTHON_LIBRARIES}
-	${MPI_CXX_LIBRARIES}
-	ssf metis)
+	${MPI_CXX_LIBRARIES})
+#	ssf metis)
 
 #add_library(simx_static ${SIMX_SOURCES} src/simx/Global/main_MPI.C)
 
