@@ -2,6 +2,8 @@
 
 project(simx)
 
+set(TARGET_NAME "core")
+
 cmake_minimum_required(VERSION 2.6)
 enable_language(CXX)
 #set(CMAKE_BUILD_TYPE Release)
@@ -39,16 +41,22 @@ file(GLOB_RECURSE SIMX_SOURCES src/simx/*.C)
 file(GLOB_RECURSE NOT_SIMX_SOURCES src/simx/main*.C)
 list(REMOVE_ITEM SIMX_SOURCES ${NOT_SIMX_SOURCES})
 
-set(ALL_SOURCES ${SIMX_SOURCES})
+set(ALL_SOURCES "")
+#set(ALL_SOURCES ${SIMX_SOURCES})
+
 
 # for SSF
 add_subdirectory(src/minissf)
+
+list(APPEND ALL_SOURCES ${SIMX_SOURCES})
+
 ADD_DEFINITIONS("-DSIMX_USE_PRIME")
 include_directories("${CMAKE_SOURCE_DIR}/src/minissf")
+include_directories("${CMAKE_SOURCE_DIR}/src/minissf/metis")
 # below include to make sure ssf_config.h is visible
 include_directories("${CMAKE_BINARY_DIR}/src/minissf")
-link_directories("${CMAKE_BINARY_DIR}/minissf")
-link_directories("${CMAKE_BINARY_DIR}/minissf/metis")
+#link_directories("${CMAKE_BINARY_DIR}/minissf")
+#link_directories("${CMAKE_BINARY_DIR}/minissf/metis")
 
 # simx	
 include_directories(${CMAKE_SOURCE_DIR} src src/simx) 
@@ -57,14 +65,14 @@ include_directories(${CMAKE_SOURCE_DIR} src src/simx)
 #					${PYTHON_INCLUDE_DIR})
 
 
-message(STATUS "ALL_SOURCES = ${ALL_SOURCES}")
+#message(STATUS "ALL_SOURCES = ${ALL_SOURCES}")
 
-add_library(simx SHARED
+add_library(${TARGET_NAME} SHARED
 		    ${ALL_SOURCES})
 
-set_target_properties(simx PROPERTIES PREFIX "" SUFFIX ".so")
+set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "" SUFFIX ".so")
 
-target_link_libraries(simx
+target_link_libraries(${TARGET_NAME}
         ${Boost_LIBRARIES}
         ${PYTHON_LIBRARIES}
 	${MPI_CXX_LIBRARIES})
@@ -76,4 +84,4 @@ include_directories(examples/HelloWorld/cpp)
 #file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_MPI.C)
 file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_dassf.C)
 add_executable(HelloWorld ${HELLOWORLD_SOURCES})
-target_link_libraries(HelloWorld simx)
+target_link_libraries(HelloWorld ${TARGET_NAME})
