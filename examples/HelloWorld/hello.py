@@ -21,9 +21,9 @@
 
 
 import simx
-from simx_init import *
-from DebugStream import *
-from OutputStream import *
+#from simx_init import *
+#from DebugStream import *
+#from OutputStream import *
 
 
 
@@ -34,7 +34,7 @@ from HelloHandler import *
 #gc.disable()
 
 ####### Initialize MPI and configuration framework#######
-init("HelloWorld")
+simx.init("HelloWorld")
 
 #end_time = 2**10
 #end_time = 10*2**10
@@ -42,13 +42,19 @@ end_time = 2**10
 #end_time = 10
 #end_time = 2
 ##### set simulation configuration values ########
-simx.set_config_value("NUMBER_LPS","0")
-simx.set_config_value("MINDELAY","10")
-simx.set_config_value("END_TIME",str(end_time))
-simx.set_config_value("OUTPUT_FILE","output_HelloWorld.out")
-simx.set_config_value("LOG_COUT_LEVEL","warn")
-simx.set_config_value("LOG_LEVEL","debug3")
-simx.set_config_value("LOG_FILE","helloworld.log")
+#simx.set_config_value("NUMBER_LPS","0")
+#simx.set_num_proc(0)
+#simx.set_config_value("MINDELAY","10")
+simx.set_min_delay(10)
+#simx.set_config_value("END_TIME",str(end_time))
+simx.set_end_time(end_time)
+#simx.set_config_value("OUTPUT_FILE","output_HelloWorld.out")
+#simx.set_output_file("helloworld.out")
+#simx.set_config_value("LOG_COUT_LEVEL","warn")
+#simx.set_config_value("LOG_LEVEL","debug3")
+#simx.set_log_level("debug3")
+#simx.set_config_value("LOG_FILE","helloworld.log")
+#simx.set_log_file("helloworld.log")
 
 ####### Initialize environment (logging, output etc) ###########
 simx.init_env()
@@ -56,7 +62,7 @@ simx.init_env()
 
 ##### Add services to be used in the simulation ########
 # the second argument is a profile (should be dictionary (can be empty) or None)
-hh = add_service('HelloHandlerPerson',None,[]) 
+hh = simx.add_service('HelloHandlerPerson',None,[]) 
 
 ##### Create Entities ##########
 
@@ -69,7 +75,7 @@ num_entities = 2**5
 
 for i in xrange(num_entities):
     # the third argument is a profile (should be dictionary (can be empty) or None)
-    create_entity(('p',i),Person,ep,[('p',1-i)])
+    simx.create_entity(('p',i),Person,ep,[('p',1-i)])
 
 ########## Schedule initial events, if any ###############
 import random
@@ -79,7 +85,7 @@ def create_events():
         hello_rcpt = random.choice(xrange(num_entities))
         # who should the reply be sent to ?
         reply_rcpt = random.choice(xrange(num_entities))
-        schedule_event( evt_time, ('p',hello_rcpt), eAddr_HelloHandlerPerson, 
+        simx.schedule_event( evt_time, ('p',hello_rcpt), eAddr_HelloHandlerPerson, 
                         HelloMessage(source_id=('p',reply_rcpt)))
         
 # for evt_time in xrange(end_time):
@@ -87,7 +93,7 @@ def create_events():
 #                     HelloMessage(source_id=('p',1)))
     
 #schedule_events()
-es = EventScheduler(create_events)
+es = simx.EventScheduler(create_events)
 #create_events()
 ##### Run Simulation #################
 #import cProfile
