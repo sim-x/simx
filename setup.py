@@ -4,9 +4,54 @@
 
 Setup script for SimX
 
+For installation, type
+
+python setup.py install
+
+or
+
+python setup.py install --user
+(this will install SimX under the user's home directory)
+
 """
 
+#Parts of the setup script are based on the setup.py of PyOpenCV
+
 from setuptools import setup, find_packages, Extension
+
+import sys
+import os
+import os.path as op
+import distutils.spawn as ds
+import distutils.dir_util as dd
+
+if ds.find_executable('cmake') is None:
+    print "CMake  is required to build SimX"
+    print "Please install cmake version >= 2.6 and re-run setup"
+    sys.exit(-1)
+
+print "Building SimX core module.... "
+cwd = os.getcwd()
+new_dir = op.join(op.split(__file__)[0],'build')
+dd.mkpath(new_dir)
+os.chdir(new_dir)
+
+try:
+    ds.spawn(['cmake','..'])
+except ds.DistutilsExecError:
+    print "Error while running cmake"
+    print "Try editing the settings in CMakeLists.txt file and re-running setup"
+    os.chdir(cwd)
+    sys.exit(-1)
+
+try:
+    ds.spawn(['make'])
+except ds.DistutilsExecError:
+    print "Error while building SimX"
+    os.chdir(cwd)
+    sys.exit(-1)
+
+os.chdir(cwd)
 
 setup(
     name = "simx",
@@ -15,7 +60,6 @@ setup(
     install_requires = ["greenlet"],
     include_package_data = True,
     url = 'http://github.com/thulas/simx',
-    author = 'Sunil Thulasidasan, Lukas Kroc',
     maintainer='Sunil Thulasidasan',
     maintainer_email = 'sunil@lanl.gov',
     license = "GNU LGPL",

@@ -73,7 +73,14 @@ include_directories(${CMAKE_SOURCE_DIR} src src/simx)
 add_library(${TARGET_NAME} SHARED
 		    ${ALL_SOURCES})
 
-set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "" SUFFIX ".so")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/simx")
+set_target_properties(${TARGET_NAME} PROPERTIES 
+    PREFIX "" 
+    SUFFIX ".so"
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/simx )
+    
+
+
 
 target_link_libraries(${TARGET_NAME}
         ${Boost_LIBRARIES}
