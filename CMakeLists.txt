@@ -12,8 +12,11 @@ set(CMAKE_CXX_FLAGS "-g -fpermissive")
 
 # for MPI
 find_package(MPI REQUIRED)
-if (MPI_CXX_FOUND)
-   include_directories(${MPI_CXX_INCLUDE_PATH})
+if (MPI_FOUND)
+   include_directories(${MPI_INCLUDE_PATH})
+else()
+  message(STATUS "mpi not found")
+   
 endif()
 
 # for boost
@@ -34,7 +37,7 @@ ENDIF()
 # for python
 find_package(PythonInterp REQUIRED)
 find_package(PythonLibs REQUIRED)
-include_directories(${PYTHON_INCLUDE_DIRS})
+include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE_PATH})
 link_directories(${PYTHON_LIBRARIES})
 
 file(GLOB_RECURSE SIMX_SOURCES src/simx/*.C)
@@ -75,7 +78,7 @@ set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "" SUFFIX ".so")
 target_link_libraries(${TARGET_NAME}
         ${Boost_LIBRARIES}
         ${PYTHON_LIBRARIES}
-	${MPI_CXX_LIBRARIES})
+	${MPI_CXX_LIBRARIES} ${MPI_LIBRARIES})
 #	ssf metis)
 
 #add_library(simx_static ${SIMX_SOURCES} src/simx/Global/main_MPI.C)
