@@ -60,8 +60,8 @@ setup(
     install_requires = ["greenlet"],
     include_package_data = True,
     url = 'http://github.com/thulas/simx',
-    maintainer='Sunil Thulasidasan',
-    maintainer_email = 'sunil@lanl.gov',
+    author='Sunil Thulasidasan, Lukas Kroc and others',
+    maintainer_email = 'simx-dev@lanl.gov',
     license = "GNU LGPL",
     long_description = 
     "\nSimX is a library for developing parallel, distributed memory\n \
