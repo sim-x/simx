@@ -21,11 +21,12 @@ import cPickle
 
 import simx
 
-from DebugStream import *
-from OutputStream import *
+#from DebugStream import *
+#from OutputStream import *
 from Message import *
 
 import random
+import math
 
 #### Define Services ##########
 eAddr_HelloHandlerPerson = 11101;
@@ -35,7 +36,7 @@ class HelloHandlerPerson(simx.PyService):
 
     def __init__(self,name, person, service_input ):
         super(HelloHandlerPerson,self).__init__( name, person, service_input,self )
-        debug2.write("HelloHandlerPerson in constructor",
+        simx.debug2.write("HelloHandlerPerson in constructor",
                      name, person, service_input.data_)   
         self.person = person
         #self.person.say_hello()
@@ -55,20 +56,21 @@ class HelloHandlerPerson(simx.PyService):
         #rf(msg)
 
     def recv_HelloMessage(self,msg):    
-        debug3.write("HelloHandler received hello",msg)
-        output.write(self,100,'Received a hello')
-        output.write(self,200,"Random number:",
+        simx.debug3.write("HelloHandler received hello",msg)
+        simx.output.write(self,100,'Received a hello')
+        simx.output.write(self,200,"Random number:",
                      self.get_random().get_uniform() )
-        # simulate some computation here
-        for i in xrange(int(random.expovariate(0.000001))):
-            j = i
+        #simulate some computation
+        # x = int(random.expovariate(0.00001))
+        # for i in xrange(x):
+        #     j = math.sqrt(i)
         self.send_info(ReplyMessage(source_id=self.get_entity_id(),
                                     dest_id=msg.source_id),
                        simx.get_min_delay(), msg.source_id,eAddr_HelloHandlerPerson)
 
     def recv_ReplyMessage(self,msg):
-        debug3.write("HelloHandlerPerson::receive(Reply):",msg)
-        output.write(self,100,"Received a reply")
+        simx.debug3.write("HelloHandlerPerson::receive(Reply):",msg)
+        simx.output.write(self,100,"Received a reply")
 
     def __str__(self):
         return "HelloHandler(%s)" %(self.get_entity_id())

@@ -87,7 +87,16 @@ int die( const string& emsg );
   // For speed, don't try to synchronize with stdio functions (printf,
   // scanf, etc).
   ios_base::sync_with_stdio(false);
+#ifdef SIMX_USE_PRIME
 
+  int i = 0;
+  minissf::ssf_init(i, NULL);
+  //set rank of this process
+  Common::Values::SetRank( minissf::ssf_machine_index() );
+  //Common::Values::SetRank( 0 );
+#else
+   assert(false);
+   // we are using simengine
   const int mySignals[15] = { 1,2,3,4,5,6,7,8,9,0,0,0,13,14,15 };
   Global::InstallSignalHandler(mySignals);
 
@@ -175,8 +184,9 @@ int die( const string& emsg );
     cerr << emsg << endl;
     log().Failure( 0, emsg );
   }
-  return MPI_SUCCESS;
 
+#endif
+  return MPI_SUCCESS;
 }
  
  ///////////////////////////////////////////////////////////////////////
@@ -311,6 +321,10 @@ int run_simulation() {
     errno = 0;
     //TODO, critical, python: get rid of two modulemain functions
     Global::startSimulation();
+#ifdef SIMX_USE_PRIME
+    Log::log().info(0) << "SUCCESS exit" << endl;
+    return EXIT_SUCCESS;
+#endif
   }
 
   // --------- oops
@@ -332,7 +346,10 @@ int run_simulation() {
    string emsg = failMsg + " unknown exception";
    return die( emsg );
  }
-    
+
+#ifdef SIMX_USE_PRIME
+
+#else  // simengine   
   // --------- Successful completion
 
  cerr << Common::Values::gProgName() << ": calling MPI_Finalize" << endl;
@@ -341,19 +358,22 @@ int run_simulation() {
  //log().Success( 0 );
 
  return EXIT_SUCCESS;
+
+#endif
 }
 
 //--------------------------------------------------------------------------
 
 int die( const string& emsg )
 {
-  const string fullmsg = emsg + " occurred in main_MPI (ModuleMain)";
+  const string fullmsg = emsg + " occurred while running simulation";
 
   cerr << fullmsg << endl;
   log().Failure( 0, fullmsg );
 
+#ifndef SIMX_USE_PRIME
   MPI_Abort(MPI_COMM_WORLD, 1);
-
+#endif
   return EXIT_FAILURE;
 }
 

@@ -26,6 +26,7 @@
 //
 //--------------------------------------------------------------------------
 
+#ifndef SIMX_USE_PRIME
 
 #include <iostream>
 #include <algorithm>
@@ -413,3 +414,4 @@ void sendEventInfo( LPID destLP, const EventInfo& e )
 
 } // namespace simx
 
+#endif

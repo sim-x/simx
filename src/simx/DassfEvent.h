@@ -49,39 +49,42 @@ class LP;
 /// \brief Base for all DassfEvents
 ///
 /// 
-class DassfEvent : public prime::ssf::Event
+class DassfEvent : public minissf::Event
 {
-    public:
-	/// Default constructor
-	DassfEvent();
-	/// Copy constructor (required)
-	explicit DassfEvent(const DassfEvent&);
-	/// Construct from PackedData
-	explicit DassfEvent(prime::ssf::ssf_compact*);
+public:
+  /// Default constructor
+  DassfEvent();
+  /// Copy constructor (required)
+  explicit DassfEvent(const DassfEvent&);
+  /// Construct from PackedData
+  explicit DassfEvent(minissf::CompactDataType*);
+  
+  /// Destroy a DassfEvent
+  virtual ~DassfEvent();
+  
+  /// Copy a DassfEvent (required)
+  virtual minissf::Event* clone() const = 0;
+  
+  /// Pack a DassfEvent (required)
+  virtual minissf::CompactDataType* pack();
+  virtual minissf::CompactDataType* pack(minissf::CompactDataType*);
+  virtual int pack(char* buf, int bufsiz);
+  
+  /// Unpack a DassfEvent (required) - MUST be overriden
+  //static minissf::Event* unpack(minissf::CompactDataType*);
+  static minissf::Event* unpack(char* buf, int bufsize);
 
-	/// Destroy an DassfEvent
-	virtual ~DassfEvent();
+  /// Print an event (empty in DassfEvent base)
+  virtual void print(std::ostream& os) const;
 
-	/// Copy an DassfEvent (required)
-	virtual prime::ssf::Event* clone() const = 0;
-	
-	/// Pack an DassfEvent (required)
-	virtual prime::ssf::ssf_compact* pack();
-	virtual prime::ssf::ssf_compact* pack(prime::ssf::ssf_compact*);
-	/// Unpack an DassfEvent (required) - MUST be overriden
-	static prime::ssf::Event* unpack(prime::ssf::ssf_compact*);
+  /// called when event is executed at destination at the proper time
+  virtual void execute(LP& lp) = 0;
 
-	/// Print an event (empty in DassfEvent base)
-	virtual void print(std::ostream& os) const;
-
-	/// called when event is executed at destination at the proper time
-	virtual void execute(LP& lp) = 0;
-
-    protected:
-    private:
+protected:
+private:
 };
 
-//===================================================================================
+  //===================================================================================
 
 } // namespace
 

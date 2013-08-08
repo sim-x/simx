@@ -124,10 +124,10 @@ void PackedData::add(const long& x)
 void PackedData::add(const long long& x)
 { addAnything(x); }
 #endif
-#ifdef HAVE_LONG_DOUBLE
-void PackedData::add(const long double& x)
-{ addAnything(x); }
-#endif
+// #ifdef HAVE_LONG_DOUBLE
+// void PackedData::add(const long double& x)
+// { addAnything(x); }
+// #endif
 void PackedData::add(const short& x)
 { addAnything(x); }
 void PackedData::add(const unsigned char& x)
@@ -197,10 +197,10 @@ bool PackedData::get(long& x)
 bool PackedData::get(long long& x)
 { return getAnything(x); }
 #endif
-#ifdef HAVE_LONG_DOUBLE
-bool PackedData::get(long double& x)
-{ return getAnything(x); }
-#endif
+// #ifdef HAVE_LONG_DOUBLE
+// bool PackedData::get(long double& x)
+// { return getAnything(x); }
+// #endif
 bool PackedData::get(short& x)
 { return getAnything(x); }
 bool PackedData::get(unsigned char& x)

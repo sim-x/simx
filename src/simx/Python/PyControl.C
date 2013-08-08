@@ -37,6 +37,7 @@
 #include "simx/control.h"
 #include "simx/LP.h"
 #include "simx/type.h"
+#include "simx/constants.h"
 
 using namespace std;
 using namespace boost;
@@ -65,6 +66,17 @@ namespace simx {
       return LP::MINDELAY;
     }
 
+    simx::Time getLocalMinDelay() {
+      return LOCAL_MINDELAY;
+    }
+
+
+    simx::Time getNow() {
+      static const Control::LpPtrMap& lpMap = Control::getLpPtrMap();
+      static const LP& lp = *(lpMap.begin()->second); // get address of ANY lp on this computer node
+      return lp.getNow();
+    }
+
   }
   
 }
@@ -87,8 +99,10 @@ void export_pycontrol() {
   enum_<simx::ServiceAddress>("ServiceAddress")
     ;  
 
-  // export MINDELAY
+  // export time functions
   def("get_min_delay",&simx::Python::getMinDelay);
+  def("get_local_min_delay",&simx::Python::getLocalMinDelay);
+  def("get_now",&simx::Python::getNow);
   // export simx::Control functions
   def("get_num_machines",&getNumMachines );
   def("get_rank",&getRank );

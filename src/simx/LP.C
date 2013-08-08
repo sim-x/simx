@@ -33,6 +33,7 @@
 #include "simx/DassfEvent.h"
 #include "simx/DassfEventInfo.h"
 #include "simx/DassfEventInfoManager.h"
+#include "simx/DassfPyEventInfoManager.h"
 #include "simx/EntityManager.h"
 #include "simx/PackedData.h"
 #include "simx/logger.h"
@@ -54,6 +55,7 @@
 #include "simx/simEngine.h"
 
 #include <boost/python.hpp>
+#include "simx/PyEventInfoManager.h"
 
 using namespace std;
 using namespace boost;
@@ -65,7 +67,7 @@ using namespace boost;
 
 // Initialize static variable MINDELAY to zero. 
 // Correct value will by set by LP constructor from config file.
-simx::Time  simx::LP::MINDELAY;
+simx::Time  simx::LP::MINDELAY = 1000;
 #endif
 
 namespace simx {
@@ -78,7 +80,10 @@ LP::LP(LPID id)
     fRandom(id)
 {
 //  SMART_ASSERT( fDassfLP );
+
   Config::gConfig.GetConfigurationValueRequired( ky_MINDELAY, MINDELAY );
+  Logger::debug3() << "LP.C setting mindelay to " << MINDELAY << endl;
+  fDassfLP->mapChannels();
 }
 
 LP::~LP()
@@ -118,8 +123,11 @@ void LP::sendEventInfo(EventInfo& e) const
 
     if( delay < LP::MINDELAY )
     {
-	Logger::error() << "LP.C on " << getId() << ": too late sending event with delay "
+     
+	Logger::error() << "LP.C on LP " << getId() << ": too late sending event with delay "
 	    << delay << " at time " << getNow() << ", will be delivered later" << endl;
+	Logger::error() << "setting delay to LP::MINDELAY of " << LP::MINDELAY;
+	delay = LP::MINDELAY;
     }
 
 
@@ -165,6 +173,38 @@ void LP::sendEventInfoManager(EventInfoManager& e) const
     theInfoManager().createInfo( info );
     SMART_ASSERT( info );
     info->fFileId = e.getFileId();
+    ei.setInfo( info );
+    SimEngine::sendEventInfo( destLP, ei );
+#endif
+}
+
+//TODO: code repetition from function above. refactor.
+void LP::sendPyEventInfoManager(PyEventInfoManager& e) const
+{
+    LPID destLP = fId;
+  
+    Logger::debug2() << "LP " << fId << ": sending PyEventInfoManager: " << e
+	<< " with delay " << e.getDelay()  << endl;
+
+    // set the time the event is supposed to execute at
+    Time delay = e.getDelay();
+    Time eventTime = getNow() + delay;
+    e.setTime(eventTime);
+
+#ifdef SIMX_USE_PRIME
+    fDassfLP->sendDassfEvent(destLP, new DassfPyEventInfoManager(e), e.getDelay() );
+#else
+    // simEngine handles this differently: uses an event to Controller
+    // TODO: this should really be happining in InfoManager when it is scheduling this
+    //   for itself.
+    EventInfo ei;
+    ei.setTo( EntityID('!', Control::getRank() ), ServiceAddress() );
+    ei.setDelay( delay );
+    ei.setTime( eventTime );
+    boost::shared_ptr<InfoWakeupInfoManager> info;
+    theInfoManager().createInfo( info );
+    SMART_ASSERT( info );
+    info->fPyEvent = true;
     ei.setInfo( info );
     SimEngine::sendEventInfo( destLP, ei );
 #endif

@@ -32,6 +32,7 @@
 
 #include <boost/python.hpp>
 #include "simx/EntityManager.h"
+#include "simx/InfoManager.h"
 #include "simx/Python/PyUtility.h"
 #include "simx/Python/PyEntity.h"
 #include "simx/type.h"
@@ -77,6 +78,19 @@ namespace simx {
 					t, *type_str.c_str() );
     }
     
+
+    void setPyEventScheduler( python::object event_scheduler) {
+      
+      theInfoManager().setPyEventScheduler( event_scheduler );
+
+    }
+      
+
+    void setPyEventSchedulerTimer(Time time) {
+      theInfoManager().setPyEventSchedulerTimer(time);
+    }
+
+
   } //namespace Python
 
 } //namespace simx
@@ -90,4 +104,6 @@ void export_PyManager() {
   python::def("get_entity",&simx::Python::getEntity,
 	      return_value_policy<reference_existing_object>() );
   python::def("probe_entities",&simx::Python::probePyEntities );
+  python::def("set_event_scheduler",&simx::Python::setPyEventScheduler);
+  python::def("set_event_scheduler_timer",&simx::Python::setPyEventSchedulerTimer);
 }

@@ -61,7 +61,10 @@ namespace simx {
   /// Definition of time, as in DaSSF. This typedef defines type of
   /// time throughout the program.
 #ifdef SIMX_USE_PRIME
-    typedef prime::ssf::ltime_t Time;  
+  //typedef minissf::ltime_t Time;  
+  //typedef minissf::VirtualTime Time;
+  typedef long Time;
+  #define PRIME_SSF_LTIME_LONG
 #elif SIMX_SST
     typedef uint64_t Time;	//< make sure this is the same as in SST
 #else

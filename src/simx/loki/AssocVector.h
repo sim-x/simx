@@ -167,7 +167,7 @@ namespace Loki
             bool found(true);
             iterator i(lower_bound(val.first));
 
-            if (i == end() || operator()(val.first, i->first))
+            if (i == end() || this->operator()(val.first, i->first))
             {
                 i = Base::insert(i, val);
                 found = false;
@@ -231,7 +231,7 @@ namespace Loki
         iterator find(const key_type& k)
         {
             iterator i(lower_bound(k));
-            if (i != end() && operator()(k, i->first))
+            if (i != end() && this->operator()(k, i->first))
             {
                 i = end();
             }
@@ -241,7 +241,7 @@ namespace Loki
         const_iterator find(const key_type& k) const
         {       
             const_iterator i(lower_bound(k));
-            if (i != end() && operator()(k, i->first))
+            if (i != end() && this->operator()(k, i->first))
             {
                 i = end();
             }

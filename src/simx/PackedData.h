@@ -45,12 +45,16 @@
 
 #include <boost/python.hpp>
 
-namespace prime {
-   namespace ssf {
-      class ssf_compact;	// the DaSSF object
-   }
-}
+// namespace prime {
+//    namespace ssf {
+//       class CompactDataType;	// the DaSSF object
+//    }
+// }
 
+
+namespace minissf {
+  class CompactDataType;
+}
 
 namespace simx {
 
@@ -58,9 +62,9 @@ namespace simx {
 class PackedData
 {
     public:
-	/// constructor from DaSSF prime::ssf::ssf_compact
+	/// constructor from ssf minissf::CompactDataType
 #ifdef SIMX_USE_PRIME
-	explicit PackedData(prime::ssf::ssf_compact*);
+	explicit PackedData(minissf::CompactDataType*);
 #endif
 	PackedData();
 	PackedData( char*, size_t );	//< ocnstructor for unpacking
@@ -80,9 +84,9 @@ class PackedData
 #ifndef PRIME_SSF_ARCH_X86_64_LINUX
     void add(const long long&);
 #endif
-#ifdef HAVE_LONG_DOUBLE
-	void add(const long double&);
-#endif
+// #ifdef HAVE_LONG_DOUBLE
+// 	void add(const long double&);
+// #endif
 	void add(const short&);
 	void add(const unsigned char&);
 	void add(const unsigned&);
@@ -122,9 +126,9 @@ class PackedData
 #ifndef PRIME_SSF_ARCH_X86_64_LINUX
     bool get(long long&);
 #endif
-#ifdef HAVE_LONG_DOUBLE
-	bool get(long double&);
-#endif
+// #ifdef HAVE_LONG_DOUBLE
+// 	bool get(long double&);
+// #endif
 	bool get(short&);
 	bool get(unsigned char&);
 	bool get(unsigned&);
@@ -156,7 +160,7 @@ class PackedData
 	
     private:
 #ifdef SIMX_USE_PRIME
-	prime::ssf::ssf_compact*	fData;
+	minissf::CompactDataType*	fData;
 #endif
 
 	// generic function for copying x byte-by-byte

@@ -43,10 +43,11 @@ namespace simx {
     class DassfLP;
 #endif
 
-class EventInfo;
-class EventInfoManager;
-class Entity;
-class ControlInfoWrapper;
+    class EventInfo;
+    class EventInfoManager;
+    class PyEventInfoManager;
+    class Entity;
+    class ControlInfoWrapper;
 
 /// \class LP LP.h "simx/LP.h"
 ///
@@ -80,6 +81,10 @@ class LP
 
 	/// Sends an event notifying the InfoManager that it should read new chunk of data from input
 	void sendEventInfoManager(EventInfoManager& e) const;
+
+	/// Sends an event notifying the InfoManager that it should notify event creator in python
+	void sendPyEventInfoManager(PyEventInfoManager& e) const;
+
 
 	//for sending out-of-band info
 	void sendControlInfo( ControlInfoWrapper& cinfo );

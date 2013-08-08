@@ -38,7 +38,7 @@
 #include "simx/Python/PyInfo.h"
 #include "simx/InfoManager.h"
 #include "simx/Python/PyService.h"
-
+#include "simx/EntityManager.h"
 
 using namespace std;
 using namespace boost;
@@ -117,13 +117,57 @@ namespace simx{
 					 const long dest_serv)
     {
       EntityID e_id = py2EntityId( dest_ent );
-      shared_ptr<PyInfo> info;
-      theInfoManager().createInfo( info );
-      //info->fData = boost::make_shared<boost::python::object>(py_info);// py_info;
-      //info->fData = &py_info;
-      info->setData( py_info );
-      processOutgoingInfo( info, time, e_id, 
-			   static_cast<ServiceAddress>( dest_serv ) );
+#ifdef SIMX_USE_PRIME
+      if ( theEntityManager().findEntityLpId(e_id) !=
+	   Control::getRank() )
+	{
+	  Logger::debug3() << "PyEntity " << getId()
+			   << " : Sending remotely, proceeding to pickle Python object" << endl;
+	  shared_ptr<PyRemoteInfo> info;
+	  theInfoManager().createInfo( info );
+	  if ( ! info->pickleData( py_info ) )
+	    {
+	      Logger::error() << "PyEntity " << getId()
+			      << ": Error while pickling info. Not sending" << endl;
+	      return;
+	    }
+	  else // succesful pickling, send it off
+	    {
+	      sendInfo( info, time, e_id, 
+			static_cast<ServiceAddress>( dest_serv ) );
+	    }
+	}
+      else // destination entity lives on the same LP. Use regular PyInfo for sending
+	{
+	   Logger::debug3() << "PyEntity " << getId()
+			    << " : Sending locally" << endl;
+#endif
+	  // either we are using SimEngine -- in which case sending local 
+	  // and remote infos use the same procedure -- or
+	  // we are using SSF and sending locally.
+
+
+	   shared_ptr<PyInfo> info;
+	   theInfoManager().createInfo( info );
+	   info->setData( py_info );
+	   sendInfo( info, time, e_id, 
+		     static_cast<ServiceAddress>( dest_serv ) );
+#ifdef SIMX_USE_PRIME
+	} //close-out else block
+#endif
+      
+      //info->fData = boost::make_shared<boost::python::object>(py_info);
+      
+
+
+      // shared_ptr<PyInfo> info;
+      // theInfoManager().createInfo( info );
+      // //info->fData = boost::make_shared<boost::python::object>(py_info);// py_info;
+      // //info->fData = &py_info;
+      // info->setData( py_info );
+      // //processOutgoingInfo( info, time, e_id, 
+      // //static_cast<ServiceAddress>( dest_serv ) );
+      // sendInfo( info, time, e_id, static_cast<ServiceAddress>(dest_serv) );
     }
 
 
@@ -172,18 +216,37 @@ using namespace boost::python;
 void export_PyEntity() {
 
 
-  python::class_<simx::EntityID>("EntityID",python::no_init);
+  python::docstring_options doc_st_opt(false);
+  doc_st_opt.disable_all();
+  //doc_st_opt.enable_py_signatures();
+  doc_st_opt.enable_user_defined();
+  //doc_st_opt.disable_all();
+  //  doc_st_opt.disable_cpp_signatures();
+
+  python::class_<simx::EntityID>("EntityID","simx internal EntityID type",python::no_init);
   
   python::class_<simx::Python::PyEntity,
     python::bases<simx::Entity> >
-    ("PyEntity",python::init
-				     <const simx::EntityID&,
-				     simx::LP&,
-				     const simx::Python::
-				      PyEntityInput&,
-				      const python::object&>() )
-    .def("getId",&simx::Python::PyEntity::getPyId)
-    .def("send_info",&simx::Python::PyEntity::sendPyInfo)
+    ("PyEntity", 
+     "Python Entity Class\n"
+     "PyEntity(EntityID, LP, EntityInput)\n\n"
+     "\t EntityID    :  id of the Entity being constructed (a python tuple)\n"
+     "\t LP          :  Reference to the logical process in which this entity lives\n"
+     "\t EntityInput :  Input passed to the entity at construction time\n",
+     python::init
+     <const simx::EntityID&,
+      simx::LP&,
+      const simx::Python::
+      PyEntityInput&,
+      const python::object&>() )
+    .def("getId",&simx::Python::PyEntity::getPyId,
+	 "getId() -> tuple\n"
+	 "Returns Entity ID")
+    .def("send_info",&simx::Python::PyEntity::sendPyInfo,
+	 "send_info((python::object)info, (Time)delay,\n"
+	 "          (EntityID)dest_entity, (ServiceAddress)dest_service)->None\n\n"
+	 "schedules a message(info) to be sent after 'delay' time units to 'dest_entity'\n"
+	 "Message will be handled by service living at address given by 'dest_service'")
     .def("get_service",&simx::Python::PyEntity::getPyService,
 	 return_value_policy<copy_non_const_reference>())
     .def("create_services",&simx::Python::PyEntity::createPyServices)

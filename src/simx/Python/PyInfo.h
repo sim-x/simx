@@ -46,10 +46,7 @@ namespace simx {
 
   namespace Python {
 
-    struct PyObjHolder {
-
-      boost::python::object fObj;
-    };
+    struct PyObjHolder;
 
     struct PyInfo : public Info {
       
@@ -75,7 +72,7 @@ namespace simx {
      
       void setData( const boost::python::object& data);
 
-      const boost::python::object& getData() const;
+      const boost::python::object getData() const;
 
       //boost::shared_ptr<boost::python::object> fData;
       //boost::python::str fPickledData;
@@ -85,19 +82,11 @@ namespace simx {
       //const boost::python::object* fData;
       //boost::python::object fData2;
       boost::shared_ptr<PyObjHolder> fDataPtr;
+      //PyObjHolder* fDataPtr;
 
     };
 
-    inline const boost::python::object& PyInfo::getData() const
-    {
-      return fDataPtr->fObj;
-    }
-    
-    inline void PyInfo::setData( const boost::python::object& data )
-    {
-      fDataPtr = boost::shared_ptr<PyObjHolder>(new PyObjHolder);
-      fDataPtr->fObj = data;
-    }
+ 
   } //namespace simx
 } // namespace Python
 

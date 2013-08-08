@@ -38,7 +38,9 @@
 #include "simx/Python/PyServiceInput.h"
 #include "simx/Python/PyInfo.h"
 #include <boost/python.hpp>
-
+#ifdef SIMX_USE_PRIME
+#include "simx/Python/PyRemoteInfo.h"
+#endif
 namespace simx {
 
   namespace Python {
@@ -47,6 +49,9 @@ namespace simx {
 
     class PyService : public Service, 
 		      public InfoRecipient<PyInfo> 
+#ifdef SIMX_USE_PRIME
+		    ,public InfoRecipient<PyRemoteInfo>
+#endif
     {
       
     public:
@@ -73,6 +78,11 @@ namespace simx {
     //   }
       virtual ~PyService() {}
       virtual void receive( boost::shared_ptr<PyInfo> );
+
+      // for receiving from remote LP when using SSF
+#ifdef SIMX_USE_PRIME
+      virtual void receive( boost::shared_ptr<PyRemoteInfo> );
+#endif
 
       void sendPyInfo( const boost::python::object& info,
 		       const Time time,

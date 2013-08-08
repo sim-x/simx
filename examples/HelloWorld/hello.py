@@ -16,29 +16,29 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
+
+
 import simx
-from simx_init import *
-from DebugStream import *
-from OutputStream import *
 
 
 
 from Person import *
 from HelloHandler import *
 
-####### Initialize MPI and configuration framework#######
-init("HelloWorld")
 
-num_events = 2**10
+####### Initialize MPI and configuration framework#######
+simx.init("HelloWorld")
+
+end_time = 2**10
 
 ##### set simulation configuration values ########
-simx.set_config_value("NUMBER_LPS","0")
-simx.set_config_value("MINDELAY","10")
-simx.set_config_value("END_TIME",str(num_events))
-simx.set_config_value("OUTPUT_FILE","output_HelloWorld.out")
-simx.set_config_value("LOG_COUT_LEVEL","warn")
-simx.set_config_value("LOG_LEVEL","info")
-simx.set_config_value("LOG_FILE","helloworld.log")
+simx.set_min_delay(10)
+simx.set_end_time(end_time)
+
+# These are optional
+simx.set_output_file("helloworld.out")
+simx.set_log_level("info")
+simx.set_log_file("helloworld.log")
 
 ####### Initialize environment (logging, output etc) ###########
 simx.init_env()
@@ -46,28 +46,35 @@ simx.init_env()
 
 ##### Add services to be used in the simulation ########
 # the second argument is a profile (should be dictionary (can be empty) or None)
-hh = add_service('HelloHandlerPerson',None,[]) 
+hh = simx.add_service('HelloHandlerPerson',None,[]) 
 
 ##### Create Entities ##########
 
 # create an entity profile (optional)
 ep = { 'SERVICES':{eAddr_HelloHandlerPerson:hh}}
 
+num_entities = 2**5
 
-num_entities = 2**10
+#num_entities = 2
+
 for i in xrange(num_entities):
     # the third argument is a profile (should be dictionary (can be empty) or None)
-    create_entity(('p',i),'Person',ep,[('p',1-i)])
+    simx.create_entity(('p',i),Person,ep,[('p',1-i)])
 
-##### Schedule initial events, if any ###############
+########## Schedule initial events, if any ###############
 import random
-for evt_time in xrange(num_events):
-    # pick a random entity for receiving hello
-    hello_rcpt = random.choice(xrange(num_entities))
-    # who should the reply be sent to ?
-    reply_rcpt = random.choice(xrange(num_entities))
-    schedule_event( evt_time, ('p',hello_rcpt), eAddr_HelloHandlerPerson, 
-                    HelloMessage(source_id=('p',reply_rcpt)))
+def create_events():
+    for evt_time in xrange(end_time):
+        # pick a random entity for receiving hello
+        hello_rcpt = random.choice(xrange(num_entities))
+        # who should the reply be sent to ?
+        reply_rcpt = random.choice(xrange(num_entities))
+        simx.schedule_event( evt_time, ('p',hello_rcpt), eAddr_HelloHandlerPerson, 
+                        HelloMessage(source_id=('p',reply_rcpt)))
+        
+    
+#schedule_events()
+es = simx.EventScheduler(create_events)
 
 ##### Run Simulation #################
 simx.run()

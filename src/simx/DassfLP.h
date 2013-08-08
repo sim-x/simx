@@ -19,7 +19,7 @@
 //--------------------------------------------------------------------------
 // File:    DassfLP.h
 // Module:  simx
-// Author:  K. Bisset
+// Author:  K. Bisset, Sunil Thulasidasan
 // Created: June 25 2004
 //
 // Description:
@@ -45,44 +45,64 @@ namespace simx {
 class LP;
 
 /// wrapper for LP to hide all DaSSF internals
-class DassfLP : public prime::ssf::Entity
+class DassfLP : public minissf::Entity
 {
 public:
   /// Construct an DassfLP.
   /// \param lp is the host LP, must be globally unique
-  DassfLP(const LPID id, LP& lp);
+    DassfLP(const LPID id, LP& lp);
 
   virtual ~DassfLP();
+  
+  //this will be called by LP in its constructor
+  //need to call this before messages are sent on channels
+  void mapChannels(); 
 
-  /// Run at before begining of simulation.
+   /// Run  before begining of simulation.
   virtual void init();
 
-  /// Run at after end of simulation.
+  /// Run after end of simulation.
   /// TODO: not yet implemented
   virtual void wrapup();
 
-  /// Called by DaSSF to process events.  
-  void process(prime::ssf::Process*); //! SSF PROCEDURE SIMPLE
-
+  /// ssf process code
+//------------------------ EMBEDDED CODE STARTS ----------------------------//
+minissf::Procedure* _ssf_create_procedure_process(minissf::Process* _ssf_omit_0, void* retaddr = 0);
+void process(minissf::Process*); 
+//------------------------ EMBEDDED CODE ENDS ----------------------------//
+  
   /// send events
-  void sendDassfEvent(const LPID destLP, prime::ssf::Event* e, const Time delay);
+  void sendDassfEvent(const LPID destLP, minissf::Event* e, const Time delay);
 
 protected:
 private:
-  std::vector<prime::ssf::inChannel*> fIn;   ///< Incomming connections
-  std::vector<prime::ssf::outChannel*> fOut; ///< Outgoing connections
+  typedef std::set<minissf::inChannel*> InChannelSet;
+  typedef std::set<minissf::outChannel*> OutChannelSet;
+  InChannelSet fInSet;
+  OutChannelSet fOutSet;
+  std::vector<InChannelSet::iterator> fIn;  ///< Incomming connections 
+  std::vector<OutChannelSet::iterator> fOut; ///< Outgoing connections
   
-  LP& fLP;	///< the host LP
 
-  /// these shouldn't be needed
+  LP& fLP; ///< the host LP
+
+   /// these shouldn't be needed
   DassfLP(const DassfLP& rhs);
   DassfLP& operator=(const DassfLP& rhs);
 };
 
-} // namespace
+  /// ssf process code
+  class EventProcess : public minissf::Process {
+  public:
+    EventProcess(DassfLP* owner) : Process(owner) {}
+//------------------------ EMBEDDED CODE STARTS ----------------------------//
+virtual minissf::Procedure* _ssf_create_procedure_action(); 
+virtual void action(); 
+//------------------------ EMBEDDED CODE ENDS ----------------------------//
+  };
 
-#endif // SIMX_USE_PRIME
+} 
 
-#endif // NISAC_SIMX_DASSFLP
+#endif 
 
-
+#endif 

@@ -154,6 +154,9 @@ class EntityManager
   bool createEntityonLP(const EntityID&, const Entity::ClassType&, 
 			const ProfileID, const boost::shared_ptr<Input>&);
 
+  bool createPyEntityonLP(const EntityID& id, const boost::python::object& type, 
+			  const ProfileID profileId, const boost::shared_ptr<Input>& input);
+
 
 	/// default function to place entities on LPs
 	/// must ALWAYS be able to place an Entity

@@ -84,11 +84,11 @@ void EventInfo::unpack(PackedData& dp)
   //Logger::debug3() << "simx::EventInfo unpack" << *this << endl;
     dp.get(fDestEntity);
     int tmpInt;
+
     dp.get(tmpInt);
-	fDestService = static_cast<ServiceAddress>(tmpInt);
+    fDestService = static_cast<ServiceAddress>(tmpInt);
     dp.get(fDelay);
     dp.get(fTime);
-
     // get the Info
     Info::ClassType type;
     dp.get(type);
@@ -137,7 +137,7 @@ void EventInfo::execute(void)
     Time diff = abs(currentTime - fTime);
     SMART_ASSERT(diff < LP::MINDELAY);
 #elif defined(PRIME_SSF_LTIME_LONG)
-    SMART_ASSERT(currentTime == fTime);
+    SMART_ASSERT(currentTime == fTime)( currentTime )( fTime );
 #elif defined(PRIME_SSF_LTIME_LONGLONG)
     //SMART_ASSERT(diff == 0)(currentTime)(fTime);
     if ( currentTime > fTime )
