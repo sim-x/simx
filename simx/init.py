@@ -108,6 +108,3 @@ def create_entity( ent_name, ent_class, ent_profile={}, ent_data=() ):
     debug2.write("Entity profile",ent_profile,"has id",prof_id)
     core.create_pyentity(ed)
 
-
-
-

@@ -50,14 +50,14 @@ namespace simx {
 		   const python::str& msg) 
     {
       Output::output( ent, rec_type, Control::getSimPhase() )
-	<< (extract_py_str(msg)+'\n'); 
+	<< (extract_py_str(msg)); 
     }
     
     void PyOutput( const PyService& serv, const OutputRecordType rec_type,
     		   const python::str& msg) 
     {
       Output::output( serv, rec_type, Control::getSimPhase() )
-    	<< (extract_py_str(msg)+'\n'); 
+    	<< (extract_py_str(msg)); 
     }
     
   } //namespace Python

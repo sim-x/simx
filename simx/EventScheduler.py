@@ -23,6 +23,8 @@ from greenlet import greenlet
 import simx.core as core
 #from simx.util import *
 
+_evt_scheduler = None
+
 class EventScheduler:
     """
     Class for staggered creation of initial events.

@@ -6,18 +6,32 @@ set(TARGET_NAME "core")
 
 cmake_minimum_required(VERSION 2.6)
 enable_language(CXX)
+
+# if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CXX_FLAGS)
+#   #release comes with -O3 by default
+#   set(CMAKE_BUILD_TYPE None CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+# endif(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CXX_FLAGS)
+
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-fpermissive" HAVE_FPERMISSIVE)
+if(NOT HAVE_FPERMISSIVE)
+  message(FATAL_ERROR "flag '-fpermissive' does not work")
+endif(NOT HAVE_FPERMISSIVE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive" CACHE STRING "" FORCE)
+
 #set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
 set(CMAKE_CXX_FLAGS "-g -fpermissive")
 
+
 # for MPI
 find_package(MPI REQUIRED)
 if (MPI_FOUND)
-   include_directories(${MPI_INCLUDE_PATH})
+   include_directories(${MPI_INCLUDE_PATH} ${MPI_CXX_INCLUDE_PATH})
 else()
   message(STATUS "mpi not found")
-   
 endif()
+
 
 # for boost
 set(Boost_USE_STATIC_LIBS  OFF)
@@ -25,18 +39,14 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost COMPONENTS
 		   python
 		   REQUIRED)
-IF (Boost_FOUND)
-  INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-  ADD_DEFINITIONS( "-DHAS_BOOST" )
-  link_directories(${Boost_LIBRARY_DIRS})
-ENDIF()
- 
-#include_directories(${Boost_INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
+ADD_DEFINITIONS( "-DHAS_BOOST" )
+link_directories(${Boost_LIBRARY_DIRS})
 
 
 # for python
-find_package(PythonInterp REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(PythonInterp REQUIRED VERSION 2)
+find_package(PythonLibs REQUIRED VERSION 2)
 include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE_PATH})
 link_directories(${PYTHON_LIBRARIES})
 
