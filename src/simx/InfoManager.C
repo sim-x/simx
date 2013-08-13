@@ -101,6 +101,8 @@ InfoManager::InfoManager()
   void InfoManager::setPyEventScheduler(boost::python::object evt_scheduler) {
     Logger::debug2() << "InfoManager setting Python event scheduler" << endl;
     fPyEventScheduler  = evt_scheduler;
+    //cerr << "pyeventscheduler location is " << evt_scheduler.ptr() << endl;
+  
     // infomanager destructor seg-faults if we do not increment
     // reference to python object. - ST
     Py_INCREF(evt_scheduler.ptr());
@@ -110,6 +112,7 @@ InfoManager::InfoManager()
   void InfoManager::processPyEventInfoManager() {
     Logger::debug3() << "InfoManager received Python event info manager"  << endl;
     //TODO: put in try-catch block
+    //cerr << "pyeventscheduler location is " << fPyEventScheduler.ptr() << endl;
     fPyEventScheduler.attr("process_scheduler_event")();
     //assert(false);
   }

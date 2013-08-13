@@ -19,36 +19,20 @@
 import sys
 from cStringIO import StringIO
 
-import simx
+import core
 
-
-# Define debug streams
-class DebugStream:
-    def __init__(self,stream_type):
-        self.stream_type = stream_type
-        self.debug_str = StringIO()
-        # define a logger function dictionary here    
-        self.logger = {'debug1':simx.debug1,
-                       'debug2':simx.debug2,
-                       'debug3':simx.debug3,
-                       'info':simx.debug_info,
-                       'warn':simx.warn,
-                       'error':simx.error,
-                       'failure':simx.failure }
-
-    # define debug stream writer method   
-    def write(self,*message):
+# Define output streams
+class OutputStream:
+    def __init__(self):
+        self.output_str = StringIO()
+         # define output stream writer method   
+    # sim_obj should be derived from either PyEntity or PyService    
+    def write(self,sim_obj,record_type,*message):
         for token in message:
-            self.debug_str.write(str(token));
-            #self.debug_str.write(" ");
-        self.logger[self.stream_type](self.debug_str.getvalue())
-        self.debug_str.truncate(0)
+            self.output_str.write(str(token));
+            self.output_str.write(" ");
+        core.output(sim_obj,record_type,self.output_str.getvalue())    
+        self.output_str.truncate(0)
 
-#create debug streams here
-debug1 = DebugStream('debug1')
-debug2 = DebugStream('debug2')
-debug3 = DebugStream('debug3')
-info = DebugStream('info')
-error = DebugStream('error')
-warn = DebugStream('warn')
-failure = DebugStream('failure')
+# create output stream
+output = OutputStream()

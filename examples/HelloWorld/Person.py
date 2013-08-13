@@ -20,8 +20,8 @@ import sys
 
 import simx
 
-from DebugStream import *
-from OutputStream import *
+#from DebugStream import *
+#from OutputStream import *
 
 ###### Define Entities ########
 class Person(simx.PyEntity):
@@ -29,14 +29,14 @@ class Person(simx.PyEntity):
         if py_obj is None:
             py_obj = self
         super(Person,self).__init__(ID,lp,entity_input,py_obj)
-        debug2.write("Person", self.getId(),"is being created with input ",
+        simx.debug2.write("Person", self.getId(),"is being created with input ",
                      entity_input.data_,"at time",self.getNow())
         self.neighbor_list = entity_input.data_
         self.create_services(entity_input)
-        debug3.write("Person",self.getId(),"done",self)
+        simx.debug3.write("Person",self.getId(),"done",self)
 
     def say_hello(self,args=None):
-        output.write(self,100,"Person ",self.getId(),"says hello")
+        simx.output.write(self,100,"Person ",self.getId(),"says hello")
 
     def __str__(self):
         return "Person(%s)" %(self.neighbor_list)

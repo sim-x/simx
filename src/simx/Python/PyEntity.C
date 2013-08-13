@@ -38,7 +38,7 @@
 #include "simx/Python/PyInfo.h"
 #include "simx/InfoManager.h"
 #include "simx/Python/PyService.h"
-
+#include "simx/EntityManager.h"
 
 using namespace std;
 using namespace boost;
@@ -117,13 +117,57 @@ namespace simx{
 					 const long dest_serv)
     {
       EntityID e_id = py2EntityId( dest_ent );
-      shared_ptr<PyInfo> info;
-      theInfoManager().createInfo( info );
-      //info->fData = boost::make_shared<boost::python::object>(py_info);// py_info;
-      //info->fData = &py_info;
-      info->setData( py_info );
-      processOutgoingInfo( info, time, e_id, 
-			   static_cast<ServiceAddress>( dest_serv ) );
+#ifdef SIMX_USE_PRIME
+      if ( theEntityManager().findEntityLpId(e_id) !=
+	   Control::getRank() )
+	{
+	  Logger::debug3() << "PyEntity " << getId()
+			   << " : Sending remotely, proceeding to pickle Python object" << endl;
+	  shared_ptr<PyRemoteInfo> info;
+	  theInfoManager().createInfo( info );
+	  if ( ! info->pickleData( py_info ) )
+	    {
+	      Logger::error() << "PyEntity " << getId()
+			      << ": Error while pickling info. Not sending" << endl;
+	      return;
+	    }
+	  else // succesful pickling, send it off
+	    {
+	      sendInfo( info, time, e_id, 
+			static_cast<ServiceAddress>( dest_serv ) );
+	    }
+	}
+      else // destination entity lives on the same LP. Use regular PyInfo for sending
+	{
+	   Logger::debug3() << "PyEntity " << getId()
+			    << " : Sending locally" << endl;
+#endif
+	  // either we are using SimEngine -- in which case sending local 
+	  // and remote infos use the same procedure -- or
+	  // we are using SSF and sending locally.
+
+
+	   shared_ptr<PyInfo> info;
+	   theInfoManager().createInfo( info );
+	   info->setData( py_info );
+	   sendInfo( info, time, e_id, 
+		     static_cast<ServiceAddress>( dest_serv ) );
+#ifdef SIMX_USE_PRIME
+	} //close-out else block
+#endif
+      
+      //info->fData = boost::make_shared<boost::python::object>(py_info);
+      
+
+
+      // shared_ptr<PyInfo> info;
+      // theInfoManager().createInfo( info );
+      // //info->fData = boost::make_shared<boost::python::object>(py_info);// py_info;
+      // //info->fData = &py_info;
+      // info->setData( py_info );
+      // //processOutgoingInfo( info, time, e_id, 
+      // //static_cast<ServiceAddress>( dest_serv ) );
+      // sendInfo( info, time, e_id, static_cast<ServiceAddress>(dest_serv) );
     }
 
 
