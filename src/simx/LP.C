@@ -56,6 +56,7 @@
 
 #include <boost/python.hpp>
 #include "simx/PyEventInfoManager.h"
+#include "simx/EventInfoManager.h"
 
 using namespace std;
 using namespace boost;
@@ -83,7 +84,9 @@ LP::LP(LPID id)
 
   Config::gConfig.GetConfigurationValueRequired( ky_MINDELAY, MINDELAY );
   Logger::debug3() << "LP.C setting mindelay to " << MINDELAY << endl;
+#ifdef SIMX_USE_PRIME
   fDassfLP->mapChannels();
+#endif
 }
 
 LP::~LP()

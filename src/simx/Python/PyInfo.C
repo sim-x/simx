@@ -56,6 +56,9 @@ namespace simx {
     // };
 
 
+    // defined here instead of in PyInfo.h, since I kept changing
+    // the internals of this struct, and did not want it triggering
+    // a recompile each time while building. - ST.
     struct PyObjHolder {
       
       // PyObjHolder(const boost::python::object& data):
@@ -155,12 +158,12 @@ namespace simx {
       //Py_INCREF(fData.ptr());
       //assert(fData.ptr());
      
-      /*      pd.add( 
+      pd.add( 
 	     //python::extract<python::str>
 	     //(theInfoManager().getPacker()(*fData)));
 	     python::extract<string>
-	     (theInfoManager().getPacker()(getData())));*/
-      pd.add( fPickledData );
+	     (theInfoManager().getPacker()(getData())));
+      //pd.add( fPickledData );
 
       //pd.add(theInfoManager().getPacker()(fData));
       //PyGILState_Release(gstate);
@@ -177,7 +180,8 @@ namespace simx {
 #else
       //cout << "Inside unpack" << endl;
       fPickled = true;
-      assert(pd.get( fPickledData ));
+      pd.get( fPickledData );
+      assert( fPickledData );
       //pd.get(fData);
       //assert(pd.getAnything( fData ));
 

@@ -27,14 +27,14 @@
 // @@
 //
 //--------------------------------------------------------------------------
-
+#ifdef SIMX_USE_PRIME
 #include "simx/DassfEvent.h"
 #include "simx/DassfEventInfo.h"
 #include "simx/DassfEventInfoManager.h"
 #include "simx/DassfPyEventInfoManager.h"
 #include "simx/logger.h"
 
-#ifdef SIMX_USE_PRIME
+
 
 #include "Common/Assert.h"
 #include "Common/backtrace.h"

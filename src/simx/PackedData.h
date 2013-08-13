@@ -84,9 +84,9 @@ class PackedData
 #ifndef PRIME_SSF_ARCH_X86_64_LINUX
     void add(const long long&);
 #endif
-// #ifdef HAVE_LONG_DOUBLE
-// 	void add(const long double&);
-// #endif
+#ifdef HAVE_LONG_DOUBLE
+	void add(const long double&);
+#endif
 	void add(const short&);
 	void add(const unsigned char&);
 	void add(const unsigned&);
@@ -126,9 +126,9 @@ class PackedData
 #ifndef PRIME_SSF_ARCH_X86_64_LINUX
     bool get(long long&);
 #endif
-// #ifdef HAVE_LONG_DOUBLE
-// 	bool get(long double&);
-// #endif
+#ifdef HAVE_LONG_DOUBLE
+	bool get(long double&);
+#endif
 	bool get(short&);
 	bool get(unsigned char&);
 	bool get(unsigned&);
