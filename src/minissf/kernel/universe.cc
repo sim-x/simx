@@ -46,11 +46,11 @@ void Universe::global_init()
 
   if(!args_rank) { // only first machine print the copyright info
     if((args_debug_mask&DEBUG_FLAG_BRIEF) != 0) {
-      printf("<><><> " PACKAGE_STRING " <><><>\n");
-      printf("[] Modeling and Networking Systems Research Group\n");
-      printf("[] School of Computing and Information Sciences\n");
-      printf("[] Florida International University\n");
-      printf("[] http://www.primessf.net/minissf/\n");
+      // printf("<><><> " PACKAGE_STRING " <><><>\n");
+      // printf("[] Modeling and Networking Systems Research Group\n");
+      // printf("[] School of Computing and Information Sciences\n");
+      // printf("[] Florida International University\n");
+      // printf("[] http://www.primessf.net/minissf/\n");
     }
   }
 

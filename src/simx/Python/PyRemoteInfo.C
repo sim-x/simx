@@ -48,13 +48,22 @@ namespace simx {
     
     void PyRemoteInfo::pack( PackedData& pd ) const
     {
+      //int debug_wait =1 ;
+      //while(debug_wait);
       pd.add( fPickledData );
+      Logger::debug3() << "PyRemoteInfo: Packed Pickled data  is "
+		       << fPickledData << endl;
+
+      
     }
     
     
     void PyRemoteInfo::unpack(PackedData& pd ) 
     {
       assert( pd.get( fPickledData ));
+      Logger::debug3() << "PyRemoteInfo: Unpacked Pickled data  is "
+		       << fPickledData << endl;
+
       
     }
     
@@ -65,6 +74,11 @@ namespace simx {
 	{
 	  fPickledData = python::extract<string>(theInfoManager().
 						 getPacker()(py_obj));
+	  
+	  Logger::debug3() << "PyRemoteInfo: Pickled data  is "
+			   << fPickledData << endl;
+
+		   
 	  return true;
 	}
       catch(...)
