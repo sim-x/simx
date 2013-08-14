@@ -180,8 +180,8 @@ namespace simx {
 #else
       //cout << "Inside unpack" << endl;
       fPickled = true;
-      pd.get( fPickledData );
-      assert( fPickledData );
+      if(!pd.get( fPickledData ))
+	assert( false);
       //pd.get(fData);
       //assert(pd.getAnything( fData ));
 

@@ -54,8 +54,8 @@ namespace simx {
     
     void PyRemoteInfo::unpack(PackedData& pd ) 
     {
-      pd.get( fPickledData );
-      assert( fPickledData );
+      if(!pd.get( fPickledData ))
+	assert(false);
     }
     
     
