@@ -2,14 +2,11 @@
 
 """
 
-Setup script for SimX
+Author: Sunil Thulasidasan
 
-For installation, type
-
+Setup script for SimX. For installating SimX, type
 python setup.py install
-
 or
-
 python setup.py install --user
 (this will install SimX under the user's home directory)
 
@@ -61,9 +58,10 @@ setup(
     name = "simx",
     version = '1.0',
     description = 'Parallel simulation library for Python',
+    requires = ["greenlet"],
     install_requires = ["greenlet"],
     include_package_data = True,
-    url = 'http://github.com/thulas/simx',
+    url = 'http://github.com/sim-x/simx',
     author='Sunil Thulasidasan, Lukas Kroc and others',
     author_email = 'simx-dev@lanl.gov',
     license = "GNU LGPL",
@@ -91,5 +89,4 @@ setup(
     ext_modules = C.extension_list,
     zip_safe=False,
     packages = ['simx'],
-    #package_data = {'simx':['core.so']}
     )

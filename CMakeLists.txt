@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -fpermissive" CACHE STRING "" FORCE)
 #set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
 #set(CMAKE_CXX_FLAGS "-g -fpermissive")
 
- ADD_DEFINITIONS("-DNDEBUG")
+# ADD_DEFINITIONS("-DNDEBUG")
 
 # for MPI
 find_package(MPI REQUIRED)
@@ -113,14 +113,14 @@ target_link_libraries(${TARGET_NAME} ${SIMX_LINK_LIBRARIES})
 #######################
 # Helloworld stuff. 
 #######################
-include_directories(examples/HelloWorld/cpp)
-if (SIMX_USE_PRIME)
-  file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_dassf.C) 
-else()
-  file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_MPI.C)
-endif()
-add_executable(HelloWorld ${HELLOWORLD_SOURCES})
-target_link_libraries(HelloWorld ${TARGET_NAME})
+# include_directories(examples/HelloWorld/cpp)
+# if (SIMX_USE_PRIME)
+#   file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_dassf.C) 
+# else()
+#   file(GLOB_RECURSE HELLOWORLD_SOURCES examples/HelloWorld/*.C src/simx/Global/main_MPI.C)
+# endif()
+# add_executable(HelloWorld ${HELLOWORLD_SOURCES})
+# target_link_libraries(HelloWorld ${TARGET_NAME})
 
 ## end Helloworld stuff
 
