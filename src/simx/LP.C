@@ -56,6 +56,7 @@
 
 #include <boost/python.hpp>
 #include "simx/PyEventInfoManager.h"
+#include "simx/EventInfoManager.h"
 
 using namespace std;
 using namespace boost;

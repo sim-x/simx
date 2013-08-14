@@ -60,12 +60,12 @@ namespace simx {
     
     void PyRemoteInfo::unpack(PackedData& pd ) 
     {
-      assert( pd.get( fPickledData ));
+      if(!pd.get( fPickledData ))
+	assert(false);
       Logger::debug3() << "PyRemoteInfo: Unpacked Pickled data  is "
 		       << fPickledData << endl;
+    }      
 
-      
-    }
     
     
     bool PyRemoteInfo::pickleData( const python::object& py_obj )
