@@ -189,6 +189,13 @@ endforeach()
 file(APPEND config.py "]
 
 ")
+
+
+#more library directories, but  remove duplicate entries
+file(APPEND config.py "library_dirs = list(set(library_dirs+map(op.dirname,libraries)))
+
+")
+
 # Remove directory, leading "lib" and trailing ".so" from the
 # library names
 file(APPEND config.py "
