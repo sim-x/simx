@@ -95,7 +95,6 @@ int die( const string& emsg );
   Common::Values::SetRank( minissf::ssf_machine_index() );
   //Common::Values::SetRank( 0 );
 #else
-   assert(false);
    // we are using simengine
   const int mySignals[15] = { 1,2,3,4,5,6,7,8,9,0,0,0,13,14,15 };
   Global::InstallSignalHandler(mySignals);

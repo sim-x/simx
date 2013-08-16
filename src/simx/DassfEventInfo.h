@@ -29,6 +29,8 @@
 //
 //--------------------------------------------------------------------------
 
+#ifdef SIMX_USE_PRIME
+
 #ifndef NISAC_SIMX_DASSFEVENTINFO
 #define NISAC_SIMX_DASSFEVENTINFO
 
@@ -36,7 +38,7 @@
 #include "simx/DassfEvent.h"
 #include "simx/EventInfo.h"
 
-#ifdef SIMX_USE_PRIME
+
 
 
 namespace simx {
@@ -143,8 +145,8 @@ inline void DassfEventInfo::execute(LP& lp)
 
 } // namespace
 
-#endif // SIMX_USE_PRIME
+
 
 #endif 
-
+#endif // SIMX_USE_PRIME
 

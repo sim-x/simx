@@ -29,12 +29,14 @@
 //
 //--------------------------------------------------------------------------
 
+#ifdef SIMX_USE_PRIME
+
 #ifndef NISAC_SIMX_DASSFLP
 #define NISAC_SIMX_DASSFLP
 
 #include "simx/type.h"
 
-#ifdef SIMX_USE_PRIME
+
 
 
 #include "ssf.h"
@@ -105,4 +107,4 @@ virtual void action();
 
 #endif 
 
-#endif 
+#endif  //ifdef SIMX_USE_PRIME

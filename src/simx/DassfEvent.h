@@ -29,13 +29,15 @@
 //
 //--------------------------------------------------------------------------
 
+#ifdef SIMX_USE_PRIME
+
 #ifndef NISAC_SIMX_EVENT
 #define NISAC_SIMX_EVENT
 
 #include "simx/type.h"
 #include "simx/PackedData.h"
 
-#ifdef SIMX_USE_PRIME
+
 
 #include "ssf.h"
 
@@ -88,7 +90,8 @@ private:
 
 } // namespace
 
-#endif // SIMX_USE_PRIME
+
 
 #endif // NISAC_SIMX_EVENT
 
+#endif // SIMX_USE_PRIME

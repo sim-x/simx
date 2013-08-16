@@ -26,6 +26,8 @@
 //
 //--------------------------------------------------------------------------
 
+#ifdef SIMX_USE_PRIME
+
 #include "simx/DassfLP.h"
 #include "simx/LP.h"
 #include "simx/EventInfo.h"
@@ -37,7 +39,7 @@
 #include "simx/constants.h"
 #include "simx/logger.h"
 
-#ifdef SIMX_USE_PRIME
+
 
 
 #include "Common/backtrace.h"

@@ -20,24 +20,24 @@ include(ssf-configure-check.txt)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} metis)
 
-file(GLOB SSF_RANDOM_SOURCES 	
-  # random sources
-  random/random.cc 
-  random/mersenne_twister.cc 
-  random/lecuyer.cc 
-  random/sprng.cc 
-  random/sprng_checkid.c 
-  random/sprng_cmrg.c 
-  random/sprng_lcg.c 
-  random/sprng_lcg64.c 
-  random/sprng_lfg.c 
-  random/sprng_makeseed.c 
-  random/sprng_mlfg.c 
-  random/sprng_primes_32.c 
-  random/sprng_primes_64.c 
-  random/sprng_sprng.c 
-  random/sprng_store.c
-  )
+# file(GLOB SSF_RANDOM_SOURCES 	
+#   # random sources
+#   random/random.cc 
+#   random/mersenne_twister.cc 
+#   random/lecuyer.cc 
+#   random/sprng.cc 
+#   random/sprng_checkid.c 
+#   random/sprng_cmrg.c 
+#   random/sprng_lcg.c 
+#   random/sprng_lcg64.c 
+#   random/sprng_lfg.c 
+#   random/sprng_makeseed.c 
+#   random/sprng_mlfg.c 
+#   random/sprng_primes_32.c 
+#   random/sprng_primes_64.c 
+#   random/sprng_sprng.c 
+#   random/sprng_store.c
+#   )
 
 file(GLOB SSF_API_SOURCES
   ssfapi/virtual_time.cc 
@@ -73,7 +73,8 @@ file(GLOB SSF_KERNEL_SOURCES
 #   ${SSF_API_SOURCES} ${SSF_EVTLIST_SOURCES} 
 #   ${SSF_KERNEL_SOURCES})
 
- list(APPEND ALL_SOURCES ${SSF_RANDOM_SOURCES} 
+ #list(APPEND ALL_SOURCES ${SSF_RANDOM_SOURCES} 
+list(APPEND ALL_SOURCES  
    ${SSF_API_SOURCES} ${SSF_EVTLIST_SOURCES} 
    ${SSF_KERNEL_SOURCES} )
 
