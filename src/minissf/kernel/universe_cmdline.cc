@@ -243,8 +243,8 @@ int Universe::parse_command_line(int& argc, char**& argv)
   }
   a_u.clear();
 
-  if(!a_s) args_seed = Random::make_new_seed();
-  else args_seed = a_s;
+  //if(!a_s) args_seed = Random::make_new_seed();
+  //else args_seed = a_s;
 
   if(a_a <= 0) args_naligns = a_a;
   else args_naligns = a_a*args_nprocs;

@@ -29,6 +29,8 @@
 //
 //--------------------------------------------------------------------------
 
+#ifdef SIMX_USE_PRIME
+
 #ifndef NISAC_SIMX_DASSFEVENTINFOMANAGER
 #define NISAC_SIMX_DASSFEVENTINFOMANAGER
 
@@ -36,7 +38,7 @@
 #include "simx/DassfEvent.h"
 #include "simx/EventInfoManager.h"
 
-#ifdef SIMX_USE_PRIME
+
 
 
 namespace simx {
@@ -141,8 +143,9 @@ inline void DassfEventInfoManager::execute(LP& lp)
 
 } // namespace
 
+#endif 
 #endif //SIMX_USE_PRIME
 
-#endif 
+
 
 

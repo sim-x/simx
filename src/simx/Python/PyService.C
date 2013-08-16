@@ -51,7 +51,7 @@ namespace simx {
     void PyService::receive( shared_ptr<PyInfo> info )
 
     {
-      Logger::debug3() << "PyService.C: Service " << getName() << " PyInfo received" << endl;
+      Logger::debug3() << "PyService.C: Service " << getName() << ": PyInfo received" << endl;
       //PyGILState_STATE gstate;
       //gstate = PyGILState_Ensure();
       try {
@@ -81,7 +81,7 @@ namespace simx {
       catch(...)
 	{
 	  Logger::error() << "PyService.C: Service " << getName()
-			  << " error in handling incoming info" << endl;
+			  << ": error in handling incoming info" << endl;
 	  PyErr_Print();
 	  PyErr_Clear();
 	}
@@ -94,9 +94,11 @@ namespace simx {
     void PyService::receive( shared_ptr<PyRemoteInfo> info )
     {
       Logger::debug3() << "Pyservice.C: Service " << getName() 
-		       << "PyRemoteInfo received" << endl;
+		       << ": PyRemoteInfo received" << endl;
       try
 	{
+	  //theInfoManager().getUnpacker();
+	  //theInfoManager().getUnpacker()( info->fPickledData );
 	  fPyObj.attr("recv")( theInfoManager().getUnpacker()
 			       ( info->fPickledData));
 	}

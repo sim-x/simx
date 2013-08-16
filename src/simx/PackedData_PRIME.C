@@ -30,9 +30,10 @@
 //
 //--------------------------------------------------------------------------
 
+#ifdef SIMX_USE_PRIME
 #include "simx/PackedData.h"
 
-#ifdef SIMX_USE_PRIME
+
 
 #include "ssf.h"
 

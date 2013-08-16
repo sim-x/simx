@@ -126,25 +126,7 @@ void InputHandler<ObjectIdent>::loadProfile( const ProfileID profileId, boost::s
     input->readProfile( profileHolder );
 }
 
-  // for python
-template<typename ObjectIdent>
-void InputHandler<ObjectIdent>::loadProfile( const ProfileID profileId, 
-					     const PyProfile& profile,
-					     boost::shared_ptr<Input> input)
-{
-  
-    Logger::debug3() << "InputHandler: loading in Python profile " << profileId << endl;
-    SMART_ASSERT( input );
-    // make a copy of profile using shared pointer
-    //boost::shared_ptr<PyProfile> profile_ptr = 
-      //      boost::make_shared<PyProfile>(profile);
-    // the block below is semantically equivalent to the 
-    // one above. thus we don't need the make_shared.hpp header anymore
-    boost::shared_ptr<PyProfile> profile_ptr =
-      boost::shared_ptr<PyProfile>( new PyProfile( profile ));
-    input->readProfile( profile_ptr );
-}
-
+ 
 
 } // namespace
 
