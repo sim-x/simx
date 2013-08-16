@@ -42,7 +42,7 @@ void Universe::global_init()
   parallel_universe = new Universe*[args_nprocs];
   assert(parallel_universe);
   ssf_barrier_init();
-  Random::global_seed = args_seed;
+  // Random::global_seed = args_seed;
 
   if(!args_rank) { // only first machine print the copyright info
     if((args_debug_mask&DEBUG_FLAG_BRIEF) != 0) {
