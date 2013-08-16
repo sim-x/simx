@@ -1,31 +1,63 @@
 Obtaining SimX
 ==============
-The latest working version of SimX can be checked out via anonymous git
+The latest working version of SimX can be downloaded from the 
+SimX GitHub page at
+http://github.com/sim-x/simx
+
+You can download SimX  sources as a zip file, or check it out via 
+anonymous git using the following  command
 
 git clone http://github.com/sim-x/simx.git
 
-Bulding SimX
-============
+SimX Requirements
+=================
 
-SimX uses the CMake build system to generate the required Makefiles. 
-CMake version 2.6 or higher is required.
+Most of Simx is written in C++ and will have to be built from source. 
+The SimX build system uses Python's setuptools along with CMake for
+determining platform specific configuration parameters. In addition to
+a C++ compiler and Python (>=2.4 ) you will need the the following 
+packages to build SimX
 
-Other requirements are
+- CMake (>=2.6)
+- Boost C++ library ( >= 1.35)
+- MPI
 
- - Python (>= 2.4) 
- - Boost C++ library ( >= 1.35)
- - MPICH2
- - gcc >= 4.2 
 
-Once the required libraries are installed, to build SimX:
+SimX also uses a Python package called greenlets for process oriented 
+simulation; this will be automatically installed while building SimX.
 
-cd build
-cmake ../
-make
 
-This will build the SimX shared library. If the build is succesful, you should have a 
-simx.so shared library in the build directory. 
+Installing SimX
+===============
 
-Add build to your PYTHONPATH environment variable.
+To build and install SimX, change to the source root directory and type
+
+python setup.py install
+This will build SimX and install it to the appropriate Python site-packages
+directory.
+
+If you do not have write permissions to the system Python directories,  try:
+python setup.py install --user 
+
+This will build and install SimX under the user's home directory. Python
+2.6 or higher is required for user mode installation.
+
+By default SimX is built with the bundled SSF library 
+(www.primessf.net/minissf) for message passing and synchronization. 
+SimX can also be built with its own native message passing library.
+
+For this, first build SimX using
+python setup.py build --without-ssf
+followed by
+python setup.py install
+
+This alternative build requires your MPI installation to be fully multi-threaded
+(on the otherhand SSF can run on both single and multi-threaded MPI). 
+Depending on your computational setup and simulation needs, one or the other 
+might perform better.  
+
+
+Using SimX
+==========
 
 See examples/HelloWorld for a simple python simulation application that uses SimX.
