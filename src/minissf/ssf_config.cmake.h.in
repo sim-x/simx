@@ -40,7 +40,8 @@
 #cmakedefine HAVE_MEMSET 1
 
 /* Define to 1 if you have the <mpi.h> header file. */
-#cmakedefine HAVE_MPI_H 1
+// commenting this out. This will  be a compile time option via command line - ST
+/*#cmakedefine HAVE_MPI_H 1*/
 
 /* Define to 1 if you have the `pow' function. */
 #cmakedefine HAVE_POW 1

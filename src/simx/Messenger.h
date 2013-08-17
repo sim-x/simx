@@ -29,12 +29,16 @@
 //
 //--------------------------------------------------------------------------
 
+#ifdef HAVE_MPI_H
+#ifdef SIMX_USE_PRIME
+
+
 #ifndef NISAC_SIMX_MESSENGER_H
 #define NISAC_SIMX_MESSENGER_H
 
 #include "simx/type.h"
 
-#ifdef SIMX_USE_PRIME
+
 
 
 namespace simx {
@@ -60,6 +64,7 @@ namespace simx {
 
 } //namespace simx
 
-#endif // SIMX_USE_PRIME
-
 #endif
+#endif // SIMX_USE_PRIME
+#endif //HAVE_MPI_H
+

@@ -15,16 +15,15 @@ SimX Requirements
 Most of Simx is written in C++ and will have to be built from source. 
 The SimX build system uses Python's setuptools along with CMake for
 determining platform specific configuration parameters. In addition to
-a C++ compiler and Python (>=2.4 ) you will need the the following 
-packages to build SimX
+a C++ compiler and Python (>=2.4 ) you will need the following 
+packages installed prior to building SimX
 
 - CMake (>=2.6)
 - Boost C++ library ( >= 1.35)
-- MPI
-
+- MPI (required for parallel simulations. See below for building without MPI)
 
 SimX also uses a Python package called greenlets for process oriented 
-simulation; this will be automatically installed while building SimX.
+simulations; this will be automatically installed while building SimX.
 
 
 Installing SimX
@@ -33,28 +32,46 @@ Installing SimX
 To build and install SimX, change to the source root directory and type
 
 python setup.py install
+
 This will build SimX and install it to the appropriate Python site-packages
 directory.
 
 If you do not have write permissions to the system Python directories,  try:
+
 python setup.py install --user 
 
 This will build and install SimX under the user's home directory. Python
 2.6 or higher is required for user mode installation.
 
+MPI Support
+-----------
+
+By default, SimX expects a working MPI installation to be present
+on your system since  MPI is required for parallel simulations. If you do not have
+MPI or, for some reason, do not wish to enable parallel simulations, type
+
+python setup.py build --without-mpi
+python setup.py install
+
+
+Other Options
+-------------
+
 By default SimX is built with the bundled SSF library 
 (www.primessf.net/minissf) for message passing and synchronization. 
 SimX can also be built with its own native message passing library.
 
-For this, first build SimX using
+For this, do the following:
+
 python setup.py build --without-ssf
-followed by
 python setup.py install
 
-This alternative build requires your MPI installation to be fully multi-threaded
-(on the otherhand SSF can run on both single and multi-threaded MPI). 
-Depending on your computational setup and simulation needs, one or the other 
-might perform better.  
+This alternative build requires MPI; it also requires that your MPI installation 
+be fully multi-threaded (on the otherhand, SSF can run on both single and 
+multi-threaded MPI). Depending on your computational setup and simulation needs, 
+one or the other might perform better.  
+
+Note: If disabling MPI, SimX will use SSF.
 
 
 Using SimX

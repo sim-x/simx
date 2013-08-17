@@ -34,9 +34,6 @@
 #include "simx/Python/PyInfo.h"
 #include "simx/InfoManager.h"
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/mpi/python/serialize.hpp>
-
 using namespace boost;
 using namespace boost::python;
 using namespace std;

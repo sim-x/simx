@@ -33,14 +33,17 @@
 //--------------------------------------------------------------------------
 
 #include "simx/Global/main.h"
+#ifdef HAVE_MPI_H
+#include "mpi.h"
 #include "simx/Global/AbortHandlerMPI.h"
+#endif
 #include "simx/Global/OptionManager.h"
 #include "simx/Global/util.h"
 #include "simx/Common/Exception.h"
 #include "simx/Common/Values.h"
 #include "simx/Config/Configuration.h"
 #include "simx/Log/Logger.h"
-#include "mpi.h"
+
 
 #include <iostream>
 #include <fstream>
@@ -94,8 +97,14 @@ int die( const string& emsg );
   //set rank of this process
   Common::Values::SetRank( minissf::ssf_machine_index() );
   //Common::Values::SetRank( 0 );
+#ifdef HAVE_MPI_H
+  return MPI_SUCCESS;
 #else
-   // we are using simengine
+  return 0;
+#endif
+
+#else    // we are using simengine
+
   const int mySignals[15] = { 1,2,3,4,5,6,7,8,9,0,0,0,13,14,15 };
   Global::InstallSignalHandler(mySignals);
 
@@ -183,9 +192,9 @@ int die( const string& emsg );
     cerr << emsg << endl;
     log().Failure( 0, emsg );
   }
-
-#endif
   return MPI_SUCCESS;
+#endif
+
 }
  
  ///////////////////////////////////////////////////////////////////////
@@ -244,12 +253,14 @@ int die( const string& emsg );
     }
   catch( const std::exception& exception )
     {
-      string emsg = failMsg + " std::exception in main_MPI (ConfigInit): ";
+      string emsg = failMsg + " std::exception in init_config(): ";
       emsg += exception.what();
       if (isPrintNode)
 	{ cerr << emsg << endl; }
       log().Failure( 0, emsg );
+#ifdef HAVE_MPI_H
       MPI_Abort(MPI_COMM_WORLD, 1);
+#endif
     }
 
   //TODO: use named constants below.

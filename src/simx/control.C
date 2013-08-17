@@ -51,7 +51,11 @@
 #include "Common/Values.h"
 #include "Random/Random.h"
 
+
+#ifdef HAVE_MPI_H
 #include "mpi.h"
+#endif
+#include <unistd.h>
 
 #ifdef SIMX_USE_PRIME
     #include "ssf.h"
@@ -75,12 +79,13 @@ using namespace std;
 
 // LK: TODO: put this ^ into SimEngine
 #ifdef SIMX_USE_PRIME
-void simx_messaging()
-{
-  simx::Messenger::checkStatus();
+#ifdef HAVE_MPI_H
+// void simx_messaging()
+// {
+//   simx::Messenger::checkStatus();
 
-}
-
+// }
+#endif
 namespace simx {
 
   PyThreadState* py_main_thread_state = NULL;
@@ -138,6 +143,7 @@ namespace {
     fRank = SimEngine::getRank();
 #endif
 
+#ifdef HAVE_MPI_H
     int proc_name_len = MPI_MAX_PROCESSOR_NAME + 1; // for null termination
     char proc_name[proc_name_len]; 
     int resultlen;
@@ -149,6 +155,11 @@ namespace {
       errStr[resultlen] = '\0';      
       Logger::failure(errStr);
     }
+#else
+    char proc_name[256];
+    size_t len;
+    gethostname( proc_name, len );
+#endif
 
     fProcessorName = proc_name;
     Logger::info() 
@@ -297,7 +308,9 @@ namespace simx {
 
 	///===================================
 	/// Init simulation (so that entities/services can schedule events at creation time)	
+#ifdef HAVE_MPI_H
       MPI_Barrier(MPI_COMM_WORLD);
+#endif
       Time endTime;
       gConfig.GetConfigurationValueRequired(ky_END_TIME, endTime);
       Logger::info() 

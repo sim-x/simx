@@ -215,6 +215,7 @@ void LP::sendPyEventInfoManager(PyEventInfoManager& e) const
 
 void LP::sendControlInfo( ControlInfoWrapper& cinfo )
 {
+#ifdef HAVE_MPI_H
 #ifdef SIMX_USE_PRIME
   EntityID entityID = cinfo.getDestEntity();
   //Time delay = cinfo.getDelay();
@@ -234,6 +235,7 @@ void LP::sendControlInfo( ControlInfoWrapper& cinfo )
     }
 #else
     Logger::error() << "simx::LP : out-of-band messaging not supported without PRIME" << endl;
+#endif
 #endif
 }
 

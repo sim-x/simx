@@ -28,7 +28,8 @@ import distutils.dir_util as dd
 #################
 # CMake function
 #################
-def run_cmake(cmake_args="-DSIMX_USE_PRIME=1"):
+#def run_cmake(cmake_args="-DSIMX_USE_PRIME=1 -DSIMX_USE_MPI=1"):
+def run_cmake(use_prime=1,use_mpi=1):
     """
     Runs CMake to determine configuration for this build
     """
@@ -41,12 +42,15 @@ def run_cmake(cmake_args="-DSIMX_USE_PRIME=1"):
     new_dir = op.join(op.split(__file__)[0],'build')
     dd.mkpath(new_dir)
     os.chdir(new_dir)
+    # construct argument string
+    cmake_args ="-DSIMX_USE_PRIME="+str(use_prime) \
+        +" -DSIMX_USE_MPI="+str(use_mpi)
     try:
-        ds.spawn(['cmake','../',cmake_args])
+        ds.spawn(['cmake','../']+cmake_args.split())
     except ds.DistutilsExecError:
         print "Error while running cmake"
-        print "Try editing the settings in CMakeLists.txt file and re-running setup"
-        os.chdir(cwd)
+        print "run 'setup.py build --help' for build options"
+        print "You may also try editing the settings in CMakeLists.txt file and re-running setup"
         sys.exit(-1)
 
         
@@ -75,19 +79,32 @@ class install(_install.install):
 class  build(_build.build):
 
     user_options=_build.build.user_options + \
-        [('without-ssf',None,"Uses SimEngine instead of SSF for message passing and synchronization. \
- This will only work with multithreaded MPI")]
+        [('without-ssf',
+          None,
+          "Uses SimEngine instead of SSF for message passing and synchronization. \
+ This will only work with multithreaded MPI"),
+         ('without-mpi',
+          None,
+          "Build without MPI support. Parallel simulations are disabled in this case. This option cannot be used together with the --without-ssf option. ")]
 
     def initialize_options(self):
         _build.build.initialize_options(self)
         self.without_ssf = 0
+        self.without_mpi = 0
         
     def run(self):
         cwd = os.getcwd()
-        if self.without_ssf:
-            run_cmake("-DSIMX_USE_PRIME=0")
-        else:
-            run_cmake()
+        # if self.without_ssf and self.without_mpi:
+        #     print "--without-ssf and --without-mpi cannot be used together"
+        #     print "run setup.py build --help for options to build command"
+        #     sys.exit(-1)
+        run_cmake(use_prime=not self.without_ssf,
+                  use_mpi = not self.without_mpi)
+        # if 
+        # if self.without_ssf:
+        #     run_cmake("-DSIMX_USE_PRIME=0")
+        # else:
+        #     run_cmake()
         #try:
         #    import config as C
         #    with open('build/src/minissf/ssf_config.h'): pass

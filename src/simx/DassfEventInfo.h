@@ -118,6 +118,7 @@ inline minissf::CompactDataType* DassfEventInfo::pack(minissf::CompactDataType* 
   /// the real packing function
   inline int DassfEventInfo::pack(char* buf, int bufsize)
   {
+#ifdef HAVE_MPI_H
     //int debug_wait = 1;
     //while(debug_wait);
     //Logger::debug3() << "DassfEventInfo::pack buffer size is " << bufsize << std::endl;
@@ -126,15 +127,25 @@ inline minissf::CompactDataType* DassfEventInfo::pack(minissf::CompactDataType* 
     PackedData pd(cdata);
     fEventInfo.pack(pd);
     return cdata->pack_and_delete(buf, bufsize); //pack into buffer and reclaim memory
+#else
+    SMART_ASSERT(false).
+      msg("DassfEventInfo::pack should never be called when MPI is not in use");
+#endif
   }
 
   //inline minissf::Event* DassfEventInfo::unpack(minissf::CompactDataType* dp)
   inline minissf::Event* DassfEventInfo::unpack(char* buf, int bufsize)
   {
+#ifdef HAVE_MPI_H
     Logger::debug3() << "DassfEventInfo: unpacking" << std::endl;
     minissf::CompactDataType* cdata = new minissf::CompactDataType; //create a byte stream
+    
     cdata->unpack(buf, bufsize);
     return new DassfEventInfo(cdata);
+#else
+    SMART_ASSERT(false).
+      msg("DassfEventInfo::unpack should never be called when MPI is not in use");
+#endif
   }
 
 inline void DassfEventInfo::execute(LP& lp)

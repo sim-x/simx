@@ -22,14 +22,21 @@ set(CMAKE_CXX_FLAGS "-g -fpermissive" CACHE STRING "" FORCE)
 #set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
 #set(CMAKE_CXX_FLAGS "-g -fpermissive")
 
-# for MPI
-find_package(MPI REQUIRED)
-if (MPI_FOUND)
-   include_directories(${MPI_INCLUDE_PATH} ${MPI_CXX_INCLUDE_PATH})
+#for MPI
+if(SIMX_USE_MPI)
+    find_package(MPI REQUIRED)
+    if (MPI_FOUND)
+	include_directories(${MPI_INCLUDE_PATH} ${MPI_CXX_INCLUDE_PATH})
+	ADD_DEFINITIONS("-DHAVE_MPI_H")
+    else()
+	message(FATAL_ERROR "MPI not found. Install MPI or build without MPI (-DSIMX_USE_MPI=0)")
+    endif()
 else()
-  message(STATUS "mpi not found")
+    #compiling without MPI, make sure we're using SSF
+    if(NOT SIMX_USE_PRIME)
+	message(FATAL_ERROR "non-MPI build must use SSF. Rebuild with SSF enabled (-DSIMX_USE_PRIME=1)")
+    endif()
 endif()
-
 
 # for boost
 set(Boost_USE_STATIC_LIBS  OFF)
@@ -96,7 +103,10 @@ set_target_properties(${TARGET_NAME} PROPERTIES
 
 
 
-list(APPEND SIMX_LINK_LIBRARIES ${Boost_LIBRARIES} ${PYTHON_LIBRARIES} ${MPI_CXX_LIBRARIES} ${MPI_LIBRARIES})
+list(APPEND SIMX_LINK_LIBRARIES ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+if(SIMX_USE_MPI)
+    list(APPEND SIMX_LINK_LIBRARIES ${MPI_CXX_LIBRARIES} ${MPI_LIBRARIES})
+endif()
 
 # target_link_libraries(${TARGET_NAME}
 #         ${Boost_LIBRARIES}
@@ -257,7 +267,7 @@ sources = all_sources,
 include_dirs = include_dirs,
 library_dirs = library_dirs,
 libraries = libraries,
-depends = all_headers,
+depends = all_headers +['${CMAKE_BINARY_DIR}/CMakeCache.txt'],
 extra_compile_args = CXX_FLAGS)
 
 ")

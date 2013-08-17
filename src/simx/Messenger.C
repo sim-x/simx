@@ -29,9 +29,12 @@
 //
 //--------------------------------------------------------------------------
 
-#include "simx/Messenger.h"
-
+#ifdef HAVE_MPI_H
 #ifdef SIMX_USE_PRIME
+
+
+
+#include "simx/Messenger.h"
 
 
 #include "simx/ControlInfoWrapper.h"
@@ -415,4 +418,6 @@ namespace simx {
   
 } //namespace simx
 
+
 #endif // SIMX_USE_PRIME
+#endif //HAVE_MPI_H

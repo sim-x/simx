@@ -917,14 +917,7 @@ void Universe::handle_incoming_events(int rbfsz)
   assert(pos == rbfsz);
 }
 
-void Universe::insert_emulated_event(Timeline* tmln, EmulatedEvent* myevt)
-{
-  Universe* univ = tmln->universe;
-  ssf_thread_mutex_lock(&univ->mailbox_mutex);
-  if(!univ->mailbox) ssf_thread_cond_signal(&univ->mailbox_cond);
-  myevt->append_to_list(&univ->mailbox, &univ->mailbox_tail);
-  ssf_thread_mutex_unlock(&univ->mailbox_mutex);
-}
+
 
 bool Universe::handle_outgoing_events(ChannelEvent* evt)
 {
@@ -1250,6 +1243,17 @@ void Universe::rw_thread()
   delete[] recvbuf;
 }
 #endif
+
+
+void Universe::insert_emulated_event(Timeline* tmln, EmulatedEvent* myevt)
+{
+  Universe* univ = tmln->universe;
+  ssf_thread_mutex_lock(&univ->mailbox_mutex);
+  if(!univ->mailbox) ssf_thread_cond_signal(&univ->mailbox_cond);
+  myevt->append_to_list(&univ->mailbox, &univ->mailbox_tail);
+  ssf_thread_mutex_unlock(&univ->mailbox_mutex);
+}
+
 
 void Universe::handle_io_events(bool blocking)
 {
