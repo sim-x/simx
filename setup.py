@@ -136,6 +136,8 @@ setup(
     author_email = 'simx-dev@lanl.gov',
     license = "GNU LGPL",
     long_description = simx_long_desc,
+    keywords = "simulation, parallel simulation, distributed simulation, \
+discrete event simulation, agent simulation, simulation library",
     platforms = ['GNU/Linux','Unix','Mac OS-X'],
     classifiers = [
          'Development Status :: 4 - Beta',
