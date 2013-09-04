@@ -16,37 +16,47 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
-import sys
+import simx.core as core
+from DebugStream import *
 
-import simx
 
-#from DebugStream import *
-#from OutputStream import *
 
-from HelloHandler import *
+class Controller(core.PyEntity):
 
-###### Define Entities ########
-class Person(simx.PyEntity):
+    """
+
+    A special kind of entity, only one per process, that has
+    an id of the form ('!', n) where n is the rank of the process.
+    The purpose of the controller is to house any and all services that
+    are global in nature. Thus any service that should not be tied to
+    a particular entity should live on the controller entity.
+
+    """
+    
     def __init__(self,ID,lp,entity_input,py_obj=None):
         if py_obj is None:
             py_obj = self
-        super(Person,self).__init__(ID,lp,entity_input,py_obj)
-        simx.debug2.write("Person", self.getId(),"is being created with input ",
-                     entity_input.data_,"at time",self.getNow())
-        self.neighbor_list = entity_input.data_
-        #self.create_services(entity_input)
+        super(Controller,self).__init__(ID,lp,entity_input,py_obj)
+        debug2.write("Controller",self.getId(),"is being created on rank: ", 
+                     core.get_rank())
+        # all other controllers are its neighbors
+        nm = core.get_num_machines()
+        self._neighbors = zip(['!']*nm,range(nm))
+        # remove own id from neighbor list
+        self._neighbors.remove(self.getId())
+    
+
+    def __str__(self):
+        return "Controller(%s)" %(self.getId())
 
 
-        self.install_service(HelloHandlerPerson, eAddr_HelloHandlerPerson)
 
-        simx.debug3.write("Person",self.getId(),"done",self)
+def get_controller():
+    """
+    
+    A helper function that returns the handle of the
+    controller object for this process
 
-    def say_hello(self,args=None):
-        simx.output.write(self,100,"Person ",self.getId(),"says hello")
+    """
 
-    # def __str__(self):
-    # #     #return "Person(%s)" %(self.neighbor_list)
-    #     return "Person(%s)" %(self.getNow())
-
-# register entity
-#simx.register_entity(Person)
+    return core.get_entity(('!',core.get_rank()))

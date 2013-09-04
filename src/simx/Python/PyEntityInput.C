@@ -100,6 +100,7 @@ void export_PyEntityInput() {
   class_<PyEntityInput>("EntityInput",init<>() )
     .def("get_profile",&PyEntityInput::getProfile,
 	 return_value_policy<reference_existing_object>() )
+    .def("load_services",&PyEntityInput::loadServices)
     .def_readonly("data_",&PyEntityInput::fData)
     ;
 }

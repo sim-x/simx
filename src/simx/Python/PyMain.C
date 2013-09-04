@@ -51,7 +51,9 @@ void Global::initEnv() {
     Control::init("Python");
     Control::prepareOutput();
     simx::Python::registerInfos();
-    simx::theEntityManager().createController();
+    // won't need this. Will create a controller that is a PyEntity
+    // from within Python.
+    //simx::theEntityManager().createController();
 }
 
 void Global::startSimulation() {

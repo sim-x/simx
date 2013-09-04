@@ -1,4 +1,4 @@
-// Copyright (c) 2012. Los Alamos National Security, LLC. 
+// copyright (c) 2012. Los Alamos National Security, LLC. 
 
 // This material was produced under U.S. Government contract DE-AC52-06NA25396
 // for Los Alamos National Laboratory (LANL), which is operated by Los Alamos 
@@ -110,7 +110,9 @@ void EventInfo::execute(void)
 
     /// first look if there is something on CONTROLLER_INPUT:
     static const EntityManager& em = theEntityManager();
-    em.getController().pollInput();
+
+    // commenting out below, since there is no controller anymore in C++ land.- ST
+    //em.getController().pollInput();
 
     // info goes to entity to deal with
     boost::shared_ptr<Entity> entity;

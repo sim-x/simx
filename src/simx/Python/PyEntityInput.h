@@ -57,8 +57,9 @@ namespace simx {
       }
 
       boost::python::object fData;
-    private:
       void loadServices(boost::python::dict&);
+    private:
+
       boost::shared_ptr<PyProfile> fProfile;
 
     };

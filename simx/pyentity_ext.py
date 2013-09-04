@@ -16,37 +16,40 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
-import sys
-
 import simx
-
-#from DebugStream import *
-#from OutputStream import *
-
-from HelloHandler import *
-
-###### Define Entities ########
-class Person(simx.PyEntity):
-    def __init__(self,ID,lp,entity_input,py_obj=None):
-        if py_obj is None:
-            py_obj = self
-        super(Person,self).__init__(ID,lp,entity_input,py_obj)
-        simx.debug2.write("Person", self.getId(),"is being created with input ",
-                     entity_input.data_,"at time",self.getNow())
-        self.neighbor_list = entity_input.data_
-        #self.create_services(entity_input)
+import simx.core as core
 
 
-        self.install_service(HelloHandlerPerson, eAddr_HelloHandlerPerson)
+"""
 
-        simx.debug3.write("Person",self.getId(),"done",self)
+Extensions to the PyEntity class
 
-    def say_hello(self,args=None):
-        simx.output.write(self,100,"Person ",self.getId(),"says hello")
+"""
 
-    # def __str__(self):
-    # #     #return "Person(%s)" %(self.neighbor_list)
-    #     return "Person(%s)" %(self.getNow())
 
-# register entity
-#simx.register_entity(Person)
+def install_service(self, service, address,
+                    profile = None,
+                    data = None
+                    ):
+    
+    """
+    
+    A method of PyEntity. Installs the service at the given address
+    with the given profile(optional) and data(optional) on this
+    this entity. 
+   
+    """
+    if not isinstance(self, core.PyEntity):
+        error.write("Argument ",self," not of type PyEntity")
+        return None
+    
+    service = simx.add_service(service.__name__, 
+                               profile, data)
+    
+    ei = core.EntityInput()
+    ei.load_services({address:service})
+    self.create_services(ei)
+    
+
+core.PyEntity.install_service = install_service
+

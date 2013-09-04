@@ -9,6 +9,7 @@ SimX
 
 #import simx.core
 from simx.core import *
+from pyentity_ext import *
 from DebugStream import *
 from OutputStream import *
 from init import *

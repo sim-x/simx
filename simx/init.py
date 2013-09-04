@@ -19,13 +19,10 @@
 import sys
 
 import simx.core as core
-from DebugStream import *
+from simx.DebugStream import *
 from simx.util import *
 import simx.config
-
-#sys.path.append("/Library/Python/2.6/site-packages/greenlet-0.4.0-py2.6-macosx-10.6-universal.egg")
-
-#from greenlet import greenlet
+from simx.controller import *
 
 """ 
 Provides core intialization routines for 
@@ -35,12 +32,21 @@ Also sets the default configuration parameters.
 """
 
 
-#_evt_scheduler = None
-
 def init(prog_name=""):
     core.init_mpi(prog_name);
     core.init_config()
     simx.config.set_defaults(prog_name)
+
+
+def create_controller(): # TODO: should this \be moved to the init function?
+    """
+    Creates a controller entity on this proces. Strictly speaking, this is
+    not required. But is highly useful. The controller id will be (!,0) in
+    a serial simulation. In a parallel simulation, it will be (!,n) where n is 
+    the MPI rank of this python process.
+    """
+    simx.create_entity(('!',simx.get_rank()),Controller)
+    
 
 
 def add_service( serv_name, serv_profile={}, serv_data=() ):

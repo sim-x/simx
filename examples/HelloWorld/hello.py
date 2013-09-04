@@ -37,21 +37,28 @@ simx.set_end_time(end_time)
 
 # These are optional
 simx.set_output_file("helloworld.out")
-simx.set_log_level("info")
+simx.set_log_level("debug2")
 simx.set_log_file("helloworld.log")
 
 ####### Initialize environment (logging, output etc) ###########
 simx.init_env()
 
+## create a controller entity -- strictly speaking, this is not required. But is highly useful ##
+## The controller id will be (!,0) in a serial simulation. In a parallel simulation, it will be
+## (!,n) where n is the MPI rank of this python process.
+
+simx.create_controller()
+
 
 ##### Add services to be used in the simulation ########
 # the second argument is a profile (should be dictionary (can be empty) or None)
-hh = simx.add_service('HelloHandlerPerson',None,[]) 
+
+#hh = simx.add_service('HelloHandlerPerson',None,[]) 
 
 ##### Create Entities ##########
 
 # create an entity profile (optional)
-ep = { 'SERVICES':{eAddr_HelloHandlerPerson:hh}}
+#ep = { 'SERVICES':{eAddr_HelloHandlerPerson:hh}}
 
 num_entities = 2**5
 
@@ -59,7 +66,8 @@ num_entities = 2**5
 
 for i in xrange(num_entities):
     # the third argument is a profile (should be dictionary (can be empty) or None)
-    simx.create_entity(('p',i),Person,ep,[('p',1-i)])
+    #simx.create_entity(('p',i),Person,ep,[('p',1-i)])
+    simx.create_entity(('p',i),Person)
 
 ########## Schedule initial events, if any ###############
 import random
