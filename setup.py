@@ -120,9 +120,13 @@ class  build(_build.build):
 ###################
 # setup
 ###################
+
+with open('README.txt') as file:
+    simx_long_desc = file.read()
+
 setup(
     name = "simx",
-    version = '1.0',
+    version = '0.1',
     description = 'Parallel simulation library for Python',
     requires = ["greenlet"],
     install_requires = ["greenlet"],
@@ -131,15 +135,15 @@ setup(
     author='Sunil Thulasidasan, Lukas Kroc and others',
     author_email = 'simx-dev@lanl.gov',
     license = "GNU LGPL",
-    long_description = 
-    "\nSimX is a library for developing parallel, distributed memory\n \
-       simulations in Python. SimX is written in C++ and Python.",
+    long_description = simx_long_desc,
+    keywords = "simulation, parallel simulation, distributed simulation, \
+discrete event simulation, agent simulation, simulation library",
     platforms = ['GNU/Linux','Unix','Mac OS-X'],
     classifiers = [
-         'Development Status :: Beta',
+         'Development Status :: 4 - Beta',
          'Intended Audience :: Developers',
          'Intended Audience :: Science/Research',
-         'License :: OSI Approved :: GNU Lesser General Public License (LGPLv2)',
+         'License :: OSI Approved :: GNU Lesser General Public License v2 (LGPLv2)',
          'Operating System :: OS Independent',
          'Programming Language :: Python :: 2',
          'Programming Language :: Python :: 2.4',
@@ -147,7 +151,7 @@ setup(
          'Programming Language :: Python :: 2.6',
          'Programming Language :: Python :: 2.7',
          'Topic :: Scientific/Engineering',
-         'Topic :: Scientific/Engineering :: Artifical Life',
+         'Topic :: Scientific/Engineering :: Artificial Life',
          'Topic :: Sociology',
          'Topic :: Software Development :: Libraries :: Python Modules',
          'Topic :: Software Development :: Libraries :: Application Frameworks',
