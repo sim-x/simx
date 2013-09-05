@@ -44,20 +44,22 @@ namespace simx {
 
   namespace Python {
 
-    python::object gNoneObject = python::api::object();
+    //python::object gNoneObject = python::api::object();
 
     LPID getPyEntityLpId( const python::tuple& ent_id) {
 
       return theEntityManager().findEntityLpId( py2EntityId( ent_id ) );
     }
 
-    python::object& getEntity( const python::tuple& ent_id ) {
+    //python::object& getEntity( const python::tuple& ent_id ) {
+    python::object getEntity( const python::tuple& ent_id ) {
       
       shared_ptr<PyEntity> py_ent;
       if ( theEntityManager().getEntity( py2EntityId( ent_id ), py_ent ))
 	return py_ent->getPyObj();
       else
-	return gNoneObject;
+	//return gNoneObject;
+	return python::object();
     }
 
     // TODO (python, high). a better way to do this is to pass in 
@@ -101,8 +103,8 @@ using namespace boost::python;
 void export_PyManager() {
 
   python::def("get_entity_lp_id",&simx::Python::getPyEntityLpId);
-  python::def("get_entity",&simx::Python::getEntity,
-	      return_value_policy<reference_existing_object>() );
+  python::def("get_entity",&simx::Python::getEntity);
+  //	      return_value_policy<reference_existing_object>() );
   python::def("probe_entities",&simx::Python::probePyEntities );
   python::def("set_event_scheduler",&simx::Python::setPyEventScheduler);
   python::def("set_event_scheduler_timer",&simx::Python::setPyEventSchedulerTimer);

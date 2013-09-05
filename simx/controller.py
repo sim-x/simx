@@ -1,4 +1,4 @@
-# Copyright (c) 2012. Los Alamos National Security, LLC. 
+# Copyright (c) 2012 Los Alamos National Security, LLC. 
 
 # This material was produced under U.S. Government contract DE-AC52-06NA25396
 # for Los Alamos National Laboratory (LANL), which is operated by Los Alamos 
@@ -46,8 +46,8 @@ class Controller(core.PyEntity):
         self._neighbors.remove(self.getId())
     
 
-    def __str__(self):
-        return "Controller(%s)" %(self.getId())
+    # def __str__(self):
+    #     return "Controller(%s)" %(self.getId())
 
 
 

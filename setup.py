@@ -134,6 +134,7 @@ setup(
     url = 'http://github.com/sim-x/simx',
     author='Sunil Thulasidasan, Lukas Kroc and others',
     author_email = 'simx-dev@lanl.gov',
+    maintainer_email = 'simx-dev@lanl.gov',
     license = "GNU LGPL",
     long_description = simx_long_desc,
     keywords = "simulation, parallel simulation, distributed simulation, \
