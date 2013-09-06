@@ -30,31 +30,33 @@ eAddr_ProcessManager = 1000
 class _ProcStatus:
     _scheduled = 0
     _active = 1
-    _wait_for = 2
+    _waitfor = 2
     _sleep = 3
     _inactive = 4
 
 
-"""
-_ProcInfo is a named tuple only for use by ProcessManager. It represents
- a proces table entry.
- object_ : the actual process object
- gobject_: the greenlet associated with this process
- status_ : the status of this process (valid values are defined in _ProcStatus)
- parent_ : the parent process that called this process. Processes called by the 
-           main simulation process will have parent as None.
-"""
-#_ProcInfo = namedtuple('ProcInfo',['object_','gobject_','status_','parent_'])
-
+#TODO (high) debug messages for process functions
 
 class _ProcInfo:
-    def __init__(self,object_=None,gobject_=None,
-                 status_=_ProcStatus._inactive,parent_=None):
-        self.object_ = object_
-        self.gobject_ = gobject_
-        self.status_ = status_
-        self.parent_ = parent_
 
+    """
+    _ProcInfo: This class is only for use by ProcessManager. It represents
+    a proces table entry.
+    object_ : the actual process object
+    gobject: the greenlet associated with this process
+    status : the status of this process (valid values are defined in _ProcStatus)
+    parent : the parent process that called this process. Processes called by the 
+              main simulation process will have parent as None.
+    waitfor:  A process that is being waited upon by this process
+    """
+
+    def __init__(self,object_=None,gobject=None,
+                 status=_ProcStatus._inactive,parent=None, waitfor = None):
+        self.object_ = object_
+        self.gobject_ = gobject
+        self.status_ = status
+        self.parent_ = parent
+        self.waitfor_ = waitfor
 
 class _ProcActivateMsg:
     def __init__(self,pid):
@@ -65,8 +67,6 @@ class _ProcActivateMsg:
 class _ProcWakeUpMsg:
     def __init__(self,pid):
         self.pid = pid
-
-
 
 
 class ProcessManager(core.PyService):
@@ -88,11 +88,10 @@ class ProcessManager(core.PyService):
                                   self.recv_activate,
                               '_ProcWakeUpMsg':
                                   self.recv_wakeup}
-        
+
 
     def recv(self, msg):
         self.recv_function[msg.__class__.__name__](msg)
-
 
     
     def recv_activate(self, msg):
@@ -100,10 +99,7 @@ class ProcessManager(core.PyService):
         if proc_info.status_ != _ProcStatus._scheduled:
             ds.failure.write("ProcessManager: Invalid activation mesage received")
             return
-        process = proc_info.object_
-        pg = greenlet(process.run)
-        proc_info.gobject_ = pg
-        self.proc_switch(proc_info)
+        self.proc_activate( proc_info )
 
     
     def recv_wakeup(self, msg):
@@ -115,12 +111,33 @@ class ProcessManager(core.PyService):
 
     def proc_switch(self, proc_info):
         proc_info.status_ = _ProcStatus._active
-        #if not bool(proc_info.gobject_):
-        #    ds.failure.write("Invalid greenlet state for process")
-#                             proc_info.object_.__name__)
+        if  proc_info.gobject_.dead:
+            ds.failure.write("Invalid greenlet state for process object ",
+                             proc_info.object_.__class__.__name__)
         proc_info.gobject_.switch()
+        # Execution of main thread resumes here when the greenlet 
+        # switches  back.
+
+        # check if process went from active to waitfor
+        if proc_info.status_ == _ProcStatus._waitfor:
+            #self.proc_activate( process = proc_info.waitfor_, parent=proc_info.object_ )
+            #pn = self.proc_new( process = proc_info.waitfor_, parent=proc_info.object_)
+            #self.proc_switch( pn )
+            self.proc_schedule( process = proc_info.waitfor_, parent = proc_info.object_,
+                                delay = 0)
+
+        # check if process finished
         if proc_info.gobject_.dead:
-            self.proc_deactivate( proc_info )
+            # check if another process was waiting on this one
+            parent = proc_info.parent_
+            if not parent is None:
+                # first deactivate finished process
+                self.proc_deactivate( proc_info )
+                # then initiate switch to parent
+                self.proc_switch(self.proc_table[id(parent)])
+            else:
+                # just deactivate finished process
+                self.proc_deactivate( proc_info )
 
 
     def proc_deactivate(self, proc_info):
@@ -129,46 +146,79 @@ class ProcessManager(core.PyService):
         
 
     
-    def proc_activate( self, process, delay = core.get_local_min_delay() ):
+    def proc_schedule( self, process, delay = core.get_local_min_delay(), parent = None ):
         """
         Schedules a process to get executed after time given by delay
         The default delay is the value of local_min_delay (1 time unit)
+        """
+        pn = self.proc_new( process, parent)
+        if delay > 0:
+            msg = _ProcActivateMsg( pid = id(process) )
+            self.send_to_self( msg, delay )
+        else:
+            self.proc_activate( pn )
+
+
+    def proc_activate(self, proc_info):
+        """
+        Creates the greenlet that will run the process
+        and switches to the process
+        """
+        process = proc_info.object_
+        pg = greenlet(process.run)
+        proc_info.gobject_ = pg
+        self.proc_switch(proc_info)
+
+
+    def proc_new( self, process, parent = None):
+        """
+        Creates a new process table entry for process
         """
         util.check_type(Process, process)
         if self.proc_table.has_key(id(process)):
             if self.proc_table[id(process)].status_ != _ProcStatus._inactive:
                 ds.failure.write("ProcessManager: Process must either be new or inactive in order to be activated")
         pi = _ProcInfo( object_ = process,
-                       gobject_ = None,
-                       status_ = _ProcStatus._scheduled,
-                       parent_ = None )
+                        gobject = None,
+                        status = _ProcStatus._scheduled,
+                        parent = parent, 
+                        waitfor = None)
         self.proc_table[id(process)] = pi
-        msg = _ProcActivateMsg( pid = id(process) )
-        self.send_to_self( msg, delay )
-                                
+        return pi
 
-    
-    def proc_sleep( self, process, duration ):
+
+    def proc_sleep( self, process, duration = None ):
         """
         Puts a process to sleep for time units specified 
-        by duration.
+        by duration. If no duration is specified, process
+        is put to sleep indefinitely till woken up by the
+        main thread
         """
         util.check_type(Process, process)
         proc_info = self.proc_table[id(process)]
         if proc_info.status_ != _ProcStatus._active:
             ds.failure.write("ProcessManager: Cannot sleep a process that is not active")
-        msg = _ProcWakeUpMsg( pid = id(process) )
-        self.send_to_self( msg, duration )
+        if duration > 0:
+            msg = _ProcWakeUpMsg( pid = id(process) )
+            self.send_to_self( msg, duration )
         proc_info.status_ = _ProcStatus._sleep
-        greenlet.getcurent().parent.switch()
+        greenlet.getcurrent().parent.switch()
 
 
-    def proc_wait_for(self, p1, p2):
+    def proc_waitfor(self, p1, p2):
         """
         Suspends process p1 till p2 finishes
         execution
         """
-        pass
+        util.check_type(Process, p1)
+        p1_info = self.proc_table[id(p1)]
+        if not p1_info.gobject_ == greenlet.getcurrent():
+            ds.failure.write("ProcessManager: Invalid greenlet call state")
+        if not p1_info.status_ == _ProcStatus._active:
+            ds.failure.write("ProcessManager: Process not in active state")
+        p1_info.status_ = _ProcStatus._waitfor
+        p1_info.waitfor_ = p2
+        greenlet.getcurrent().parent.switch()
 
 
     def send_to_self(self, msg, delay):

@@ -29,12 +29,12 @@ class Process(object):
     #     self.pid = pid
 
 
-    def wait_for(self, process):
+    def waitfor(self, process):
         """
         Suspends process till the given process finishes
         executing. 
         """
-        pass
+        pm.get_process_mgr().proc_waitfor(self,process)
     
     
     def sleep(self, duration):
@@ -46,7 +46,7 @@ class Process(object):
 
     def run(self): 
         """
-        All classes that inherit from this class should
+        All classes that inherit from Process class should
         define this method. This is the method that gets
         run when the process is activated. This method should
         _never_ be directly called by the user.

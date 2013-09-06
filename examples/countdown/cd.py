@@ -23,7 +23,8 @@ import simx
 class CountDown(simx.Process):
     """
     A simple countdown process that will count down from 
-    a given integer to 0
+    a given integer to 0. Process will sleep for a specified
+    amount of time between count-down iterations.
     """
 
     def __init__(self, from_):
@@ -32,21 +33,34 @@ class CountDown(simx.Process):
     def run(self):
         i = self.from_
         while i > 0:
-            print "Time: %s !! %s !! " %(simx.get_now(),i)
+            print "Countdown process: ",id(self),"Time: %s: Value %s  " %(simx.get_now(),i)
             self.sleep(1)
-            print "wake up!"
+            print "Countdown process: wake up at time:", simx.get_now()
+            #foo = fooprocess()
+            self.waitfor(fooprocess())
             i -= 1
+
+
+class fooprocess(simx.Process):
+    """
+    Just another process
+    """
+    def run(self):
+        print "foo process: ",id(self),"Time: ",simx.get_now()
+        self.sleep(2)
+        print "foo process wake up at time:",simx.get_now()
 
 
 simx.init("cd")
 
 simx.set_min_delay(1)
-simx.set_end_time(10)
+simx.set_end_time(100)
 simx.set_log_level("debug3")
 
 simx.init_env()
 
-cd = CountDown(10)
-simx.activate_process( cd )
+for i in range(1):
+    cd = CountDown(10)
+    simx.schedule_process( cd )
 
 simx.run()

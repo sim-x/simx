@@ -26,11 +26,11 @@ import util
 from controller import Controller
 from processmgr import get_process_mgr
 
-def activate_process( process ):
+def schedule_process( process ):
     """
-    Invokes ProcessManager.proc_activate()
+    Invokes ProcessManager.proc_schedule()
     """
-    get_process_mgr().proc_activate( process )
+    get_process_mgr().proc_schedule( process )
 
 
 
