@@ -18,7 +18,7 @@
 
 import simx.core as core
 from DebugStream import *
-
+from processmgr import *
 
 
 class Controller(core.PyEntity):
@@ -41,10 +41,21 @@ class Controller(core.PyEntity):
                      core.get_rank())
         # all other controllers are its neighbors
         nm = core.get_num_machines()
-        self._neighbors = zip(['!']*nm,range(nm))
+        self.neighbors_ = zip(['!']*nm,range(nm))
         # remove own id from neighbor list
-        self._neighbors.remove(self.getId())
+        self.neighbors_.remove(self.getId())
     
+        #install process manager service
+        self.install_service(ProcessManager, eAddr_ProcessManager)
+        self.pmgr_ = self.get_service(eAddr_ProcessManager)
+
+
+    def get_process_mgr():
+        """
+        Returns handle of process manager service
+        """
+        return self.pmgr_
+
 
     # def __str__(self):
     #     return "Controller(%s)" %(self.getId())

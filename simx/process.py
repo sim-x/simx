@@ -16,40 +16,45 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
-import simx
-import simx.core as core
+import util
 
-
-"""
-
-Extensions to the PyEntity class
-
-"""
-
-
-def install_service(self, service, address,
-                    profile = None,
-                    data = None
-                    ):
-    
+class Process:
     """
-    
-    A method of PyEntity. Installs the service at the given address
-    with the given profile(optional) and data(optional) on this
-    this entity. 
-   
+    Base class for all processes in simx.
+    Provides functionality for process oriented simulation
+    *Needs more desscription*
     """
-    if not isinstance(self, core.PyEntity):
-        error.write("Argument ",self," not of type PyEntity")
-        raise TypeError, "install_service: Instance must be of type PyEntity"
-    
-    service = simx.add_service(service.__name__, 
-                               profile, data)
-    
-    ei = core.EntityInput()
-    ei.load_services({address:service})
-    self.create_services(ei)
-    
 
-core.PyEntity.install_service = install_service
+    def __init__(self,pid):
+        self.pid = pid
+
+
+    def wait_for(self, process):
+        """
+        Suspends process till the given process finishes
+        executing. 
+        """
+        util.check_type(Process, process)
+
+    
+    def sleep(self, time):
+        """
+        Suspends for specified amount of time
+        """
+        pass
+
+
+    def run(self): 
+        """
+        All classes that inherit from this class should
+        define this method. This is the method that gets
+        run when the process is activated
+        """
+        pass
+
+        
+
+    
+            
+        
 

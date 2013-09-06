@@ -20,9 +20,12 @@ _service_names = {}
 
 """
 
+
 Provides commonly used utility functions 
 
 """
+
+from DebugStream import error
 
 def get_profile_id( profile_obj):
     """
@@ -66,3 +69,16 @@ def get_class_name(obj):
     """
     return obj.__class__.__name__
 
+
+def check_type(class_type, obj):
+    """
+    Checks if obj is an instance of class and
+    raises a Type error if not
+    """
+
+    if not isinstance(obj, class_type):
+        err_str = ''.join[obj.__name__,"must be of type",class_type.__name__]
+        DebugStream.error.write(err_str)
+        raise TypeError, err_str
+
+        

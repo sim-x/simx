@@ -16,40 +16,47 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
-import simx
-import simx.core as core
+from simx import core
+from DebugStream import *
+import controller
 
 
-"""
+eAddr_ProcessManager = 1000
 
-Extensions to the PyEntity class
+class ProcessManager(core.PyService):
 
-"""
-
-
-def install_service(self, service, address,
-                    profile = None,
-                    data = None
-                    ):
-    
     """
-    
-    A method of PyEntity. Installs the service at the given address
-    with the given profile(optional) and data(optional) on this
-    this entity. 
-   
+    The process manager is the work-horse for proces oriented simulation
+    in SimX. All process switching, scheduling and management goes via
+    the process manager. The process manager is a service that lives on the
+    controller entity
     """
-    if not isinstance(self, core.PyEntity):
-        error.write("Argument ",self," not of type PyEntity")
-        raise TypeError, "install_service: Instance must be of type PyEntity"
+
+    def __init__(self, name, entity, service_input ):
+        super(ProcessManager,self).__init__( name,  
+                                             entity, service_input, self )
+        debug1.write("Process Manager ", name, "being created on entity",
+                          entity)
+        
+
+
+    # def recv(self, msg):
+    #     self.recv_function[msg.__class__.__name__](msg)
+
     
-    service = simx.add_service(service.__name__, 
-                               profile, data)
-    
-    ei = core.EntityInput()
-    ei.load_services({address:service})
-    self.create_services(ei)
     
 
-core.PyEntity.install_service = install_service
+
+
+
+core.register_service(ProcessManager)
+core.register_address("eAddr_ProcessManager",eAddr_ProcessManager)
+
+
+def get_process_mgr():
+    """
+    A helper function that returns the handle of the
+    process manager service
+    """
+    return get_controller().get_process_mgr()
 

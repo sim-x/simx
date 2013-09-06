@@ -36,12 +36,21 @@ def init(prog_name=""):
     core.init_mpi(prog_name);
     core.init_config()
     simx.config.set_defaults(prog_name)
+    
+
+def init_env():
+    """
+    Sets up MPI rank (if any), initializes logging and output, and creates
+    the controller entity for this process
+    """
+    core.init_env()
+    create_controller()
 
 
 def create_controller(): # TODO: should this \be moved to the init function?
     """
     Creates a controller entity on this proces. Strictly speaking, this is
-    not required. But is highly useful. The controller id will be (!,0) in
+    not required, but is highly useful. The controller id will be (!,0) in
     a serial simulation. In a parallel simulation, it will be (!,n) where n is 
     the MPI rank of this python process.
     """

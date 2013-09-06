@@ -43,13 +43,6 @@ simx.set_log_file("helloworld.log")
 ####### Initialize environment (logging, output etc) ###########
 simx.init_env()
 
-## create a controller entity -- strictly speaking, this is not required. But is highly useful ##
-## The controller id will be (!,0) in a serial simulation. In a parallel simulation, it will be
-## (!,n) where n is the MPI rank of this python process.
-
-simx.create_controller()
-
-
 ##### Add services to be used in the simulation ########
 # the second argument is a profile (should be dictionary (can be empty) or None)
 

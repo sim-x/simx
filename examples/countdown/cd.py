@@ -16,40 +16,34 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
+
 import simx
-import simx.core as core
 
 
-"""
-
-Extensions to the PyEntity class
-
-"""
-
-
-def install_service(self, service, address,
-                    profile = None,
-                    data = None
-                    ):
-    
+class CountDown(simx.Process):
     """
-    
-    A method of PyEntity. Installs the service at the given address
-    with the given profile(optional) and data(optional) on this
-    this entity. 
-   
+    A simple countdown process that will count down from 
+    a given integer to 0
     """
-    if not isinstance(self, core.PyEntity):
-        error.write("Argument ",self," not of type PyEntity")
-        raise TypeError, "install_service: Instance must be of type PyEntity"
-    
-    service = simx.add_service(service.__name__, 
-                               profile, data)
-    
-    ei = core.EntityInput()
-    ei.load_services({address:service})
-    self.create_services(ei)
-    
 
-core.PyEntity.install_service = install_service
+    def __init__(self, from_):
+        self.from_ = from_
+
+    def run():
+        i = self.from_
+        while i > 0:
+            print "Time: %s !! %s !! " %(simx.get_now(),i)
+            self.sleep(1)
+            print "wake up!"
+
+
+
+simx.init("countdown")
+
+simx.set_min_delay(1)
+simx.set_end_time(10)
+
+simx.init_env()
+
+
 
