@@ -23,7 +23,7 @@ parameters in simx
 
 """
 
-import simx.core
+import core
 
 def set_num_proc( np ):
     """
@@ -33,7 +33,7 @@ def set_num_proc( np ):
     Argument must be an integer
 
     """
-    simx.core.set_config_value( "NUMBER_LPS", str(np))
+    core.set_config_value( "NUMBER_LPS", str(np))
 
 
 def set_min_delay( min_delay ):
@@ -45,7 +45,7 @@ def set_min_delay( min_delay ):
     Argument must be an integer.
 
     """
-    simx.core.set_config_value("MINDELAY",str(min_delay))
+    core.set_config_value("MINDELAY",str(min_delay))
 
 
 def set_end_time( end_time ):
@@ -56,7 +56,7 @@ def set_end_time( end_time ):
     Argument must be an integer.
 
     """
-    simx.core.set_config_value("END_TIME", str(end_time))
+    core.set_config_value("END_TIME", str(end_time))
 
 
 def set_output_file( of_name ):
@@ -68,7 +68,7 @@ def set_output_file( of_name ):
     Argument must be a string
 
     """
-    simx.core.set_config_value("OUTPUT_FILE", of_name )
+    core.set_config_value("OUTPUT_FILE", of_name )
 
 
 def set_log_cout_level( log_level ):
@@ -78,7 +78,7 @@ def set_log_cout_level( log_level ):
     Undocumented
 
     """
-    simx.core.set_config_value("LOG_COUT_LEVEL", log_level )
+    core.set_config_value("LOG_COUT_LEVEL", log_level )
 
 
 def set_log_level( log_level ):
@@ -91,7 +91,7 @@ def set_log_level( log_level ):
     Argument must be a string
 
     """
-    simx.core.set_config_value("LOG_LEVEL", log_level )
+    core.set_config_value("LOG_LEVEL", log_level )
 
 
 def set_log_file( lf_name ):
@@ -103,7 +103,7 @@ def set_log_file( lf_name ):
     Argument must be a string
 
     """
-    simx.core.set_config_value("LOG_FILE", lf_name )
+    core.set_config_value("LOG_FILE", lf_name )
 
 
 def set_defaults( prog_name ):
@@ -121,9 +121,9 @@ def set_defaults( prog_name ):
 
     """
 
-    simx.core.set_config_value( "NUMBER_LPS", str(0))
-    simx.core.set_config_value("LOG_LEVEL", "info" )
-    simx.core.set_config_value("LOG_COUT_LEVEL", "warn" )
-    simx.core.set_config_value("OUTPUT_FILE", prog_name+".out")
-    simx.core.set_config_value("LOG_FILE", prog_name+".log")
+    core.set_config_value( "NUMBER_LPS", str(0))
+    core.set_config_value("LOG_LEVEL", "info" )
+    core.set_config_value("LOG_COUT_LEVEL", "warn" )
+    core.set_config_value("OUTPUT_FILE", prog_name+".out")
+    core.set_config_value("LOG_FILE", prog_name+".log")
     

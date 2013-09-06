@@ -16,9 +16,11 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
-import simx
-import simx.core as core
-
+#import simx
+#import simx.core as core
+import core
+import core_ext
+import DebugStream as ds
 
 """
 
@@ -40,10 +42,10 @@ def install_service(self, service, address,
    
     """
     if not isinstance(self, core.PyEntity):
-        error.write("Argument ",self," not of type PyEntity")
+        ds.error.write("Argument ",self," not of type PyEntity")
         raise TypeError, "install_service: Instance must be of type PyEntity"
     
-    service = simx.add_service(service.__name__, 
+    service = core_ext.add_service(service.__name__, 
                                profile, data)
     
     ei = core.EntityInput()

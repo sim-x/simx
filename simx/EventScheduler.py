@@ -20,7 +20,7 @@
 import sys
 from greenlet import greenlet
 
-import simx.core as core
+import core
 #from simx.util import *
 
 _evt_scheduler = None

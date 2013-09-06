@@ -16,17 +16,17 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
-import util
+import processmgr as pm
 
-class Process:
+class Process(object):
     """
     Base class for all processes in simx.
     Provides functionality for process oriented simulation
     *Needs more desscription*
     """
 
-    def __init__(self,pid):
-        self.pid = pid
+    # def __init__(self,pid):
+    #     self.pid = pid
 
 
     def wait_for(self, process):
@@ -34,27 +34,21 @@ class Process:
         Suspends process till the given process finishes
         executing. 
         """
-        util.check_type(Process, process)
-
+        pass
     
-    def sleep(self, time):
+    
+    def sleep(self, duration):
         """
         Suspends for specified amount of time
         """
-        pass
+        pm.get_process_mgr().proc_sleep(self, duration)
 
 
     def run(self): 
         """
         All classes that inherit from this class should
         define this method. This is the method that gets
-        run when the process is activated
+        run when the process is activated. This method should
+        _never_ be directly called by the user.
         """
         pass
-
-        
-
-    
-            
-        
-

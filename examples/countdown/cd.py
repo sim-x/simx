@@ -29,21 +29,24 @@ class CountDown(simx.Process):
     def __init__(self, from_):
         self.from_ = from_
 
-    def run():
+    def run(self):
         i = self.from_
         while i > 0:
             print "Time: %s !! %s !! " %(simx.get_now(),i)
             self.sleep(1)
             print "wake up!"
+            i -= 1
 
 
-
-simx.init("countdown")
+simx.init("cd")
 
 simx.set_min_delay(1)
 simx.set_end_time(10)
+simx.set_log_level("debug3")
 
 simx.init_env()
 
+cd = CountDown(10)
+simx.activate_process( cd )
 
-
+simx.run()

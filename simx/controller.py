@@ -16,9 +16,9 @@
 # it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
-import simx.core as core
-from DebugStream import *
-from processmgr import *
+import core
+import DebugStream as ds
+import processmgr as pm
 
 
 class Controller(core.PyEntity):
@@ -37,7 +37,7 @@ class Controller(core.PyEntity):
         if py_obj is None:
             py_obj = self
         super(Controller,self).__init__(ID,lp,entity_input,py_obj)
-        debug2.write("Controller",self.getId(),"is being created on rank: ", 
+        ds.debug2.write("Controller",self.getId(),"is being created on rank: ", 
                      core.get_rank())
         # all other controllers are its neighbors
         nm = core.get_num_machines()
@@ -46,11 +46,11 @@ class Controller(core.PyEntity):
         self.neighbors_.remove(self.getId())
     
         #install process manager service
-        self.install_service(ProcessManager, eAddr_ProcessManager)
-        self.pmgr_ = self.get_service(eAddr_ProcessManager)
+        self.install_service(pm.ProcessManager, pm.eAddr_ProcessManager)
+        self.pmgr_ = self.get_service(pm.eAddr_ProcessManager)
 
 
-    def get_process_mgr():
+    def get_process_mgr(self):
         """
         Returns handle of process manager service
         """

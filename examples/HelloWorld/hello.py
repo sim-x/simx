@@ -32,7 +32,7 @@ simx.init("HelloWorld")
 end_time = 2**10
 
 ##### set simulation configuration values ########
-simx.set_min_delay(10)
+simx.set_min_delay(1)
 simx.set_end_time(end_time)
 
 # These are optional
