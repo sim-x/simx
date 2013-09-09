@@ -19,7 +19,7 @@
 #import simx
 #import simx.core as core
 import core
-import core_ext
+#import core_ext
 import DebugStream as ds
 
 """
@@ -45,7 +45,7 @@ def install_service(self, service, address,
         ds.error.write("Argument ",self," not of type PyEntity")
         raise TypeError, "install_service: Instance must be of type PyEntity"
     
-    service = core_ext.add_service(service.__name__, 
+    service = core.add_service(service.__name__, 
                                profile, data)
     
     ei = core.EntityInput()

@@ -37,6 +37,14 @@ class Process(object):
         pm.get_process_mgr().proc_waitfor(self,process)
     
     
+    def spawn(self, process):
+        """
+        Spawns a process and continues executing
+        """
+        #TODO: should a parent be set while spawning?
+        pm.get_process_mgr().proc_schedule(process)
+
+
     def sleep(self, duration):
         """
         Suspends for specified amount of time

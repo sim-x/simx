@@ -9,9 +9,12 @@ SimX
 
 #import simx.core
 
+#from core import *
 from core import *
-from core_ext import *
+#from core_ext import *
 from process import *
+from processmgr import *
+
 from init import *
 from pyentity_ext import *
 from controller import *

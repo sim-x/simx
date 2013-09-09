@@ -23,7 +23,9 @@ import core
 import util
 import DebugStream as ds
 import controller
+import process
 from process import Process
+#import process.Process as Process
 
 eAddr_ProcessManager = 1000
 
@@ -33,6 +35,7 @@ class _ProcStatus:
     _waitfor = 2
     _sleep = 3
     _inactive = 4
+
 
 
 #TODO (high) debug messages for process functions
@@ -136,7 +139,7 @@ class ProcessManager(core.PyService):
                 # then initiate switch to parent
                 self.proc_switch(self.proc_table[id(parent)])
             else:
-                # just deactivate finished process
+                # else just deactivate finished process
                 self.proc_deactivate( proc_info )
 
 
@@ -157,6 +160,7 @@ class ProcessManager(core.PyService):
             self.send_to_self( msg, delay )
         else:
             self.proc_activate( pn )
+
 
 
     def proc_activate(self, proc_info):
@@ -197,7 +201,9 @@ class ProcessManager(core.PyService):
         util.check_type(Process, process)
         proc_info = self.proc_table[id(process)]
         if proc_info.status_ != _ProcStatus._active:
-            ds.failure.write("ProcessManager: Cannot sleep a process that is not active")
+            ds.failure.write("ProcessManager: Invalid State for process ", 
+                             process.__class__.__name__,
+                             " Cannot sleep a process that is not active")
         if duration > 0:
             msg = _ProcWakeUpMsg( pid = id(process) )
             self.send_to_self( msg, duration )

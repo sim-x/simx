@@ -27,17 +27,19 @@ class CountDown(simx.Process):
     amount of time between count-down iterations.
     """
 
-    def __init__(self, from_):
+    def __init__(self, id_,from_):
         self.from_ = from_
+        self.id_ = id_
 
     def run(self):
         i = self.from_
         while i > 0:
-            print "Countdown process: ",id(self),"Time: %s: Value %s  " %(simx.get_now(),i)
+            print "Countdown process: ",self.id_,"Time: %s: Value %s  " %(simx.get_now(),i)
             self.sleep(1)
-            print "Countdown process: wake up at time:", simx.get_now()
+            print "Countdown process: ",self.id_," wake up at time:", simx.get_now()
             #foo = fooprocess()
-            self.waitfor(fooprocess())
+            #self.waitfor(fooprocess())
+            self.spawn(fooprocess(i))
             i -= 1
 
 
@@ -45,10 +47,12 @@ class fooprocess(simx.Process):
     """
     Just another process
     """
+    def __init__(self,id_):
+        self.id_ = id_
     def run(self):
-        print "foo process: ",id(self),"Time: ",simx.get_now()
+        print "foo process: ",self.id_," Time: ",simx.get_now()
         self.sleep(2)
-        print "foo process wake up at time:",simx.get_now()
+        print "foo process: ",self.id_," wake up at time:",simx.get_now()
 
 
 simx.init("cd")
@@ -60,7 +64,7 @@ simx.set_log_level("debug3")
 simx.init_env()
 
 for i in range(1):
-    cd = CountDown(10)
+    cd = CountDown(i,10)
     simx.schedule_process( cd )
 
 simx.run()

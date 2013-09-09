@@ -18,7 +18,7 @@
 
 
 import core
-import core_ext
+#import core_ext
 #import DebugStream as ds
 #import util
 import config
@@ -45,7 +45,7 @@ def init_env():
     the controller entity for this process
     """
     core.init_env()
-    core_ext.create_controller()
+    core.create_controller()
 
 
 

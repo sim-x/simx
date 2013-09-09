@@ -21,16 +21,17 @@ Extensions to simx.core
 """
 
 import core
-import DebugStream as ds
-import util
-from controller import Controller
-from processmgr import get_process_mgr
+from  simx import DebugStream as ds
+from  simx import util
+from simx.controller import Controller
+#from controller import Controller
+from simx.processmgr import get_process_mgr
 
-def schedule_process( process ):
+def schedule_process( process, delay=core.get_local_min_delay() ):
     """
     Invokes ProcessManager.proc_schedule()
     """
-    get_process_mgr().proc_schedule( process )
+    get_process_mgr().proc_schedule( process, max(delay,core.get_local_min_delay()) )
 
 
 
