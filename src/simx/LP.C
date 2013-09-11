@@ -245,7 +245,7 @@ void LP::sendControlInfo( ControlInfoWrapper& cinfo )
 void export_LP() {
 
   python::class_<simx::LP,boost::noncopyable>("LP",python::no_init)
-    .def("getId",&simx::LP::getId )
-    .def("getNow",&simx::LP::getNow )
+    .def("get_id",&simx::LP::getId )
+    .def("get_now",&simx::LP::getNow )
     ;
 }

@@ -239,8 +239,8 @@ void export_PyEntity() {
       const simx::Python::
       PyEntityInput&,
       const python::object&>() )
-    .def("getId",&simx::Python::PyEntity::getPyId,
-	 "getId() -> tuple\n"
+    .def("get_id",&simx::Python::PyEntity::getPyId,
+	 "get_id() -> tuple\n"
 	 "Returns Entity ID")
     .def("send_info",&simx::Python::PyEntity::sendPyInfo,
 	 "send_info((python::object)info, (Time)delay,\n"

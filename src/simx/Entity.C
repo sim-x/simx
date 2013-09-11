@@ -367,6 +367,6 @@ void export_EntityInput() {
 void export_Entity() {
 
   python::class_<simx::Entity,boost::noncopyable>("Entity",python::no_init)
-    .def("getNow",&simx::Entity::getNow)
+    .def("get_now",&simx::Entity::getNow)
     ;
 }
