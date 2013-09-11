@@ -3,6 +3,7 @@
 
 project(simx)
 set(TARGET_NAME "core")
+set(TARGET_MODULE "core")
 cmake_minimum_required(VERSION 2.6)
 enable_language(CXX)
 
@@ -263,7 +264,7 @@ file(APPEND config.py "all_headers = map(op.relpath,all_headers)
 
 
 #create entry for extension
-file(APPEND config.py "${TARGET_NAME}_ext = Extension('simx.${TARGET_NAME}',
+file(APPEND config.py "${TARGET_NAME}_ext = Extension('simx.${TARGET_MODULE}.${TARGET_NAME}',
 sources = all_sources,
 include_dirs = include_dirs,
 library_dirs = library_dirs,
