@@ -272,7 +272,7 @@ def get_current_process():
     Returns the current active process.
     """
     try:
-        proc_mgr = _gr_pm_map[greenlet.getcurent()]
+        proc_mgr = _gr_pm_map[greenlet.getcurrent()]
     except KeyError:
         ds.failure.write("Cannot find a process manager service for greenlet.")
     return proc_mgr.get_gr_process(greenlet.getcurrent())
