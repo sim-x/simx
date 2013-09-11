@@ -37,7 +37,7 @@ simx.set_end_time(end_time)
 
 # These are optional
 simx.set_output_file("helloworld.out")
-simx.set_log_level("debug2")
+simx.set_log_level("info")
 simx.set_log_file("helloworld.log")
 
 ####### Initialize environment (logging, output etc) ###########

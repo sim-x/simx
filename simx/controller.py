@@ -37,13 +37,13 @@ class Controller(core.PyEntity):
         if py_obj is None:
             py_obj = self
         super(Controller,self).__init__(ID,lp,entity_input,py_obj)
-        ds.debug2.write("Controller",self.getId(),"is being created on rank: ", 
+        ds.debug2.write("Controller",self.get_id(),"is being created on rank: ", 
                      core.get_rank())
         # all other controllers are its neighbors
         nm = core.get_num_machines()
         self.neighbors_ = zip(['!']*nm,range(nm))
         # remove own id from neighbor list
-        self.neighbors_.remove(self.getId())
+        self.neighbors_.remove(self.get_id())
     
         #install process manager service
         self.install_service(pm.ProcessManager, pm.eAddr_ProcessManager)
@@ -58,7 +58,7 @@ class Controller(core.PyEntity):
 
 
     # def __str__(self):
-    #     return "Controller(%s)" %(self.getId())
+    #     return "Controller(%s)" %(self.get_id())
 
 
 

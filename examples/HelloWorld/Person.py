@@ -31,22 +31,22 @@ class Person(simx.PyEntity):
         if py_obj is None:
             py_obj = self
         super(Person,self).__init__(ID,lp,entity_input,py_obj)
-        simx.debug2.write("Person", self.getId(),"is being created with input ",
-                     entity_input.data_,"at time",self.getNow())
+        simx.debug2.write("Person", self.get_id(),"is being created with input ",
+                     entity_input.data_,"at time",self.get_now())
         self.neighbor_list = entity_input.data_
         #self.create_services(entity_input)
 
 
         self.install_service(HelloHandlerPerson, eAddr_HelloHandlerPerson)
 
-        simx.debug3.write("Person",self.getId(),"done",self)
+        simx.debug3.write("Person",self.get_id(),"done",self)
 
     def say_hello(self,args=None):
-        simx.output.write(self,100,"Person ",self.getId(),"says hello")
+        simx.output.write(self,100,"Person ",self.get_id(),"says hello")
 
     # def __str__(self):
     # #     #return "Person(%s)" %(self.neighbor_list)
-    #     return "Person(%s)" %(self.getNow())
+    #     return "Person(%s)" %(self.get_now())
 
 # register entity
 #simx.register_entity(Person)
