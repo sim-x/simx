@@ -37,6 +37,7 @@ class _ProcStatus:
     _inactive = 4
 
 
+_gr_pm_map = {} #a greenlet to proces manager map.
 
 #TODO (high) debug messages for process functions
 
@@ -170,6 +171,11 @@ class ProcessManager(core.PyService):
         """
         process = proc_info.object_
         pg = greenlet(process.run)
+        #updates the global greenlet-to-process manager object map
+        global _gr_pm_map
+        if _gr_pm_map.has_key(pg):
+            ds.failure.write("ProcessManager: New greenlet has entry in map!!")
+        _gr_pm_map[pg] = self
         proc_info.gobject_ = pg
         self.proc_switch(proc_info)
 
@@ -235,6 +241,16 @@ class ProcessManager(core.PyService):
                         self.get_entity_id(), eAddr_ProcessManager)
 
 
+    def get_gr_process(self, grlt):
+        """
+        Returns the process object associated with a 
+        greenlet.
+        """
+        for pid in self.proc_table:
+            if self.proc_table[pid].gobject_ == grlt:
+                return self.proc_table[pid].object_
+        return None
+
 
 core.register_service(ProcessManager)
 core.register_address("eAddr_ProcessManager",eAddr_ProcessManager)
@@ -247,4 +263,17 @@ def get_process_mgr():
     process manager service
     """
     return controller.get_controller().get_process_mgr()
+
+
+
+def get_current_process():
+    """
+    Called from within the execution frame of a Process.
+    Returns the current active process.
+    """
+    try:
+        proc_mgr = _gr_pm_map[greenlet.getcurent()]
+    except KeyError:
+        ds.failure.write("Cannot find a process manager service for greenlet.")
+    return proc_mgr.get_gr_process(greenlet.getcurrent())
 
