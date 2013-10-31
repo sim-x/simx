@@ -51,8 +51,8 @@ link_directories(${Boost_LIBRARY_DIRS})
 
 
 # for python
-find_package(PythonInterp REQUIRED VERSION 2)
-find_package(PythonLibs REQUIRED VERSION 2)
+find_package(PythonInterp 2 REQUIRED)
+find_package(PythonLibs 2 REQUIRED)
 include_directories(${PYTHON_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIR} ${PYTHON_INCLUDE_PATH})
 link_directories(${PYTHON_LIBRARY_DIRS})
 
