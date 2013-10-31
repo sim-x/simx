@@ -65,7 +65,7 @@ for i in xrange(num_entities):
 ########## Schedule initial events, if any ###############
 import random
 def create_events():
-    for evt_time in xrange(end_time):
+    for evt_time in range(1,end_time):
         # pick a random entity for receiving hello
         hello_rcpt = random.choice(xrange(num_entities))
         # who should the reply be sent to ?

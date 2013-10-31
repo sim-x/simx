@@ -210,7 +210,7 @@ class ProcessManager(core.PyService):
             ds.failure.write("ProcessManager: Invalid State for process ", 
                              process.__class__.__name__,
                              " Cannot sleep a process that is not active")
-        if duration > 0:
+        if duration is not None:
             msg = _ProcWakeUpMsg( pid = id(process) )
             self.send_to_self( msg, duration )
         proc_info.status_ = _ProcStatus._sleep
