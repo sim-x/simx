@@ -20,15 +20,16 @@ import simx
 from Person import *
 from HelloHandler import *
 
+num_entities = 32
+end_time = 1024
+
 # initialize
-simx.init("helloworld")
-simx.set_end_time(100)
+simx.init("helloworldv2")
+simx.set_end_time(end_time)
 simx.set_min_delay(1)
 simx.init_env()
 
 
-num_entities = 1024
-end_time = 200
 
 # create Persons
 for i in xrange(num_entities):
@@ -46,14 +47,12 @@ class MessageGen (simx.Process):
             simx.schedule_event(evt_time, hello_rcvr, eAddr_HelloHandlerPerson,
                                 HelloMessage(source_id=reply_rcvr))
             #schedule in chunks of 10 time units
-            # if (evt_time % 10 == 0):
-            #     # go to sleep, and wake up just
-            #     # just before the last scheduled event
-            #     print "evt time is ",evt_time," going to sleep at ",simx.get_now()
-            #     self.sleep(evt_time - simx.get_now()-1)
-            #     print "woke up at ",simx.get_now()
+            if (evt_time % 10 == 0):
+                # go to sleep, and wake up in time to schedule
+                # next batch of events
+                 self.sleep(evt_time - simx.get_now())
             
-
+            
 mg = MessageGen()
 simx.schedule_process(mg)
 simx.run()
