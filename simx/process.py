@@ -35,6 +35,14 @@ class Process(object):
         executing. 
         """
         pm.get_process_mgr().proc_waitfor(self,process)
+
+
+    def waiton(self, resource):
+        """
+        Waits on a resource.
+        """
+        pm.get_process_mgr().proc_waiton(self, resource)
+    
     
     
     def spawn(self, process):

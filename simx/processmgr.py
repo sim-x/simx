@@ -35,7 +35,7 @@ class _ProcStatus:
     _waitfor = 2
     _sleep = 3
     _inactive = 4
-
+    _waiton = 5
 
 _gr_pm_map = {} #a greenlet to proces manager map.
 
@@ -232,6 +232,18 @@ class ProcessManager(core.PyService):
         p1_info.waitfor_ = p2
         greenlet.getcurrent().parent.switch()
 
+    
+    # waiton is untested.
+    def proc_waiton(self, proc, resource):
+        util.check_type(Process, proc)
+        proc_info = self.proc_table[id(proc)]
+        if not proc_info.gobject_ == greenlet.getcurrent():
+            ds.failure.write("ProcessManager: Invalid greenlet call state")
+        if not proc_info.status_ == _ProcStatus._active:
+            ds.failure.write("ProcessManager: Process not in active state")
+        proc_info.status_ = _ProcStatus._waiton
+        proc_info.waiton_ = resource
+        resource.update_state( proc )
 
     def send_to_self(self, msg, delay):
         """
