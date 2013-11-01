@@ -55,9 +55,10 @@ class Process(object):
 
     def sleep(self, duration):
         """
-        Suspends for specified amount of time
+        Suspends for specified amount of time. Duration has to be atleast
+        one second
         """
-        pm.get_process_mgr().proc_sleep(self, duration)
+        pm.get_process_mgr().proc_sleep(self, max(1,duration))
 
 
     def run(self): 
