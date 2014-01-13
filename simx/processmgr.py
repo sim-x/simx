@@ -52,15 +52,32 @@ class _ProcInfo:
     parent : the parent process that called this process. Processes called by the 
               main simulation process will have parent as None.
     waitfor:  A process that is being waited upon by this process
+    waitingon: A process that is waiting on this process
     """
 
     def __init__(self,object_=None,gobject=None,
-                 status=_ProcStatus._inactive,parent=None, waitfor = None):
+                 status=_ProcStatus._inactive,parent=None, waitfor = None, waitingon = None):
         self.object_ = object_
         self.gobject_ = gobject
         self.status_ = status
         self.parent_ = parent
         self.waitfor_ = waitfor
+        self.waitingon_ = waitingon
+        self.children_ = []
+
+    def add_child(self, child_proc):
+        """
+        Appends child_proc to list of child processes
+        """
+        self.children_.append(child_proc)
+
+
+    def remove_child(self, child_proc):
+        """
+        Removes child process entry from list
+        """
+        self.children_.remove(child_proc)
+
 
 class _ProcActivateMsg:
     def __init__(self,pid):
@@ -100,16 +117,21 @@ class ProcessManager(core.PyService):
     
     def recv_activate(self, msg):
         proc_info = self.proc_table[msg.pid]
-        if proc_info.status_ != _ProcStatus._scheduled:
-            ds.failure.write("ProcessManager: Invalid activation mesage received")
+        if proc_info.status_ == _ProcStatus._inactive:
+            ds.info.write("ProcessManager: Activation mesage received for inactive process")
             return
+        if proc_info.status_ != _ProcStatus._scheduled:
+            ds.failure.write("ProcessManager: invalid activation message received")
         self.proc_activate( proc_info )
 
     
     def recv_wakeup(self, msg):
         proc_info = self.proc_table[msg.pid]
+        if proc_info.status_ == _ProcStatus._inactive:
+            ds.info.write("ProcessManager: Activation message received for inactive proess")
+            return
         if proc_info.status_ != _ProcStatus._sleep:
-            ds.failure.write("ProcessManager: Invalid wake-up message received")
+            ds.failure.write("ProcessManager: invalid wake-up message received")
         self.proc_switch(proc_info)
 
 
@@ -128,24 +150,31 @@ class ProcessManager(core.PyService):
             #pn = self.proc_new( process = proc_info.waitfor_, parent=proc_info.object_)
             #self.proc_switch( pn )
             self.proc_schedule( process = proc_info.waitfor_, parent = proc_info.object_,
-                                delay = 0)
+                                waitingon = proc_info.object_, delay = 0)
 
         # check if process finished
         if proc_info.gobject_.dead:
             # check if another process was waiting on this one
-            parent = proc_info.parent_
-            if not parent is None:
+            waitingon = proc_info.waitingon_
+            if not waitingon is None:
                 # first deactivate finished process
                 self.proc_deactivate( proc_info )
-                # then initiate switch to parent
-                self.proc_switch(self.proc_table[id(parent)])
+                # then initiate switch to waitingon process
+                self.proc_switch(self.proc_table[id(waitingon)])
             else:
                 # else just deactivate finished process
                 self.proc_deactivate( proc_info )
 
 
     def proc_deactivate(self, proc_info):
+        # invoke end() method of process if any
+        proc_info.object_.end()
         proc_info.gobject_ = None
+        # can't do below, since it will break the process tree
+        # connectivity. 
+        #if not proc_info.parent_ is None:
+        #    self.proc_remove_child(proc_info.parent_, proc_info.object_)
+        #TODO: should we just remove the entry from the process table?
         proc_info.status_ = _ProcStatus._inactive
         
 
@@ -179,7 +208,7 @@ class ProcessManager(core.PyService):
         proc_info.gobject_ = pg
         self.proc_switch(proc_info)
 
-
+        
     def proc_new( self, process, parent = None):
         """
         Creates a new process table entry for process
@@ -194,7 +223,32 @@ class ProcessManager(core.PyService):
                         parent = parent, 
                         waitfor = None)
         self.proc_table[id(process)] = pi
+        if not parent is None:
+            self.proc_add_child(parent, process)
         return pi
+
+
+    def proc_add_child(self, parent, child):
+        """
+        Adds entry for child process in process table entry
+        of parent
+        """
+        try:
+            pi = self.proc_table[id(parent)]
+            pi.add_child( child )
+        except KeyError:
+            print "ProcessManager::proc_add_child: process not found in process table"
+             
+
+    def proc_remove_child(self, parent, child):
+        """
+        Removes entry for child process in process table entry of parent
+        """
+        try:
+            pi = self.proc_table[id(parent)]
+            pi.remove_child( child )
+        except KeyError:
+            print "ProcessManager::proc_remove_child: process not found in process table"
 
 
     def proc_sleep( self, process, duration = None ):
@@ -215,6 +269,50 @@ class ProcessManager(core.PyService):
             self.send_to_self( msg, duration )
         proc_info.status_ = _ProcStatus._sleep
         greenlet.getcurrent().parent.switch()
+
+
+    def proc_kill(self, process):
+        """
+        kills associated greenlet object and de-activates process
+        """
+        util.check_type(Process, process)
+        # make sure the calling process is not trying to kill itself.
+        global _gr_pm_map
+        if _gr_pm_map[greenlet.getcurrent()] == process:
+            ds.error.write("ProcessManager: process",process.__class__.__name__
+                           ,"trying to kill self. Not allowed")
+            return
+        try:
+            proc_info = self.proc_table[id(process)]
+        except KeyError:
+            ds.failure.write("ProcessManager: proc_kill: no entry found for process",
+                              process.__class__.__name__,"in process table")
+        if proc_info.status_ == _ProcStatus._inactive:
+            ds.info.write("ProcessManager: proc_kill: process already inactive",
+                          process.__class__.__name__)
+        else:
+            # kill greenlet if not already dead
+            if ( not proc_info.gobject_ is None) and (not proc_info.gobject_.dead):
+                proc_info.gobject_.GreenletExit
+            # de-activate process
+            self.proc_deactivate( proc_info )
+
+
+    def proc_kill_all(self, process):
+        """
+        Kills process and all of its sub processes.
+        This calls proc_kill_all recursively for all its children
+        and calls kill for leaf processes.
+        """
+        util.check_type( Process, process)
+        try:
+            proc_info = self.proc_table[id(process)]
+        except KeyError:
+            ds.failure.write("ProcessManager: proc_kill: no entry found for process",
+                             process.__class__.__name__,"in process table")
+        for child_proc in proc_info.children_:
+            self.proc_kill_all(child_proc)
+        self.proc_kill(process)
 
 
     def proc_waitfor(self, p1, p2):
@@ -244,6 +342,7 @@ class ProcessManager(core.PyService):
         proc_info.status_ = _ProcStatus._waiton
         proc_info.waiton_ = resource
         resource.update_state( proc )
+
 
     def send_to_self(self, msg, delay):
         """

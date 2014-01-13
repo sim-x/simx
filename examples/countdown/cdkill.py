@@ -17,7 +17,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
 """
-Demo of process spawn, sleep
+Demo of process spawn, sleep, kill
 """
 
 import simx
@@ -33,7 +33,7 @@ class CountDown(simx.Process):
     def __init__(self, id_,from_):
         self.from_ = from_
         self.id_ = id_
-
+        self.foo_procs = []
     def run(self):
         i = self.from_
         while i > 0:
@@ -42,9 +42,13 @@ class CountDown(simx.Process):
             print "Countdown process: ",self.id_," wake up at time:", simx.get_now()
             #foo = fooprocess()
             #self.waitfor(fooprocess())
-            self.spawn(fooprocess(i))
+            foo = fooprocess(i)
+            self.spawn(foo)
+            self.foo_procs.append(foo)
             i -= 1
-
+        
+        for foo in self.foo_procs:
+            self.kill_all(foo)
 
 class fooprocess(simx.Process):
     """
@@ -55,15 +59,14 @@ class fooprocess(simx.Process):
 
     def run(self):
         print "foo process: ",self.id_," Time: ",simx.get_now()
-        if id = 0:
-            self.spawn(fooprocess(id+1))
         self.sleep(2)
         print "foo process: ",self.id_," wake up at time:",simx.get_now()
+        self.spawn(fooprocess(self.id_))
 
     def end(self):
         print "foo process: ",self.id_," ends here"
 
-simx.init("cd")
+simx.init("cdkill")
 
 simx.set_min_delay(1)
 simx.set_end_time(100)

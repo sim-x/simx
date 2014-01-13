@@ -22,7 +22,7 @@ class Process(object):
     """
     Base class for all processes in simx.
     Provides functionality for process oriented simulation
-    *Needs more desscription*
+    *Needs more description*
     """
 
     # def __init__(self,pid):
@@ -34,7 +34,7 @@ class Process(object):
         Suspends process till the given process finishes
         executing. 
         """
-        pm.get_process_mgr().proc_waitfor(self,process)
+        pm.get_process_mgr().proc_waitfor(self, process)
 
 
     def waiton(self, resource):
@@ -49,8 +49,7 @@ class Process(object):
         """
         Spawns a process and continues executing
         """
-        #TODO: should a parent be set while spawning?
-        pm.get_process_mgr().proc_schedule(process)
+        pm.get_process_mgr().proc_schedule(process, parent=self)
 
 
     def sleep(self, duration):
@@ -69,3 +68,27 @@ class Process(object):
         _never_ be directly called by the user.
         """
         pass
+
+    
+    def end(self):
+        """
+        Called by SimX process management when a process is terminated. Should _never_
+        be directly called by the user. Can't use Python destructor __del__
+        method for this, since __del__ might not be called when a process is deleted
+        (due to Python's reference counting mechanism)
+        """
+        pass
+    
+    
+    def kill_all(self, process):
+        """
+        Kills process and all its sub processes (process tree).
+        """
+        pm.get_process_mgr().proc_kill_all( process )
+        
+        
+    def kill(self, process):
+        """
+        kills process.
+        """
+        pm.get_process_mgr().proc_kill( process )
