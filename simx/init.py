@@ -22,6 +22,7 @@ import core
 #import DebugStream as ds
 #import util
 import config
+from controller import Controller
 
 #from controller import Controller
 
@@ -45,7 +46,15 @@ def init_env():
     the controller entity for this process
     """
     core.init_env()
-    core.create_controller()
+    create_controller()
 
 
+def create_controller(): # TODO: should this \be moved to the init function?
+    """
+    Creates a controller entity on this proces. Strictly speaking, this is
+    not required, but is highly useful. The controller id will be (!,0) in
+    a serial simulation. In a parallel simulation, it will be (!,n) where n is 
+    the MPI rank of this python process.
+    """
+    core.create_entity(('!',core.get_rank()),Controller)
 

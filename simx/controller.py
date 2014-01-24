@@ -17,7 +17,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
 import core
-import DebugStream as ds
+import core.DebugStream as ds
 import processmgr as pm
 
 

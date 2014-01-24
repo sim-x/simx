@@ -55,7 +55,7 @@ class fooprocess(simx.Process):
 
     def run(self):
         print "foo process: ",self.id_," Time: ",simx.get_now()
-        if id = 0:
+        if id == 0:
             self.spawn(fooprocess(id+1))
         self.sleep(2)
         print "foo process: ",self.id_," wake up at time:",simx.get_now()

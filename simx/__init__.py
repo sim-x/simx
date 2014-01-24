@@ -18,8 +18,8 @@ from processmgr import *
 from init import *
 from pyentity_ext import *
 from controller import *
-from DebugStream import *
-from OutputStream import *
+from core.DebugStream import *
+from core.OutputStream import *
 from EventScheduler import *
-from util import *
+from core.util import *
 from config import *

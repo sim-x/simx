@@ -21,28 +21,20 @@ Extensions to simx.core
 """
 
 import core
-from  simx import DebugStream as ds
-from  simx import util
-from simx.controller import Controller
+#from  simx import DebugStream as ds
+import DebugStream as ds
+
+#from  simx import util
+import util
+
+#from simx.controller import Controller
 #from controller import Controller
-from simx.processmgr import get_process_mgr
-
-def schedule_process( process, delay=core.get_local_min_delay() ):
-    """
-    Invokes ProcessManager.proc_schedule()
-    """
-    get_process_mgr().proc_schedule( process, max(delay,core.get_local_min_delay()) )
+#from simx.processmgr import get_process_mgr
 
 
 
-def create_controller(): # TODO: should this \be moved to the init function?
-    """
-    Creates a controller entity on this proces. Strictly speaking, this is
-    not required, but is highly useful. The controller id will be (!,0) in
-    a serial simulation. In a parallel simulation, it will be (!,n) where n is 
-    the MPI rank of this python process.
-    """
-    create_entity(('!',core.get_rank()),Controller)
+
+
     
 
 

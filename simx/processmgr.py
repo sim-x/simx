@@ -20,11 +20,11 @@ from greenlet import greenlet
 from collections import namedtuple
 
 import core
-import util
-import DebugStream as ds
+import core.util as util
+import core.DebugStream as ds
 import controller
 import process
-from process import Process
+#from process import Process
 #import process.Process as Process
 
 eAddr_ProcessManager = 1000
@@ -209,22 +209,22 @@ class ProcessManager(core.PyService):
         self.proc_switch(proc_info)
 
         
-    def proc_new( self, process, parent = None):
+    def proc_new( self, proc, parent = None):
         """
         Creates a new process table entry for process
         """
-        util.check_type(Process, process)
-        if self.proc_table.has_key(id(process)):
-            if self.proc_table[id(process)].status_ != _ProcStatus._inactive:
+        util.check_type(process.Process, proc)
+        if self.proc_table.has_key(id(proc)):
+            if self.proc_table[id(proc)].status_ != _ProcStatus._inactive:
                 ds.failure.write("ProcessManager: Process must either be new or inactive in order to be activated")
-        pi = _ProcInfo( object_ = process,
+        pi = _ProcInfo( object_ = proc,
                         gobject = None,
                         status = _ProcStatus._scheduled,
                         parent = parent, 
                         waitfor = None)
-        self.proc_table[id(process)] = pi
+        self.proc_table[id(proc)] = pi
         if not parent is None:
-            self.proc_add_child(parent, process)
+            self.proc_add_child(parent, proc)
         return pi
 
 
@@ -251,45 +251,45 @@ class ProcessManager(core.PyService):
             print "ProcessManager::proc_remove_child: process not found in process table"
 
 
-    def proc_sleep( self, process, duration = None ):
+    def proc_sleep( self, proc, duration = None ):
         """
         Puts a process to sleep for time units specified 
         by duration. If no duration is specified, process
         is put to sleep indefinitely till woken up by the
         main thread
         """
-        util.check_type(Process, process)
-        proc_info = self.proc_table[id(process)]
+        util.check_type(process.Process, proc)
+        proc_info = self.proc_table[id(proc)]
         if proc_info.status_ != _ProcStatus._active:
             ds.failure.write("ProcessManager: Invalid State for process ", 
-                             process.__class__.__name__,
+                             proc.__class__.__name__,
                              " Cannot sleep a process that is not active")
         if duration is not None:
-            msg = _ProcWakeUpMsg( pid = id(process) )
+            msg = _ProcWakeUpMsg( pid = id(proc) )
             self.send_to_self( msg, duration )
         proc_info.status_ = _ProcStatus._sleep
         greenlet.getcurrent().parent.switch()
 
 
-    def proc_kill(self, process):
+    def proc_kill(self, proc):
         """
         kills associated greenlet object and de-activates process
         """
-        util.check_type(Process, process)
+        util.check_type(process.Process, proc)
         # make sure the calling process is not trying to kill itself.
         global _gr_pm_map
-        if _gr_pm_map[greenlet.getcurrent()] == process:
-            ds.error.write("ProcessManager: process",process.__class__.__name__
+        if _gr_pm_map[greenlet.getcurrent()] == proc:
+            ds.error.write("ProcessManager: process",proc.__class__.__name__
                            ,"trying to kill self. Not allowed")
             return
         try:
-            proc_info = self.proc_table[id(process)]
+            proc_info = self.proc_table[id(proc)]
         except KeyError:
             ds.failure.write("ProcessManager: proc_kill: no entry found for process",
-                              process.__class__.__name__,"in process table")
+                              proc.__class__.__name__,"in process table")
         if proc_info.status_ == _ProcStatus._inactive:
             ds.info.write("ProcessManager: proc_kill: process already inactive",
-                          process.__class__.__name__)
+                          proc.__class__.__name__)
         else:
             # kill greenlet if not already dead
             if ( not proc_info.gobject_ is None) and (not proc_info.gobject_.dead):
@@ -298,21 +298,21 @@ class ProcessManager(core.PyService):
             self.proc_deactivate( proc_info )
 
 
-    def proc_kill_all(self, process):
+    def proc_kill_all(self, proc):
         """
         Kills process and all of its sub processes.
         This calls proc_kill_all recursively for all its children
         and calls kill for leaf processes.
         """
-        util.check_type( Process, process)
+        util.check_type( process.Process, proc)
         try:
-            proc_info = self.proc_table[id(process)]
+            proc_info = self.proc_table[id(proc)]
         except KeyError:
             ds.failure.write("ProcessManager: proc_kill: no entry found for process",
-                             process.__class__.__name__,"in process table")
+                             proc.__class__.__name__,"in process table")
         for child_proc in proc_info.children_:
             self.proc_kill_all(child_proc)
-        self.proc_kill(process)
+        self.proc_kill(proc)
 
 
     def proc_waitfor(self, p1, p2):
@@ -320,7 +320,7 @@ class ProcessManager(core.PyService):
         Suspends process p1 till p2 finishes
         execution
         """
-        util.check_type(Process, p1)
+        util.check_type(process.Process, p1)
         p1_info = self.proc_table[id(p1)]
         if not p1_info.gobject_ == greenlet.getcurrent():
             ds.failure.write("ProcessManager: Invalid greenlet call state")
@@ -333,7 +333,7 @@ class ProcessManager(core.PyService):
     
     # waiton is untested.
     def proc_waiton(self, proc, resource):
-        util.check_type(Process, proc)
+        util.check_type(process.Process, proc)
         proc_info = self.proc_table[id(proc)]
         if not proc_info.gobject_ == greenlet.getcurrent():
             ds.failure.write("ProcessManager: Invalid greenlet call state")
@@ -388,3 +388,9 @@ def get_current_process():
         ds.failure.write("Cannot find a process manager service for greenlet.")
     return proc_mgr.get_gr_process(greenlet.getcurrent())
 
+
+def schedule_process( process, delay=core.get_local_min_delay() ):
+    """
+    Invokes ProcessManager.proc_schedule()
+    """
+    get_process_mgr().proc_schedule( process, max(delay,core.get_local_min_delay()) )

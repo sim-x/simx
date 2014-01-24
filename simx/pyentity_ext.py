@@ -20,7 +20,7 @@
 #import simx.core as core
 import core
 #import core_ext
-import DebugStream as ds
+import core.DebugStream as ds
 
 """
 
