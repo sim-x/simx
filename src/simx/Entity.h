@@ -39,6 +39,7 @@
 #include "simx/Info.h"
 #include "simx/InfoRecipient.h"
 #include "simx/ExceptionServiceNotFound.h"
+//#include "simx/Service.h"
 
 #include "Random/Random.h"
 
@@ -181,7 +182,6 @@ class Entity
 //=======================================================================
 
 
-
 template<typename ServiceClass> 
 bool Entity::getService(ServiceAddress servAddr, boost::shared_ptr<ServiceClass>& ret) const throw()
 {
@@ -200,8 +200,11 @@ bool Entity::getService(ServiceAddress servAddr, boost::shared_ptr<ServiceClass>
     	if( !serv )
     	{
 	        Logger::debug3() << "Entity " << fId << ": service of an incorrect type requested at addr=" << servAddr 
-                       		<< ", requested: " << typeid(ServiceClass).name() 
-	                      	<< ", resident: " << typeid(*(iter->second)).name() << std::endl;
+				 << ", requested: " << typeid(ServiceClass).name() << std::endl;
+		//commenting below line as it does not compile with clang
+		//cannot use typeid on a forward declared class. this is 
+		//standards-noncompliant - ST
+	//				 << ", resident: " << typeid(*(iter->second)).name() << std::endl;
 	        return false;
   	  }
 

@@ -223,22 +223,22 @@ void PackedData::add(const std::pair<A1,A2>& x)
 template<typename A1> 
 void PackedData::add(const boost::tuple<A1>& x)
 {
-    add(x.get<0>());
+    add(x.template get<0>());
 }
 
 template<typename A1, typename A2> 
 void PackedData::add(const boost::tuple<A1,A2>& x)
 {
-    add(x.get<0>());
-    add(x.get<1>());
+  add(boost::get<0>(x));
+  add(boost::get<1>(x));
 }
 
 template<typename A1, typename A2, typename A3> 
 void PackedData::add(const boost::tuple<A1,A2,A3>& x)
 {
-    add(x.get<0>());
-    add(x.get<1>());
-    add(x.get<2>());
+  add(boost::get<0>(x));
+  add(boost::get<1>(x));
+  add(boost::get<2>(x));
 }
 
 template<typename Type1, typename Type2>
@@ -306,19 +306,19 @@ bool PackedData::get(std::pair<A1,A2>& x)
 template<typename A1> 
 bool PackedData::get(boost::tuple<A1>& x)
 {
-    return get(x.get<0>());
+  return get(boost::get<0>(x));
 }
 
 template<typename A1, typename A2> 
 bool PackedData::get(boost::tuple<A1,A2>& x)
 {
-    return get(x.get<0>()) && get(x.get<1>());
+  return get(boost::get<0>(x)) && get(boost::get<1>(x));
 }
 
 template<typename A1, typename A2, typename A3> 
 bool PackedData::get(boost::tuple<A1,A2,A3>& x)
 {
-    return get(x.get<0>()) && get(x.get<1>()) && get(x.get<2>());
+  return get(boost::get<0>(x)) && get(boost::get<1>(x)) && get(boost::get<2>(x));
 }
 
 template<typename Type1, typename Type2> 

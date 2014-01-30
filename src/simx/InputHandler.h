@@ -109,7 +109,7 @@ boost::shared_ptr<Input> InputHandler<ObjectIdent>::createInput(const ObjectIden
 {
     Logger::debug3() << "InputHandler: creating Input " << inputIdent << " " << profileId << std::endl;
 
-    boost::shared_ptr<Input>& input = fProfileMap[ make_pair(inputIdent,profileId) ];
+    boost::shared_ptr<Input>& input = fProfileMap[ std::make_pair(inputIdent,profileId) ];
     if( !input )
     {
       Logger::debug3() << "InputHandler: loading in new profile" << std::endl;
@@ -154,7 +154,7 @@ boost::shared_ptr<Input> InputHandler<ObjectIdent>::createInput( const ObjectIde
 {
   Logger::debug3() << "InputHandler: creating Input " << inputIdent << " " << profileId << std::endl;
 
-  boost::shared_ptr<Input>& input = fProfileMap[ make_pair(inputIdent,profileId) ];
+  boost::shared_ptr<Input>& input = fProfileMap[ std::make_pair(inputIdent,profileId) ];
   if( !input )
     {
       Logger::debug3() << "InputHandler: loading in new profile" << std::endl;

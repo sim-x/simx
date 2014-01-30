@@ -489,8 +489,8 @@ using namespace boost;
 using namespace boost::python;
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetUniformD,TRandom::GetUniform,0,2);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetUniformI,TRandom::GetUniform<int>,2,2);
-BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetUniformL,TRandom::GetUniform<long>,2,2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetUniformI,TRandom::template GetUniform<int>,2,2);
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetUniformL,TRandom::template GetUniform<long>,2,2);
 
 void export_Random() {
 

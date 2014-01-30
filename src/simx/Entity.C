@@ -235,6 +235,7 @@ void Entity::processOutgoingControlInfo(const boost::shared_ptr<const Info> info
 
 
 
+
 void Entity::processIncomingInfo(boost::shared_ptr<Info> info, const ServiceAddress& address) const
 {
     Logger::debug2() << "Entity " << fId << ": received Info " << info 
