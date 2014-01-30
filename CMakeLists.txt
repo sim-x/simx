@@ -17,7 +17,7 @@ check_cxx_compiler_flag("-fpermissive" HAVE_FPERMISSIVE)
 if(NOT HAVE_FPERMISSIVE)
   message(FATAL_ERROR "flag '-fpermissive' does not work")
 endif(NOT HAVE_FPERMISSIVE)
-set(CMAKE_CXX_FLAGS "-g -fpermissive" CACHE STRING "" FORCE)
+#set(CMAKE_CXX_FLAGS "-g -fpermissive" CACHE STRING "" FORCE)
 
 #set(CMAKE_BUILD_TYPE Release)
 #set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
