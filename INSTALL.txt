@@ -13,10 +13,9 @@ SimX Requirements
 =================
 
 Most of Simx is written in C++ and will have to be built from source. 
-The SimX build system uses Python's setuptools along with CMake for
-determining platform specific configuration parameters. In addition to
-a C++ compiler and Python (>=2.4 ) you will need the following 
-packages installed prior to building SimX
+The SimX build system uses CMake for determining platform specific 
+configuration parameters. In addition to a C++ compiler and Python (>=2.4 ) 
+you will need the following packages installed prior to building SimX
 
 - CMake (>=2.6)
 - Boost C++ library ( >= 1.35)
@@ -25,20 +24,31 @@ packages installed prior to building SimX
 SimX also uses a Python package called greenlets for process oriented 
 simulations; this will be automatically installed while building SimX.
 
+Using Simx
+==========
+
+To build and use SimX without installing it, change to the source root
+and type
+
+cmake .
+make
+source SimX.rc
 
 Installing SimX
 ===============
 
 To build and install SimX, change to the source root directory and type
 
-python setup.py install
+cmake . 
+make install
 
 This will build SimX and install it to the appropriate Python site-packages
 directory.
 
 If you do not have write permissions to the system Python directories,  try:
 
-python setup.py install --user 
+cmake -DCMAKE_INSTALL_PREFIX=$HOME .
+make install
 
 This will build and install SimX under the user's home directory. Python
 2.6 or higher is required for user mode installation.
@@ -50,8 +60,8 @@ By default, SimX expects a working MPI installation to be present
 on your system since  MPI is required for parallel simulations. If you do not have
 MPI or, for some reason, do not wish to enable parallel simulations, type
 
-python setup.py build --without-mpi
-python setup.py install
+cmake -DSIMX_USE_MPI=OFF .
+make install
 
 
 Other Options
@@ -63,8 +73,8 @@ SimX can also be built with its own native message passing library.
 
 For this, do the following:
 
-python setup.py build --without-ssf
-python setup.py install
+cmake -DSIMX_USE_PRIME=OFF .
+make install
 
 This alternative build requires MPI; it also requires that your MPI installation 
 be fully multi-threaded (on the otherhand, SSF can run on both single and 

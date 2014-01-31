@@ -1,12 +1,3 @@
-# CMake script for metis
-# Author: Sunil Thulasidasan
-# Date Created: May 7 2013
-
-#project(metis)
-#cmake_minimum_required(VERSION 2.6)
-#enable_language(C)
-#set(CMAKE_C_FLAGS "-O2")
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 file(GLOB METIS_SOURCES 
@@ -64,9 +55,5 @@ file(GLOB METIS_SOURCES
   timing.c
   util.c )
 
-#add_library(metis SHARED ${METIS_SOURCES})
-
-#target_link_libraries(metis)
-
-list(APPEND ALL_SOURCES ${METIS_SOURCES} )
-set(ALL_SOURCES "${ALL_SOURCES}" PARENT_SCOPE )
+list(APPEND SIMX_SOURCES ${METIS_SOURCES} )
+set(SIMX_SOURCES "${SIMX_SOURCES}" PARENT_SCOPE )

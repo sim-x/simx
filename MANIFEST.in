@@ -1,5 +1,0 @@
-include  *.txt
-recursive-include src *
-recursive-include examples *.py *.cfg *.C *.h *.dat
-
-

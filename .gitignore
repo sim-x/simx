@@ -1,0 +1,9 @@
+*~
+*.pyc
+*.so
+CMakeFiles
+cmake_install.cmake
+CMakeCache.txt
+Makefile
+SimX.rc
+src/minissf/ssf_config.h
