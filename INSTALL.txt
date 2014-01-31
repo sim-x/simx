@@ -77,4 +77,6 @@ Note: If disabling MPI, SimX will use SSF.
 Using SimX
 ==========
 
-See examples/HelloWorld for a simple python simulation application that uses SimX.
+See the examples directory for some simple python simulation applications that use the 
+SimX APIs.
+
