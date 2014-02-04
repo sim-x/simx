@@ -1,0 +1,5 @@
+*~
+build/
+config.py
+config.pyc
+simx.egg-info/
