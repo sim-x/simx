@@ -18,15 +18,7 @@ check_cxx_compiler_flag("-fpermissive" HAVE_FPERMISSIVE)
 if(NOT HAVE_FPERMISSIVE)
   message(FATAL_ERROR "flag '-fpermissive' does not work")
 endif(NOT HAVE_FPERMISSIVE)
-<<<<<<< HEAD
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fpermissive")
-=======
-#set(CMAKE_CXX_FLAGS "-g -fpermissive" CACHE STRING "" FORCE)
-
-#set(CMAKE_BUILD_TYPE Release)
-#set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
-#set(CMAKE_CXX_FLAGS "-g -fpermissive")
->>>>>>> master
 
 #for MPI
 option(SIMX_USE_MPI "Build Simx with MPI" ON)
