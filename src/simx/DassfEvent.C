@@ -81,7 +81,7 @@ namespace simx {
   int DassfEvent::pack(char* buf, int bufsize)
   {
     SMART_ASSERT(false)("DassfEvent can only be used as a base class; pack should never be called");
-
+    return -1;
   }
 
   //minissf::Event* DassfEvent::unpack(minissf::CompactDataType*)

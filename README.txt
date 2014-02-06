@@ -3,10 +3,13 @@ SimX is a library for developing parallel, discrete-event simulations
 in Python. SimX is written in C++ and Python.
 
 SimX provides the simulation developer with core functionality such as
-event queueing, entity management, time advancement, domain
-parititioning, synchronization and message passing. Parallel
-simulations are implemented using distributed memory and message
-passing.
+- event queueing
+- entity management
+- domain parititioning
+- synchronization and message passing.
+
+SimX also supports process oriented simulations. Parallel simulations are
+implemented using distributed memory and message passing.
 
 SimX has been written to be flexible enough to suit a variety of
 application domains that use discrete-event simulations for modeling,
@@ -22,5 +25,5 @@ SimX is free software; you can redistribute it and/or modify it under
 the terms of the GNU Lesser General Public License v2.1 as published
 by the Free Software Foundation.
 
-Copyright (C) 2012, 2013 Los Alamos National Security LLC. See
+Copyright (C) 2012, 2013, 2014 Los Alamos National Security LLC. See
 COPYRIGHT.txt for details.
