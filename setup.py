@@ -161,5 +161,5 @@ discrete event simulation, agent simulation, simulation library",
     # build or install commands
     cmdclass={'install':install,'build': build},
     zip_safe=False,
-    packages = ['simx','simx.core'],
+    packages = ['simx','simx.core','simx.os'],
     )
