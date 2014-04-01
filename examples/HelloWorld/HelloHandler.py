@@ -37,7 +37,7 @@ class HelloHandlerPerson(simx.PyService):
     def __init__(self,name, person, service_input ):
         super(HelloHandlerPerson,self).__init__( name, person, service_input,self )
         simx.debug2.write("HelloHandlerPerson in constructor",
-                     name, person, service_input.data_)   
+                     name, person.get_id(), service_input.data_)   
         self.person = person
         #self.person.say_hello()
         self.recv_function = {'HelloMessage':self.recv_HelloMessage,

@@ -1,4 +1,4 @@
-# Copyright (c) 2012. Los Alamos National Security, LLC. 
+# Copyright (c) 2013. Los Alamos National Security, LLC. 
 
 # This material was produced under U.S. Government contract DE-AC52-06NA25396
 # for Los Alamos National Laboratory (LANL), which is operated by Los Alamos 
@@ -70,9 +70,18 @@ class Process(object):
         pass
 
     
+    def end_(self):
+        """
+        Called by simx process manager when a process is terminated. Should
+        never be directly called by the user
+        """
+        self.end()
+    
+
+    
     def end(self):
         """
-        Called by SimX process management when a process is terminated. Should _never_
+        Called by SimX process manager when a process is terminated. Should _never_
         be directly called by the user. Can't use Python destructor __del__
         method for this, since __del__ might not be called when a process is deleted
         (due to Python's reference counting mechanism)

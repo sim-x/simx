@@ -40,9 +40,9 @@ class CountDown(simx.Process):
             print "Countdown process: ",self.id_,"Time: %s: Value %s  " %(simx.get_now(),i)
             self.sleep(1)
             print "Countdown process: ",self.id_," wake up at time:", simx.get_now()
-            #foo = fooprocess()
-            #self.waitfor(fooprocess())
-            self.spawn(fooprocess(i))
+            foo = fooprocess(i)
+            self.waitfor(foo)
+            #self.spawn(fooprocess(i))
             i -= 1
 
 
@@ -55,8 +55,8 @@ class fooprocess(simx.Process):
 
     def run(self):
         print "foo process: ",self.id_," Time: ",simx.get_now()
-        if id == 0:
-            self.spawn(fooprocess(id+1))
+        #if id == 0:
+        #    self.spawn(fooprocess(id+1))
         self.sleep(2)
         print "foo process: ",self.id_," wake up at time:",simx.get_now()
 

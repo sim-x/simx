@@ -15,6 +15,8 @@ from core import *
 from process import *
 from processmgr import *
 
+from resource import *
+
 from init import *
 from pyentity_ext import *
 from controller import *
