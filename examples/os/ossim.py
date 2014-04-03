@@ -74,24 +74,26 @@ class FooProcess(os.Process):
 
 #initialize
 simx.init("ossim")
-simx.set_end_time(1000000)
+simx.set_end_time(1000)
 simx.set_min_delay(1)
 simx.set_log_level("debug3")
 simx.init_env()
 
-num_nodes = 1
+num_nodes = 1000
 
 #create nodes
 for i in xrange(num_nodes):
     simx.create_entity(('n',i), os.Node,ent_data=({'num_cores':1}))
-    
 
 num_processes = 2
 #on each node create foo processes
 for i in xrange(num_nodes):
     node = simx.get_entity(('n',i))
-    for j in range(num_processes):
-        fp = node.os.create_process(FooProcess)
-        node.os.schedule_process(fp)
+    # the node might not live in this memory space
+    # in a distributed memory simulation
+    if node is not None: 
+         for j in range(num_processes):
+              fp = node.os.create_process(FooProcess)
+              node.os.schedule_process(fp)
 
 simx.run()
