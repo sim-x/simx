@@ -7,11 +7,8 @@ SimX
 
 """
 
-#import simx.core
 
-#from core import *
 from core import *
-#from core_ext import *
 from process import *
 from processmgr import *
 
