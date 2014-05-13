@@ -47,11 +47,11 @@ class Process(simx.Process):
         self.os.waitfor_process(self, process)
 
 
-    def spawn(self, process_class, arguments=None, req_resource=None):
+    def spawn(self, process_class, *args, **kwargs):
         """
         spawns a process and continues executing
         """
-        p = self.os.create_process(process_class, arguments, req_resource)
+        p = self.os.create_process(process_class, *args, **kwargs)
         self.os.schedule_process(p)
         return p
     

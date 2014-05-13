@@ -40,11 +40,27 @@ class System(core.PyService):
         self.pm = simx.processmgr.get_process_mgr()
         self.ready_processes = [] #processes waiting for CPU time
         
-    def create_process(self, process_class, arguments=None, req_resource=None):
+    def create_process(self, process_class, *args, **kwargs):
         """
         creates a process of process_class with given arguments
         """
+        # this way of creating the class does not call
+        # the class's init method
+        new_proc = process_class.__new__(process_class)
+        core.util.check_type(Process, new_proc)
+        #initialize os.Process members by invoking parent class's init()
+        super(process_class,new_proc).__init__(self, req_resource=None)
+        # then call the class's init()
+        new_proc.__init__(*args, **kwargs)
+        #self.schedule_process(new_proc)
+        return new_proc
 
+
+    def create_process_on_resource(self, req_resource, process_class, *args, **kwargs):
+        """
+        Creates a process class with given arguments and requests a specific resource
+        """  
+        
         # this way of creating the class does not call
         # the class's init method
         new_proc = process_class.__new__(process_class)
@@ -52,9 +68,10 @@ class System(core.PyService):
         #initialize os.Process members by invoking parent class's init()
         super(process_class,new_proc).__init__(self, req_resource)
         # then call the class's init()
-        new_proc.__init__()
+        new_proc.__init__(*args, **kwargs)
         #self.schedule_process(new_proc)
         return new_proc
+        
 
 
     def schedule_process(self, process, delay = core.get_local_min_delay() ):
