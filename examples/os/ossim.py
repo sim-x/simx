@@ -53,7 +53,7 @@ class FooProcess(os.Process):
              " started running on resource ", self.resource, \
              " at time ", simx.get_now()
 
-        print self.os.node.foo
+        
 
         # spawns Bar process, and continues executing
         bp = self.spawn(BarProcess)
