@@ -140,9 +140,9 @@ class ProcessManager(core.PyService):
             ds.failure.write("Invalid greenlet state for process object ",
                              proc_info.object_.__class__.__name__)
         proc_info.status_ = ProcStatus._active
-        try:
+        if hasattr(proc_info.object_, 'res_handler'):
             proc_info.object_.res_handler.assign_process(proc_info)
-        except AttributeError: # no resource handler for process. so handle it here
+        else:
             proc_info.gobject_.switch()
 
         # Execution of main thread resumes here when the greenlet 

@@ -46,12 +46,15 @@ class FooProcess(os.Process):
     
     def __init__(self):
         print "Foo process created on node",self.os.get_entity_id()
-        
+
+
     def run(self):
-        print "Foo process",id(self),"on node",self.os.get_entity_id(), \
-            " started running on resource ", self.resource, \
-            " at time ", simx.get_now()
-        
+        print "Foo process",id(self),"on node",self.os.get_entity_id(),  \
+             " started running on resource ", self.resource, \
+             " at time ", simx.get_now()
+
+        print self.os.node.foo
+
         # spawns Bar process, and continues executing
         bp = self.spawn(BarProcess)
         #self.kill(bp)
@@ -85,15 +88,18 @@ num_nodes = 1
 for i in xrange(num_nodes):
     simx.create_entity(('n',i), os.Node,ent_data=({'num_cores':1}))
 
-num_processes = 2
+num_processes = 1
 #on each node create foo processes
 for i in xrange(num_nodes):
     node = simx.get_entity(('n',i))
     # the node might not live in this memory space
     # in a distributed memory simulation
+
     if node is not None: 
+         
          for j in range(num_processes):
               fp = node.os.create_process(FooProcess)
               node.os.schedule_process(fp)
 
 simx.run()
+
