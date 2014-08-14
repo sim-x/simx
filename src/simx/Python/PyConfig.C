@@ -89,8 +89,8 @@ int createProfile( const python::object& profile_name,
 // TODO (high): change name of export function
 void export_SetConfigurationValue() {
       
-  boost::python::def("set_config_value",setConfigurationValue);
-  boost::python::def("create_profile",createProfile);
+  boost::python::def("set_config_value",setConfigurationValue,"Sets (key,value) pairs ");
+  boost::python::def("create_profile",createProfile,"Creates a profile dictionary");
 }
 
 

@@ -74,5 +74,5 @@ namespace simx{
 
 void export_PyCreateInputInfo() {
 
-  python::def("create_input_info",simx::Python::PyCreateInputInfo);
+  python::def("create_input_info",simx::Python::PyCreateInputInfo,"Creates an Info object from data supplied from Python");
 }

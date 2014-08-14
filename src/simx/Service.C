@@ -87,11 +87,11 @@ void export_Service() {
   class_<simx::Service,noncopyable>("Service",no_init)
     // .def("get_entity",&simx::Service::getEntity,
     //	 return_value_policy<copy_const_reference>());
-    .def("get_name",&simx::Service::getName,
+    .def("get_name",&simx::Service::getName,"Returns name string of Service object",
 	 return_value_policy<copy_const_reference>() )
-    .def("get_random",&simx::Service::getRandom,
+    .def("get_random",&simx::Service::getRandom,"Returns the random number object associated with this Service",
 	 return_value_policy<reference_existing_object>() )
-    .def("get_now",&simx::Service::getNow)
+    .def("get_now",&simx::Service::getNow,"Returns current simulation time. Note that this is the simulation time local to the logical process on which this service lives.")
     ;
   //;
 }

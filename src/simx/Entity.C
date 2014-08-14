@@ -368,6 +368,6 @@ void export_EntityInput() {
 void export_Entity() {
 
   python::class_<simx::Entity,boost::noncopyable>("Entity",python::no_init)
-    .def("get_now",&simx::Entity::getNow)
+    .def("get_now",&simx::Entity::getNow,"Returns the current simulation time. Note that this is the simulation time local to the logical process on which this entity lives.")
     ;
 }

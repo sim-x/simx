@@ -76,6 +76,7 @@ class System(core.PyService):
 
     def schedule_process(self, process, delay = core.get_local_min_delay() ):
         """
+        Schedules a process by calling proc_schedule function of process manager
         """
         self.pm.proc_schedule(process)
 

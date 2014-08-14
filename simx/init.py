@@ -35,6 +35,9 @@ Also sets the default configuration parameters.
 
 
 def init(prog_name=""):
+    """
+    Initializes MPI, configuration module, and sets program defaults
+    """
     core.init_mpi(prog_name);
     core.init_config()
     config.set_defaults(prog_name)

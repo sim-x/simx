@@ -102,10 +102,10 @@ using namespace boost::python;
 
 void export_PyManager() {
 
-  python::def("get_entity_lp_id",&simx::Python::getPyEntityLpId);
-  python::def("get_entity",&simx::Python::getEntity);
+  python::def("get_entity_lp_id",&simx::Python::getPyEntityLpId,"Returns the Id of the Logical Process (LP) on which the given entity lives");
+  python::def("get_entity",&simx::Python::getEntity,"Returns the Entity object associated with the given entity Id");
   //	      return_value_policy<reference_existing_object>() );
-  python::def("probe_entities",&simx::Python::probePyEntities );
-  python::def("set_event_scheduler",&simx::Python::setPyEventScheduler);
-  python::def("set_event_scheduler_timer",&simx::Python::setPyEventSchedulerTimer);
+  python::def("probe_entities",&simx::Python::probePyEntities,"Calls the given class method on all the entities of the given class, that live on this logical process" );
+  python::def("set_event_scheduler",&simx::Python::setPyEventScheduler,"Sets the Python event scheduler obejct for staggered creation of simulation events");
+  python::def("set_event_scheduler_timer",&simx::Python::setPyEventSchedulerTimer,"Sets the time after which the next batch of events will be scheduled");
 }

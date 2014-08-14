@@ -102,13 +102,13 @@ using namespace simx::Python;
 
 void export_PyLogger() {
 
-  python::def("debug1",&PyDebug1);
-  python::def("debug2",&PyDebug2);
-  python::def("debug3",&PyDebug3);
-  python::def("debug_info",&PyDebugInfo);
-  python::def("warn",&PyWarn);
-  python::def("error",&PyError);
-  python::def("failure",&PyFailure);
+  python::def("debug1",&PyDebug1,"Returns handler to the simx Debug level 1 stream");
+  python::def("debug2",&PyDebug2,"Returns handler to the simx Debug level 2 stream");
+  python::def("debug3",&PyDebug3,"Returns handler to the simx Debug level 3 stream");
+  python::def("debug_info",&PyDebugInfo,"Returns handler to the simx Info stream");
+  python::def("warn",&PyWarn,"Returns handler to the simx Warn stream");
+  python::def("error",&PyError,"Returns handler to the simx Error stream");
+  python::def("failure",&PyFailure,"Returns handler to the simx failure stream");
   
 
 }

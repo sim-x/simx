@@ -72,5 +72,5 @@ namespace simx{
 
 void export_PyCreateEntity() {
 
-  python::def("create_pyentity",simx::Python::PyCreateEntity);
+  python::def("create_pyentity",simx::Python::PyCreateEntity,"Creates entities from entity data supplied from Python");
 }

@@ -98,9 +98,9 @@ using namespace boost::python;
 void export_PyEntityInput() {
 
   class_<PyEntityInput>("EntityInput",init<>() )
-    .def("get_profile",&PyEntityInput::getProfile,
+    .def("get_profile",&PyEntityInput::getProfile,"Returns profile object associated with this input object",
 	 return_value_policy<reference_existing_object>() )
-    .def("load_services",&PyEntityInput::loadServices)
-    .def_readonly("data_",&PyEntityInput::fData)
+    .def("load_services",&PyEntityInput::loadServices,"loads services specified in this input object")
+    .def_readonly("data_",&PyEntityInput::fData,"returns the data object associated with this input object")
     ;
 }

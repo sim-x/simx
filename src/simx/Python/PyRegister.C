@@ -129,9 +129,9 @@ namespace simx {
 
 void export_PyRegister() {
 
-  python::def("register_entity",simx::Python::PyRegisterEntity);
-  python::def("register_service",simx::Python::PyRegisterService);
+  python::def("register_entity",simx::Python::PyRegisterEntity,"Registers Python Entity class");
+  python::def("register_service",simx::Python::PyRegisterService,"Registers Python Service class");
   python::def("register_packer",simx::Python::PyRegisterPacker);
   python::def("register_unpacker",simx::Python::PyRegisterUnpacker);
-  python::def("register_address",simx::Python::PyRegisterServiceAddress);
+  python::def("register_address",simx::Python::PyRegisterServiceAddress,"Registers service address");
 }

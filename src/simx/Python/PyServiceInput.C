@@ -40,7 +40,7 @@ using namespace boost::python;
 void export_PyServiceInput() {
 
   class_<PyServiceInput>("ServiceInput",init<>() )
-    .def("get_profile",&PyServiceInput::getProfile,
+    .def("get_profile",&PyServiceInput::getProfile,"Gets profile object associated with this input object",
 	 return_value_policy<reference_existing_object>() )
     .def_readonly("data_",&PyServiceInput::fData)
     

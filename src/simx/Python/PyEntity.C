@@ -53,7 +53,7 @@ namespace simx{
     int distributePyInfo( const PyEntity& ent, const python::object& py_info,
 			  const PyService& serv, bool exclude )
     {
-      shared_ptr<PyInfo> info;
+      boost::shared_ptr<PyInfo> info;
       theInfoManager().createInfo( info );
       //info->fData = &py_info;
       info->setData( py_info );
@@ -77,20 +77,20 @@ namespace simx{
       i = id.get<1>();
       //createServices(*this,input.fServices);
       i = i+1;
-      // boost::shared_ptr<PyService> py_serv;
+      // boost::boost::shared_ptr<PyService> py_serv;
       // if (! getService( static_cast<ServiceAddress>(11101), py_serv ) )
       // 	assert(false);
     }
 
     void PyEntity::print_address() const
     {
-      //cout << "c++ pyentity " << getId() << " my address is " << long(this) << endl;
+      cout << "c++ pyentity " << getId() << " my address is " << long(this) << endl;
     }
     
     
     python::object& PyEntity::getPyService(long serv_addr)
     {
-      shared_ptr<PyService> py_serv;
+      boost::shared_ptr<PyService> py_serv;
       if (getService( static_cast<ServiceAddress>(serv_addr), py_serv ) ) 
 	{
 
@@ -123,7 +123,7 @@ namespace simx{
 	{
 	  Logger::debug3() << "PyEntity " << getId()
 			   << " : Sending remotely, proceeding to pickle Python object" << endl;
-	  shared_ptr<PyRemoteInfo> info;
+	  boost::shared_ptr<PyRemoteInfo> info;
 	  theInfoManager().createInfo( info );
 	  if ( ! info->pickleData( py_info ) )
 	    {
@@ -147,7 +147,7 @@ namespace simx{
 	  // we are using SSF and sending locally.
 
 
-	   shared_ptr<PyInfo> info;
+	   boost::shared_ptr<PyInfo> info;
 	   theInfoManager().createInfo( info );
 	   info->setData( py_info );
 	   sendInfo( info, time, e_id, 
@@ -160,7 +160,7 @@ namespace simx{
       
 
 
-      // shared_ptr<PyInfo> info;
+      // boost::shared_ptr<PyInfo> info;
       // theInfoManager().createInfo( info );
       // //info->fData = boost::make_shared<boost::python::object>(py_info);// py_info;
       // //info->fData = &py_info;
@@ -216,10 +216,10 @@ using namespace boost::python;
 void export_PyEntity() {
 
 
-  python::docstring_options doc_st_opt(false);
-  doc_st_opt.disable_all();
+  //python::docstring_options doc_st_opt(true,true,false);
+  //doc_st_opt.disable_all();
   //doc_st_opt.enable_py_signatures();
-  doc_st_opt.enable_user_defined();
+  //doc_st_opt.enable_user_defined();
   //doc_st_opt.disable_all();
   //  doc_st_opt.disable_cpp_signatures();
 
@@ -240,20 +240,25 @@ void export_PyEntity() {
       PyEntityInput&,
       const python::object&>() )
     .def("get_id",&simx::Python::PyEntity::getPyId,
-	 "get_id() -> tuple\n"
+	 // "get_id() -> tuple\n"
 	 "Returns Entity ID")
     .def("send_info",&simx::Python::PyEntity::sendPyInfo,
-	 "send_info((python::object)info, (Time)delay,\n"
-	 "          (EntityID)dest_entity, (ServiceAddress)dest_service)->None\n\n"
+	 // "send_info((python::object)info, (Time)delay,\n"
+	 // "          (EntityID)dest_entity, (ServiceAddress)dest_service)->None\n\n"
 	 "schedules a message(info) to be sent after 'delay' time units to 'dest_entity'\n"
 	 "Message will be handled by service living at address given by 'dest_service'")
     .def("get_service",&simx::Python::PyEntity::getPyService,
+	 "Returns service object residing at the given service address",
 	 return_value_policy<copy_non_const_reference>())
-    .def("create_services",&simx::Python::PyEntity::createPyServices)
-    .def("print_address",&simx::Python::PyEntity::print_address)
-    .def_readwrite("i_",&simx::Python::PyEntity::i)
+    .def("create_services",
+	 &simx::Python::PyEntity::createPyServices,
+	 "Creates services specified in EntityInput on PyEntity")
+    .def("print_address",
+	 &simx::Python::PyEntity::print_address,
+	 "Prints memory address of C++ PyEntity object")
+    //.def_readwrite("i_",&simx::Python::PyEntity::i)
     
     ;
   def("distribute_info", &simx::Python::distributePyInfo );
-
+  
 }

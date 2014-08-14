@@ -480,6 +480,7 @@ namespace Random
 //---------------------------------------------------------------------
 
 #include <boost/python.hpp>
+#include <boost/python/args.hpp>
 //namespace simx {
 
 //namespace Python {
@@ -487,6 +488,9 @@ namespace Random
 using namespace Random;
 using namespace boost;
 using namespace boost::python;
+//arg = boost::python::arg;
+//using boost::python::arg;
+namespace bp = boost::python;
 
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetUniformD,TRandom::GetUniform,0,2);
 BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(GetUniformI,TRandom::template GetUniform<int>,2,2);
@@ -496,24 +500,33 @@ void export_Random() {
 
   class_<TRandom,noncopyable>("TRandom",no_init)
     .def("get_uniform",static_cast< double(TRandom::*)(float,float)>
-	 (&TRandom::GetUniform),GetUniformD() )
+	 (&TRandom::GetUniform),GetUniformD())//,(bp::arg("min"),bp::arg("max")),"Return uniformly distributed double in range [min,max)")
     .def("get_uniform", static_cast<int (TRandom::*)(int,int)>
 	 (&TRandom::GetUniform<int>), GetUniformI() )
     .def("get_uniform", static_cast<long (TRandom::*)(long,long)>
 	 (&TRandom::GetUniform<long>), GetUniformL() )
-    .def("get_exponential",&TRandom::GetExponential)
-    .def("get_normal",&TRandom::GetNormal)
-    .def("get_lognormal",&TRandom::GetLognormal)
-    .def("get_gamma",&TRandom::GetGamma)
-    .def("get_beta",&TRandom::GetBeta)
-    .def("get_triangular",&TRandom::GetTriangular)
-    .def("get_weibull",&TRandom::GetWeibull)
-    .def("get_cauchy",&TRandom::GetCauchy)
-    .def("set_num_streams",&TRandom::SetNumberStreams)
-    .def("get_num_streams",&TRandom::GetNumberStreams)
-    .def("set_seed",&TRandom::SetSeed)
-    .def("get_seed",&TRandom::GetSeed)
-    .def("make_seed",&TRandom::MakeSeed)
+    .def("get_exponential",&TRandom::GetExponential,(bp::arg("mean"))," Return exponentially distributed double in range [0, infinity). Parameter is the mean.")
+
+    .def("get_normal",&TRandom::GetNormal,(bp::arg("mean"),bp::arg("std"))," Return normally distributed double in range (-infinity, infinity).  Parameters are mean and standard deviation.")
+
+    .def("get_lognormal",&TRandom::GetLognormal,(bp::arg("meanlog"),bp::arg("stdlog")),"Return log-normally distributed double in range (0, infinity). Parameters are mean and standard deviation on logarithmic scale (mean and sd of the underlining normal distr).")
+
+    .def("get_gamma",&TRandom::GetGamma,(bp::arg("alpha"),bp::arg("beta")),"Return gamma distributed double in range [0, infinity)")
+
+    .def("get_beta",&TRandom::GetBeta,(bp::arg("beta"),bp::arg("gamma")),"Return beta distributed double in range [0, 1).  Parameters are alpha and beta shape parameters.")
+
+    .def("get_triangular",&TRandom::GetTriangular,(bp::arg("min"),bp::arg("max"),bp::arg("mode")),"Return a triangularly distributed double in range [min, max]. Parameters are minimum, maximum and mode." )
+
+    .def("get_weibull",&TRandom::GetWeibull,(bp::arg("alpha"),bp::arg("gamma"), bp::arg("mi")),"Returns Weibull distributed double with parameters alpha, gamma, mi")
+
+    .def("get_cauchy",&TRandom::GetCauchy,(bp::arg("scale"),bp::arg("location")),"Returns a Cauchy distributed double with scale and location as parameters")
+
+    .def("set_num_streams",&TRandom::SetNumberStreams,bp::arg("nstreams"),"Sets the number of random streams")
+    .def("get_num_streams",&TRandom::GetNumberStreams,"Returns the number of random streams")
+
+    .def("set_seed",&TRandom::SetSeed,bp::arg("seed"),"Defines the random seed")
+    .def("get_seed",&TRandom::GetSeed,"Returns the value of the random seed")
+    .def("make_seed",&TRandom::MakeSeed,"Generate and return the random seed based upon system date and time")
     ;
 }
 //}

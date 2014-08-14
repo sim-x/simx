@@ -35,6 +35,10 @@ class Process(simx.Process):
 
 
     def compute(self, time):
+        """
+        Mimics computation of a process for the given number of time units by 
+        calling sleep(time). Does not give up the resource.
+        """
         self.sleep(time)
 
 

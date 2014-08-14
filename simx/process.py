@@ -22,8 +22,8 @@ class Process(object):
     """
     Base class for all processes in simx.
     Provides functionality for process oriented simulation
-    *Needs more description*
     """
+    #Needs more description*
 
     # def __init__(self,pid):
     #     self.pid = pid

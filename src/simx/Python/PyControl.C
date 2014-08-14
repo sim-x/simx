@@ -85,8 +85,8 @@ using namespace simx::Control;
 
 void export_pycontrol() {
   
-  python::def("prepare_services",&simx::Python::preparePyServices);
-  python::def("prepare_service",&simx::Python::preparePyService);
+  python::def("prepare_services",&simx::Python::preparePyServices,"Pre-initialization of all services in the given list of services");
+  python::def("prepare_service",&simx::Python::preparePyService,"Pre-initialization of service");
   //python::def("create_controller",&simx::Python::createController);
 
   //export simx::Control enums
@@ -100,14 +100,14 @@ void export_pycontrol() {
     ;  
 
   // export time functions
-  def("get_min_delay",&simx::Python::getMinDelay);
-  def("get_local_min_delay",&simx::Python::getLocalMinDelay);
-  def("get_now",&simx::Python::getNow);
+  def("get_min_delay",&simx::Python::getMinDelay, "Returns the value of look-ahead in a parallel simulatoin");
+  def("get_local_min_delay",&simx::Python::getLocalMinDelay,"Returns the minimum delay with which events can be schedules on the local processor");
+  def("get_now",&simx::Python::getNow,"Returns the value of the simulation clock on this logical process");
   // export simx::Control functions
-  def("get_num_machines",&getNumMachines );
-  def("get_rank",&getRank );
-  def("get_num_lps",&getNumLPs );
-  def("get_sim_phase",&getSimPhase );
-  def("get_processor_name",&getProcessorName,
+  def("get_num_machines",&getNumMachines,"Returns the number of MPI processes in a simulation" );
+  def("get_rank",&getRank,"Returns the MPI rank of this process" );
+  def("get_num_lps",&getNumLPs,"Returns the number of logical processes. This is usually the same as the number of MPI processes." );
+  def("get_sim_phase",&getSimPhase,"Returns the current simulation phase. Will be one of PHASE_INIT, PHASE_RUN or PHASE_WRAPUP" );
+  def("get_processor_name",&getProcessorName,"Returns the processor name on which the calling process is running",
       return_value_policy<copy_const_reference>());
 }

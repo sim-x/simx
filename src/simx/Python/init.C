@@ -391,11 +391,13 @@ int die( const string& emsg )
 
 }
 void export_init() {
-  python::def("init_mpi",init_mpi);
-  python::def("init_config",init_config);
+  python::def("init_mpi",init_mpi,"Initializes MPI communicator");
+  python::def("init_config",init_config,"Initializes the configuration module. "
+	      "This has to be initialized before the configuration values are set.");
   //python::def("init_main",init_main);
   python::def("init_env",init_env);
-  python::def("run",run_simulation);
+  python::def("run",run_simulation,"Calling this function actually starts the simulation. "
+	      "Typically called after initializing the configuration variables, creating entities, etc");
 }
 //--------------------------------------------------------------------------
 // end

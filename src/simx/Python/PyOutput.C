@@ -77,9 +77,9 @@ void export_PyOutput() {
   python::def("output",static_cast< void(*)
 	      (const PyEntity&, const OutputRecordType,
 	       const python::str&)>
-	      (&PyOutput), PyEntOutput() );
+	      (&PyOutput), PyEntOutput());//,"Accessor for output stream of PyEntity");
   python::def("output",static_cast< void(*)
 	      (const PyService&, const OutputRecordType,
 	       const python::str&)>
-	      (&PyOutput), PyServOutput() );
+	      (&PyOutput), PyServOutput());//,"Accessor for output stream of PyService" );
 }
