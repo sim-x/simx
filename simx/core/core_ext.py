@@ -17,10 +17,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See LICENSE.txt for more details.
 
 """
-Extensions to simx.core
+
+Extensions to :mod:`simx.core.core`
+
 """
 
 import core
+
 #from  simx import DebugStream as ds
 import DebugStream as ds
 

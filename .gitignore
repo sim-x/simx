@@ -1,5 +1,5 @@
 *~
 build/
 config.py
-config.pyc
+*.pyc
 simx.egg-info/

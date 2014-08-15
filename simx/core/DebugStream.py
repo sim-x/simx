@@ -25,6 +25,14 @@ import core
 
 # Define debug streams
 class DebugStream:
+    """
+
+    Class for writing log messages to the simx log files
+    :param stream_type: stream_type can be of the following types::
+     * :func:`simx.core.core.debug1`
+     * debug2
+
+    """
     def __init__(self,stream_type):
         self.stream_type = stream_type
         self.debug_str = StringIO()

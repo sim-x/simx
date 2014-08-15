@@ -66,7 +66,7 @@ void export_Random();
 BOOST_PYTHON_MODULE(core)
 {
   
-  boost::python::scope().attr("__doc__") = "SimX Documentation";
+  boost::python::scope().attr("__doc__") = "**SimX Classes and Functions Exported from C++**";
   boost::python::docstring_options doc_st_opt(true,true,false);
   PyEval_InitThreads();
   export_SetConfigurationValue();
