@@ -9,18 +9,26 @@ anonymous git using the following  command
 
 git clone http://github.com/sim-x/simx.git
 
+SimX can also be downloaded from the Python package index site at
+https://pypi.python.org/pypi/simx
+
 SimX Requirements
 =================
 
-Most of Simx is written in C++ and will have to be built from source. 
-The SimX build system uses Python's setuptools along with CMake for
+Detailed installation instructions are available at http://simx.lanl.gov/install.html
+
+Pre-built packages are available for Fedora Linux. See http://simx.lanl.gov/install.html
+for more details.
+
+SimX can also be built from source. Most of Simx is written in C++ ; the
+SimX build system uses Python's setuptools along with CMake for
 determining platform specific configuration parameters. In addition to
 a C++ compiler and Python (>=2.4 ) you will need the following 
 packages installed prior to building SimX
 
 - CMake (>=2.6)
 - Boost C++ library ( >= 1.35)
-- MPI (required for parallel simulations. See below for building without MPI)
+- MPICH implementation of MPI (required for parallel simulations. See below for building without MPI)
 
 SimX also uses a Python package called greenlets for process oriented 
 simulations; this will be automatically installed while building SimX.
@@ -66,17 +74,12 @@ For this, do the following:
 python setup.py build --without-ssf
 python setup.py install
 
-This alternative build requires MPI; it also requires that your MPI installation 
-be fully multi-threaded (on the otherhand, SSF can run on both single and 
-multi-threaded MPI). Depending on your computational setup and simulation needs, 
+Depending on your computational setup and simulation needs, 
 one or the other might perform better.  
-
-Note: If disabling MPI, SimX will use SSF.
-
 
 Using SimX
 ==========
 
 See the examples directory for some simple python simulation applications that use the 
-SimX APIs.
-
+SimX APIs. More information on setting up a simulation using SimX is available at 
+http://simx.lanl.gov/getting-started.html
