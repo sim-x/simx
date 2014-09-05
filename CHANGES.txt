@@ -1,0 +1,13 @@
+v0.1, 2013/08/13 -- Initial release
+
+v0.2, 2014/08/11
+* Support for process oriented simulation
+* Added an 'os' module for computer systems simulation
+* Lots of minor bug fixes
+
+v0.3, 2014/09/05
+* SimEngine (SimX's native message passing and synchronization library)
+  is now the default, instead of miniSSF
+* SimEngine now can be built without MPI for non-parallel simulations
+* Added a new example consensus in the examples/ directory that illustrates
+  usage of SimX for simulating complex networks.

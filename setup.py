@@ -125,7 +125,7 @@ with open('README.txt') as file:
 
 setup(
     name = "simx",
-    version = '0.2',
+    version = '0.3',
     description = 'Parallel simulation library for Python',
     requires = ["greenlet"],
     install_requires = ["greenlet"],
