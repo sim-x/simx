@@ -29,7 +29,7 @@ import distutils.dir_util as dd
 # CMake function
 #################
 #def run_cmake(cmake_args="-DSIMX_USE_PRIME=1 -DSIMX_USE_MPI=1"):
-def run_cmake(use_prime=1,use_mpi=1):
+def run_cmake(use_prime=0,use_mpi=1):
     """
     Runs CMake to determine configuration for this build
     """
@@ -79,17 +79,16 @@ class install(_install.install):
 class  build(_build.build):
 
     user_options=_build.build.user_options + \
-        [('without-ssf',
+        [('with-ssf',
           None,
-          "Uses SimEngine instead of SSF for message passing and synchronization. \
- This will only work with multithreaded MPI"),
+          "Uses the miniSSF synchronization engine instead of SimX's native engine for message passing and synchronization."),
          ('without-mpi',
           None,
-          "Build without MPI support. Parallel simulations are disabled in this case. This option cannot be used together with the --without-ssf option. ")]
+          "Build without MPI support. Parallel simulations are disabled in this case.")]
 
     def initialize_options(self):
         _build.build.initialize_options(self)
-        self.without_ssf = 0
+        self.with_ssf = 0
         self.without_mpi = 0
         
     def run(self):
@@ -98,7 +97,7 @@ class  build(_build.build):
         #     print "--without-ssf and --without-mpi cannot be used together"
         #     print "run setup.py build --help for options to build command"
         #     sys.exit(-1)
-        run_cmake(use_prime=not self.without_ssf,
+        run_cmake(use_prime=self.with_ssf,
                   use_mpi = not self.without_mpi)
         # if 
         # if self.without_ssf:
@@ -126,12 +125,12 @@ with open('README.txt') as file:
 
 setup(
     name = "simx",
-    version = '0.1',
+    version = '0.2',
     description = 'Parallel simulation library for Python',
     requires = ["greenlet"],
     install_requires = ["greenlet"],
     include_package_data = True,
-    url = 'http://github.com/sim-x/simx',
+    url = 'http://simx.lanl.gov',
     author='Sunil Thulasidasan, Lukas Kroc and others',
     author_email = 'simx-dev@lanl.gov',
     maintainer_email = 'simx-dev@lanl.gov',
