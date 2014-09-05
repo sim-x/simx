@@ -34,9 +34,9 @@ if(SIMX_USE_MPI)
     endif()
 else()
     #compiling without MPI, make sure we're using SSF
-    if(NOT SIMX_USE_PRIME)
-	message(FATAL_ERROR "non-MPI build must use SSF. Rebuild with SSF enabled (-DSIMX_USE_PRIME=1)")
-    endif()
+    #if(NOT SIMX_USE_PRIME)
+#	message(FATAL_ERROR "non-MPI build must use SSF. Rebuild with SSF enabled (-DSIMX_USE_PRIME=1)")
+ #   endif()
 endif()
 
 # for boost

@@ -35,7 +35,9 @@
 #include <iostream>
 #include <algorithm>
 
+#ifdef HAVE_MPI_H
 #include "mpi.h"
+#endif
 
 #include "simx/type.h"
 #include "simx/EventInfo.h"

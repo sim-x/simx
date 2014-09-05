@@ -101,13 +101,13 @@ int die( const string& emsg );
   return MPI_SUCCESS;
 #else
   return 0;
-#endif
+#endif // HAVE_MPI_H
 
 #else    // we are using simengine
 
   const int mySignals[15] = { 1,2,3,4,5,6,7,8,9,0,0,0,13,14,15 };
   Global::InstallSignalHandler(mySignals);
-
+#ifdef HAVE_MPI_H
   // --------- Start MPI
 
   // mpirun mangles the command line.  MPI_Init demangles it, so
@@ -162,19 +162,27 @@ int die( const string& emsg );
     MPI_Abort(MPI_COMM_WORLD, 1);
   }    
 
-
+#endif //HAVE_MPI_H
   
   Common::Values::SetProgName( Global::GetBaseName( name ) );
 
+#ifdef HAVE_MPI_H
   cerr << Common::Values::gProgName() << ": MPI_Init OK" << endl;
-  
+#endif
+
   const string failMsg = Common::Values::gProgName() + 
 			 " execution failed: ";
+#ifdef HAVE_MPI_H
   int rank = -1;
   mpiReturn = MPI_Comm_rank( MPI_COMM_WORLD, &rank );
   Common::Values::SetRank( rank );
   cout << "MPI rank is " << rank << endl;
+#else
+  int rank = 0;
+  Common::Values::SetRank(rank);
+#endif
   const int myRank( Common::Values::gRank() );
+#ifdef HAVE_MPI_H
   int mpiSize;
   const int mpiReturn2( MPI_Comm_size( MPI_COMM_WORLD, &mpiSize ) );
 
@@ -193,7 +201,9 @@ int die( const string& emsg );
     log().Failure( 0, emsg );
   }
   return MPI_SUCCESS;
-#endif
+#endif //HAVE_MPI_H
+
+#endif // SIMX_USE_PRIME
 
 }
  
@@ -362,14 +372,16 @@ int run_simulation() {
 #else  // simengine   
   // --------- Successful completion
 
+#ifdef HAVE_MPI_H
  cerr << Common::Values::gProgName() << ": calling MPI_Finalize" << endl;
  MPI_Finalize();
- //cerr << Common::Values::gProgName() << ": finalized" << endl;
+#else
+ cerr << Common::Values::gProgName() << ": finalized" << endl;
  //log().Success( 0 );
-
+#endif //HAVE_MPI_H
  return EXIT_SUCCESS;
 
-#endif
+#endif // SIMX_USE_PRIME
 }
 
 //--------------------------------------------------------------------------
@@ -382,7 +394,9 @@ int die( const string& emsg )
   log().Failure( 0, fullmsg );
 
 #ifndef SIMX_USE_PRIME
+#ifdef HAVE_MPI_H
   MPI_Abort(MPI_COMM_WORLD, 1);
+#endif
 #endif
   return EXIT_FAILURE;
 }

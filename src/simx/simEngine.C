@@ -19,7 +19,7 @@
 //--------------------------------------------------------------------------
 // File:    simEngine.C
 // Module:  simx
-// Author:  Lukas Kroc
+// Author:  Lukas Kroc, Sunil Thulasidasan
 // Created: Feb 25 2010
 //
 // @@
@@ -31,7 +31,10 @@
 #include <iostream>
 #include <algorithm>
 
+#ifdef HAVE_MPI_H
 #include "mpi.h"
+#endif
+
 #include "pthread.h"
 
 #include "simx/simEngine.h"
@@ -53,13 +56,17 @@ namespace {
 
 using namespace simx;
 
-// MPI STUFF
+
 int g_num_proc;		// number of processes
 int g_my_rank;		// rank of process
+
+#ifdef HAVE_MPI_H
+// MPI STUFF
 MPI_Datatype g_mpi_time_type;	// type of simx time
 const int g_eventinfo_tag = 1;	//< tag for EventInfos
 MPI_Comm g_comm_events;	//< the communicator for events
 MPI_Comm g_comm_sync;	//< the communicator for sync
+#endif
 
 // TIMING
 Time g_time_start;	// when the sim starts
@@ -70,10 +77,13 @@ Time g_time_next_sent = numeric_limits<Time>::max();	//< the estimate of the nex
 
 // EVENT QUEUE
 EventQueue		g_eq;		//< EVENT QUEUE
+
+#ifdef HAVE_MPI_H
 pthread_mutex_t 	g_eqlock;	// for for the event queue access
+#endif
 
 
-
+#ifdef HAVE_MPI_H
 // THE LISTENING THREAD FUNCTION:
 // (listens for any messages coming in, and puts them into Evetn Queue)
 void* listeningThread(void*)
@@ -160,7 +170,7 @@ void* listeningThread(void*)
     Logger::info() << "LISTENING THREAD DONE: listening thread done" << endl;
     pthread_exit(NULL);
 }
-
+#endif
 
 } // unnamed namespace
 
@@ -174,9 +184,10 @@ namespace SimEngine {
 //=============================================================
 
 
-// initializes MPI
+// initializes MPI, if enabled
 void init()
 {
+#ifdef HAVE_MPI_H
     // MPI MUST BE RUNNING (done in framework/Global/main_MPI.C)
 
     // create our communicators:
@@ -200,7 +211,10 @@ void init()
     else if( typeid( Time ) == typeid(unsigned long long) )
         g_mpi_time_type = MPI_UNSIGNED_LONG_LONG;
     else Logger::failure("Unsupported simx::Time type in SimEngine::init()");
-
+#else
+    g_my_rank = 0;
+    g_num_proc = 1;
+#endif
     if( ! (sizeof( EventInfo ) > 1 ) ) 
     {
 	Logger::failure("EventInfo must be at least 2 bytes large");
@@ -209,13 +223,14 @@ void init()
     }
 }
 
-// returns the number of machines in the MPI world
+// returns the number of machines in the MPI world; will be 1
+// if MPI is not enabled
 int getNumMachs()
 {
     return g_num_proc;
 }
 
-// returns the rank of this machine
+// returns the rank of this machine; will be 0 if MPI is not enabled
 int getRank()
 {
     return g_my_rank;
@@ -226,14 +241,17 @@ void prepare(Time start, Time stop)
 {
     g_time_start = start;
     g_time_end = stop;
+#ifdef HAVE_MPI_H
     int lockRet =  pthread_mutex_init( &g_eqlock, NULL);
     SMART_VERIFY( lockRet == 0)( lockRet ).msg("Cannot initialize thread queue lock");
-	
+#endif
+       
 }
 
 // runs the simulation, does not return untill the end
 void run()
 {
+#ifdef HAVE_MPI_H
     // START A SEPARATE THREAD FOR LISTENING TO INCOMMING MESSAGES
     Logger::info() << "MAIN THREAD START: creating other threads" << endl;
 
@@ -345,6 +363,72 @@ void run()
 //    pthread_cancel( ltId );
 
     pthread_mutex_destroy( &g_eqlock );
+
+#else  // MPI not enabled
+
+    Logger::info() << "SimEngine: Starting simulation" << endl;
+    //Time base_time = g_time_start;
+    g_time_now = g_time_start;
+    while( g_time_now <= g_time_end)
+      {
+	//g_time_now = base_time;
+	//Time next_tie = g_time_end + 1;
+	//bool done = false;
+	//while (true)
+	//  {
+	    EventInfo e;
+	    if ( g_eq.empty() )
+	      {
+		//done = true;
+		break;
+	      }
+	    else
+	      {
+		e = g_eq.top();
+		g_eq.pop();
+	      }
+	    //if (done)
+	    //  break;
+	    SMART_ASSERT( e.getTime() >= g_time_now)(e.getTime())
+	      (g_time_now);
+	    g_time_now = e.getTime();
+	    Logger::debug2() << "Executing event:" << e << endl;
+	     /// 2c) and execute the event
+	    /// main try{} catch{} loop of simx
+	    try {
+	      e.execute();
+	    }
+	    catch(const Exception& ex)
+	      {
+		switch( ex.getLevel() )
+		  {
+		  case Exception::kINFO:
+		    Logger::debug2() << "Exception: " << ex.getDescription() << endl;
+		    break;
+		  case Exception::kWARN:
+		    Logger::warn() << "Exception: " << ex.getDescription() << endl;
+		    break;
+		  case Exception::kERROR:
+		    Logger::error() << "Exception: " << ex.getDescription() << endl;
+		    break;
+		  case Exception::kFATAL:
+		    Logger::error() << "FATAL Exception: " << ex.getDescription() << endl;
+		    Logger::failure( "FATAL Exception caught");
+		    break;
+		  default:
+		    Logger::error() << "(UNKNOWN) Exception: " << ex.getDescription() << endl;
+		  }
+	      }
+	    catch(const std::exception& ex)
+	      {
+		SMART_ASSERT( ex.what() );
+		Logger::error() << "simEngine.C: std::exception: " << ex.what() << endl;
+	      }
+	    //	  }
+      }
+    Logger::info() << "SimEngine: Simulation Done" << endl;
+    
+#endif
 }
 
 // shuts down MPI
@@ -360,8 +444,10 @@ void finalize()
   // clear out events from event queue before python erases them.
   g_eq.finalize();
   
+#ifdef HAVE_MPI_H
   MPI_Comm_free( &g_comm_events );
-    MPI_Comm_free( &g_comm_sync );
+  MPI_Comm_free( &g_comm_sync );
+#endif
 }
 
 //=============================================================
@@ -378,6 +464,7 @@ void sendEventInfo( LPID destLP, const EventInfo& e )
 {
     Logger::debug3() << "Sending EventInfo " << e << " for " << destLP << endl;
 
+#ifdef HAVE_MPI_H
     if( g_my_rank == destLP )
     {
 	Logger::debug3() << "    .... no need to pack it" << endl;
@@ -408,6 +495,9 @@ void sendEventInfo( LPID destLP, const EventInfo& e )
 	// in it, send that synchronously, and send the rest using normal send. 
 	MPI_Ssend( dp.getMem(), dp.getLength(), MPI_BYTE, destLP, g_eventinfo_tag, g_comm_events );
     }
+#else // MPI  not enabled
+    g_eq.push( e.getTime(), e );
+#endif
 }
 
 } // namespace SimEngine

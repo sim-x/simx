@@ -14,8 +14,10 @@ update_interval = 5
 vel_scale_factor = 50
 #vel_scale_factor = 10
 num_nodes = 200
-end_time = 2048
+end_time = 1024
+#graph_radius = 0.0825
 graph_radius = 0.125
+#graph_radius = 0.05
 
 #position info for nodes created on this process
 local_pos = {}
@@ -23,7 +25,7 @@ local_pos = {}
 #setting the seed below ensures that all simulation
 #generate the same graph
 import random
-random.seed(0)
+random.seed(1)
 
 G=nx.random_geometric_graph(num_nodes,graph_radius)
 # position is stored as node attribute data for random_geometric_graph
