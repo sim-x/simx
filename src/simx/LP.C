@@ -57,6 +57,7 @@
 #include <boost/python.hpp>
 #include "simx/PyEventInfoManager.h"
 #include "simx/EventInfoManager.h"
+#include "simx/constants.h"
 
 using namespace std;
 using namespace boost;
@@ -122,19 +123,28 @@ void LP::sendEventInfo(EventInfo& e) const
 {
     EntityID entityID = e.getDestEntity();
     Time delay = e.getDelay();
-
-
-    if( delay < LP::MINDELAY )
-    {
-     
-	Logger::error() << "LP.C on LP " << getId() << ": too late sending event with delay "
-	    << delay << " at time " << getNow() << ", will be delivered later" << endl;
-	Logger::error() << "setting delay to LP::MINDELAY of " << LP::MINDELAY;
-	delay = LP::MINDELAY;
-    }
-
-
     LPID destLP = theEntityManager().findEntityLpId( entityID );
+    
+    if ( destLP == Control::getRank() )
+      {
+	if (delay < LOCAL_MINDELAY )
+	  {
+	    Logger::error() << "LP.C on LP " << getId() << ": too late sending event with delay "
+			    << delay << " at time " << getNow() << ", will be delivered later" << endl;
+	    Logger::error() << "setting delay to LOCAL_MINDELAY of " << LOCAL_MINDELAY;
+	    delay = LOCAL_MINDELAY;
+	  }
+      }
+    else { // detLP is different from this LP
+      if( delay < LP::MINDELAY )
+	{
+     
+	  Logger::error() << "LP.C on LP " << getId() << ": too late sending event with delay "
+			  << delay << " at time " << getNow() << ", will be delivered later" << endl;
+	  Logger::error() << "setting delay to LP::MINDELAY of " << LP::MINDELAY;
+	  delay = LP::MINDELAY;
+	}
+    }
     
     // set the time the event is supposed to execute at
     Time eventTime = getNow() + delay;
