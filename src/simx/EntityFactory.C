@@ -38,6 +38,7 @@ using namespace boost;
 
 namespace simx { 
 
+using boost::shared_ptr;
 
   void PyEntityCreator::registerObject( const Entity::ClassType& name, 
 					const python::object& py_entity_class ) {

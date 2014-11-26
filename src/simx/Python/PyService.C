@@ -46,6 +46,8 @@ using namespace boost;
 
 namespace simx {
 
+using boost::shared_ptr;
+
   namespace Python {
 
     void PyService::receive( shared_ptr<PyInfo> info )
