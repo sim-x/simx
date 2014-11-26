@@ -1,0 +1,11 @@
+language: cpp
+
+before_install:
+ - sudo apt-get update
+ - sudo apt-get install cmake python-dev libboost-all-dev mpich2 libmpich2-dev
+
+script:
+ - python2 setup.py build && sudo python2 setup.py install 
+
+compiler:
+  - gcc
