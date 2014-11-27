@@ -42,6 +42,8 @@ using namespace boost;
 
 namespace simx {
 
+using boost::shared_ptr;
+
   namespace Python {
 
     //python::object gNoneObject = python::api::object();

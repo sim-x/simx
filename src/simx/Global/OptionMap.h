@@ -38,6 +38,7 @@
 #include "simx/Global/OptionManager.h"
 #include "simx/loki/Singleton.h"
 #include <map>
+#include <string>
 
 //-------------------------------------------------------------------------
 //-------------------------------------------------------------------------

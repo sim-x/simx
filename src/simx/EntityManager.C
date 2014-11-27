@@ -51,6 +51,8 @@ using namespace boost;
 
 namespace simx {
 
+using boost::shared_ptr;
+
 EntityManager::EntityManager()
     :	fEntityPtrMap(),
 	fInputHandler("EntityProfile"),
@@ -117,7 +119,7 @@ bool EntityManager::createEntity(const EntityID& id, const Entity::ClassType& ty
 	Logger::debug3() << "EntityManager::createEntityFromInput: informing other machines" << endl;
         SMART_VERIFY( fMyLpPtr ).msg("Cannot create new Entities on machines with no LPs");
 	
-        boost::shared_ptr<InfoControllerModifyEntity> info;
+        shared_ptr<InfoControllerModifyEntity> info;
         theInfoManager().createInfo( info );
 	info->fAction = InfoControllerModifyEntity::kADD;
         info->fEntityId = id;
@@ -157,7 +159,7 @@ void EntityManager::createController() {
 	EntityInput::loadServices( controllerInput, controllerServicesStr );
 	fMyLpPtr = (lps.begin())->second;
 	SMART_ASSERT( fMyLpPtr );
-	fControllerPtr = boost::shared_ptr<Controller>( new Controller( *fMyLpPtr, controllerInput) );	///< create is on _some_ LP in the set
+	fControllerPtr = shared_ptr<Controller>( new Controller( *fMyLpPtr, controllerInput) );	///< create is on _some_ LP in the set
 	SMART_ASSERT( fControllerPtr );
 
 	/// remember the pointer just like any other entity
@@ -297,7 +299,7 @@ LPID EntityManager::defaultEntityPlacingFunction( const EntityID& entId ) const
   // 				      const ProfileID profileId, const python::object& data )
 
   // {
-  //   boost::shared_ptr<Input> input( fInputHandler.createInput( "PyEntity", profileId, data ) );
+  //   shared_ptr<Input> input( fInputHandler.createInput( "PyEntity", profileId, data ) );
   //   SMART_ASSERT( input );
   //   return createEntityonLP( id, type, profileId, input );
   // }
@@ -309,7 +311,7 @@ LPID EntityManager::defaultEntityPlacingFunction( const EntityID& entId ) const
   bool EntityManager::createPyEntity( const Python::PyEntityData& ent_data )
 
   {
-    boost::shared_ptr<Input> input( fInputHandler.createInput( "PyEntity", ent_data.fProfileId, ent_data.fProfile, ent_data.fData ) );
+    shared_ptr<Input> input( fInputHandler.createInput( "PyEntity", ent_data.fProfileId, ent_data.fProfile, ent_data.fData ) );
     SMART_ASSERT( input );
     // return createEntityonLP( id, type, profileId, input );
     return createPyEntityonLP( ent_data.fEntityId, ent_data.fEntityType, 
@@ -324,7 +326,7 @@ bool EntityManager::createEntityPrivate(const EntityID& id, const Entity::ClassT
     Logger::debug3() << "EntityManager::createEntityPrivate " << id << " of type " << type << endl;
 
     // get input object and fill it with data
-    boost::shared_ptr<Input> input( fInputHandler.createInput( type, profileId, data ) );
+    shared_ptr<Input> input( fInputHandler.createInput( type, profileId, data ) );
     SMART_ASSERT( input );
 
     return createEntityonLP( id, type, profileId, input );
@@ -376,7 +378,7 @@ bool EntityManager::createEntityPrivate(const EntityID& id, const Entity::ClassT
 	LP& lp = *(lpIter->second);
 
 	// actually create the entity:
-	boost::shared_ptr<Entity> entity = creator.create( id, lp, *input, type);
+	shared_ptr<Entity> entity = creator.create( id, lp, *input, type);
 
 	// now remember where this entity is:
 	if( !fEntityPtrMap.insert( make_pair(
@@ -434,7 +436,7 @@ bool EntityManager::createEntityPrivate(const EntityID& id, const Entity::ClassT
 	LP& lp = *(lpIter->second);
 
 	// actually create the entity:
-	boost::shared_ptr<Entity> entity = fPyEntityCreator->create( id, lp, *input, type);
+	shared_ptr<Entity> entity = fPyEntityCreator->create( id, lp, *input, type);
 
 	// now remember where this entity is:
 	if( !fEntityPtrMap.insert( make_pair(
