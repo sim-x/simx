@@ -267,7 +267,9 @@ bool EntityManager::getEntity( const EntityID& id, boost::shared_ptr<EntityClass
 template<typename T>
 void EntityManager::probeEntities( void (T::*method)(void), boost::tuples::element<0, EntityID>::type eType ) const
 {
+#ifdef DEBUG
     Logger::debug3() << "EntityManager: probingEntities() with " << method << std::endl;
+#endif
     SMART_ASSERT( method ).msg("Cannot probe with NULL member pointer");
     
     
@@ -295,7 +297,9 @@ void EntityManager::probeEntities( void (T::*method)(void), boost::tuples::eleme
 template<typename T, typename Arg1, typename Arg1a>
 void EntityManager::probeEntities( void (T::*method)(Arg1), Arg1a& arg1, boost::tuples::element<0, EntityID>::type eType ) const
 {
+#ifdef DEBUG
     Logger::debug3() << "EntityManager: probingEntities(Arg) with " << method << std::endl;
+#endif
     SMART_ASSERT( method ).msg("Cannot probe with NULL member pointer");
     
     

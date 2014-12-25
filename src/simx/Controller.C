@@ -220,6 +220,7 @@ void Controller::processIncomingInfo( boost::shared_ptr<Info> info, const Servic
 
 void Controller::pollInput(void)
 {
+  assert(false);
     Logger::debug3() << "Controller polls for input and checks if we need to pause" << endl;
     
     // see if you need to pause according to fRunTill:

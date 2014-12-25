@@ -167,7 +167,7 @@ int die( const string& emsg );
   Common::Values::SetProgName( Global::GetBaseName( name ) );
 
 #ifdef HAVE_MPI_H
-  cerr << Common::Values::gProgName() << ": MPI_Init OK" << endl;
+  //cerr << Common::Values::gProgName() << ": MPI_Init OK" << endl;
 #endif
 
   const string failMsg = Common::Values::gProgName() + 
@@ -176,7 +176,7 @@ int die( const string& emsg );
   int rank = -1;
   mpiReturn = MPI_Comm_rank( MPI_COMM_WORLD, &rank );
   Common::Values::SetRank( rank );
-  cout << "MPI rank is " << rank << endl;
+  //cout << "MPI rank is " << rank << endl;
 #else
   int rank = 0;
   Common::Values::SetRank(rank);
@@ -373,10 +373,10 @@ int run_simulation() {
   // --------- Successful completion
 
 #ifdef HAVE_MPI_H
- cerr << Common::Values::gProgName() << ": calling MPI_Finalize" << endl;
- MPI_Finalize();
+  //cerr << Common::Values::gProgName() << ": calling MPI_Finalize" << endl;
+  MPI_Finalize();
 #else
- cerr << Common::Values::gProgName() << ": finalized" << endl;
+  //cerr << Common::Values::gProgName() << ": finalized" << endl;
  //log().Success( 0 );
 #endif //HAVE_MPI_H
  return EXIT_SUCCESS;

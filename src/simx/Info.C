@@ -44,7 +44,9 @@ void Info::pack(PackedData& dp) const
 {
     // get the size of the structure (w/o VMT):
     unsigned infoSize = getInfoHandler().getByteSize() - sizeof(Info);
+#ifdef DEBUG
     Logger::debug3() << "Info: automatic packing of " << getInfoHandler().getClassType() << " with size=" << infoSize << std::endl;
+#endif
     SMART_ASSERT( infoSize>=0 );
 
     // cast the object as a char array and skip the VMT stuff (everythig in Info):
@@ -61,7 +63,9 @@ void Info::unpack(PackedData& dp)
     // we assume that the size of the structure comes first:
     unsigned infoSize;
     dp.get( infoSize );
+#ifdef DEBUG
     Logger::debug3() << "Info: automatic unpacking of " << getInfoHandler().getClassType() << " with size=" << infoSize << std::endl;
+#endif
     SMART_VERIFY( infoSize == getInfoHandler().getByteSize()-sizeof(Info) )(infoSize)(getInfoHandler().getByteSize())(sizeof(Info));
 
     // now fill in the space appropriately

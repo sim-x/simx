@@ -134,13 +134,17 @@ namespace simx
 
 	    if ( processEntry( curr_entry ) )
 	      {
+#ifdef DEBUG
 		simx::Logger::debug3() << "Table Reader: Processed " << i++ << " entries " << std::endl;
+#endif
 		foundEntry = true;
 		typename std::map< OwnerType, boost::shared_ptr<MapType> >::const_iterator
 		  iter = tmap.find( curr_entry );
 		if ( iter == tmap.end() )
 		  {
+#ifdef DEBUG
 		    simx::Logger::debug3() << "Inserting entry for " << curr_entry << std::endl;
+#endif
 		    boost::shared_ptr<MapType> map_ptr( new MapType );
 		    tmap.insert( make_pair( curr_entry, map_ptr ));
 		    curr_map_ptr = map_ptr;

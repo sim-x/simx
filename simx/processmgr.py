@@ -229,7 +229,7 @@ class ProcessManager(core.PyService):
         """
         Creates a new process table entry for process
         """
-        util.check_type(process.Process, proc)
+        #util.check_type(process.Process, proc)
         if self.proc_table.has_key(id(proc)):
             if self.proc_table[id(proc)].status_ != ProcStatus._inactive:
                 ds.failure.write("ProcessManager: Process must either be new or inactive in order to be activated")
@@ -275,7 +275,7 @@ class ProcessManager(core.PyService):
         is put to sleep indefinitely till woken up by the
         main thread
         """
-        util.check_type(process.Process, proc)
+        #util.check_type(process.Process, proc)
         proc_info = self.proc_table[id(proc)]
         if proc_info.status_ != ProcStatus._active:
             ds.failure.write("ProcessManager: Invalid State for process ", 
@@ -296,7 +296,7 @@ class ProcessManager(core.PyService):
         """
         kills associated greenlet object and de-activates process
         """
-        util.check_type(process.Process, proc)
+        #util.check_type(process.Process, proc)
         # make sure the calling process is not trying to kill itself.
         global _gr_pm_map
         if _gr_pm_map[greenlet.getcurrent()] == proc:
@@ -325,7 +325,7 @@ class ProcessManager(core.PyService):
         This calls proc_kill_all recursively for all its children
         and calls kill for leaf processes.
         """
-        util.check_type( process.Process, proc)
+        #util.check_type( process.Process, proc)
         try:
             proc_info = self.proc_table[id(proc)]
         except KeyError:
@@ -341,7 +341,7 @@ class ProcessManager(core.PyService):
         Suspends process p1 till p2 finishes
         execution
         """
-        util.check_type(process.Process, p1)
+        #util.check_type(process.Process, p1)
         p1_info = self.proc_table[id(p1)]
         #print "in wait for. chaning proc info at memory location",p1_info
         if not p1_info.gobject_ == greenlet.getcurrent():
@@ -355,7 +355,7 @@ class ProcessManager(core.PyService):
     
     # waiton is untested.
     def proc_waiton(self, proc, resource):
-        util.check_type(process.Process, proc)
+        #util.check_type(process.Process, proc)
         proc_info = self.proc_table[id(proc)]
         if not proc_info.gobject_ == greenlet.getcurrent():
             ds.failure.write("ProcessManager: Invalid greenlet call state")

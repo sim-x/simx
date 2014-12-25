@@ -82,7 +82,7 @@ simx.set_min_delay(1)
 simx.set_log_level("debug3")
 simx.init_env()
 
-num_nodes = 1
+num_nodes = 2
 
 #create nodes
 for i in xrange(num_nodes):

@@ -127,12 +127,16 @@ DassfLP::~DassfLP()
 
 void DassfLP::init()
 {
+#ifdef DEBUG
   Logger::debug3() << "DassfLP init()" << endl;
+#endif
 } 
 
 void DassfLP::mapChannels()
 {
+#ifdef DEBUG
   Logger::debug3() << "DassfLP: mapping channels" << endl;
+#endif
   LPID local_id = fLP.getId();
   const string local = boost::lexical_cast<string>( fLP.getId() );
   for (int i=0; i < Control::getNumLPs(); ++i)
@@ -157,9 +161,10 @@ void DassfLP::wrapup()
 
 void DassfLP::sendDassfEvent(const LPID destLP, minissf::Event* e, const Time delay)
 {
+#ifdef DEBUG
   Logger::debug3() << "DassfLP " << fLP.getId() << ": sending event with delay " 
 		   << delay << " to LP " << destLP << ", at time " << now() << endl;
-  
+#endif
    Time realDelay;
     SMART_ASSERT( e );
     Time mindelay;
@@ -326,11 +331,12 @@ void DassfLP::process(minissf::Process* _ssf_proc)
        if ( event != 0 )
 	 {
 	   Logger::setTime( now() );
+#ifdef DEBUG
 	   Logger::debug2() << "DassfLP " << fLP.getId() 
 			    << ": in process() " << Control::getRank()
 			    << "/" << Control::getNumMachines()
 			    << " @" << now() << endl;
-	   
+#endif
 	   
 
 	    
@@ -342,10 +348,11 @@ void DassfLP::process(minissf::Process* _ssf_proc)
 				<< typeid(event).name() << ", ignored" << endl;
 		{ _ssf_pframe->call_return(); return; }
 	    }
+#ifdef DEBUG
     	    Logger::debug2() << "Executing event: "
 			     << Common::demangle(typeid(*e).name())
 			     << endl;
-
+#endif
 	    
 	    try {
 	      e->execute(fLP);
@@ -355,7 +362,9 @@ void DassfLP::process(minissf::Process* _ssf_proc)
 		switch( ex.getLevel() )
 		  {
 		  case Exception::kINFO:
+#ifdef DEBUG
 		    Logger::debug2() << "Exception: " << ex.getDescription() << endl;
+#endif
 		    break;
 		  case Exception::kWARN:
 		    Logger::warn() << "Exception: " << ex.getDescription() << endl;

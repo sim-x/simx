@@ -185,12 +185,16 @@ class Entity
 template<typename ServiceClass> 
 bool Entity::getService(ServiceAddress servAddr, boost::shared_ptr<ServiceClass>& ret) const throw()
 {
+#ifdef DEBUG
     Logger::debug2() << "Entity " << fId << ": looking for service with Address= " << servAddr << " in map " << fServices << std::endl;
+#endif
     ServiceMap::const_iterator iter = fServices.find(servAddr);
     if(iter==fServices.end())
     {
+#ifdef DEBUG
     	Logger::debug3() << "Entity " << fId << ": service with address " << servAddr 
 	                     << " doesn't exist" << std::endl;
+#endif
     	return false;
     }
     else
@@ -199,8 +203,10 @@ bool Entity::getService(ServiceAddress servAddr, boost::shared_ptr<ServiceClass>
     	boost::shared_ptr<ServiceClass> serv = boost::dynamic_pointer_cast<ServiceClass>(iter->second);
     	if( !serv )
     	{
+#ifdef DEBUG
 	        Logger::debug3() << "Entity " << fId << ": service of an incorrect type requested at addr=" << servAddr 
 				 << ", requested: " << typeid(ServiceClass).name() << std::endl;
+#endif
 		//commenting below line as it does not compile with clang
 		//cannot use typeid on a forward declared class. this is 
 		//standards-noncompliant - ST
@@ -233,9 +239,10 @@ void Entity::sendInfo(boost::shared_ptr<InfoClass>& info, const Time& delay, con
       Logger::warn() << "Entity: " << fId
 		     << " sending an Info that is not unique " << info << std::endl;
     }
+#ifdef DEBUG
     Logger::debug3() << "Entity: " << fId << ","
 		     << ": sending Info " << info << std::endl;
-
+#endif
     // send it off, and invalidate if not disabled
     if( invalidate )
     {

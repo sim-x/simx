@@ -73,7 +73,9 @@ namespace simx{
     {
       
       //      cout << "c++ pyentity " << id << " my address is " << long(this) << endl;
+#ifdef DEBUG
       Logger::debug3() << "I'm a c++ PyEntity" << std::endl;
+#endif
       i = id.get<1>();
       //createServices(*this,input.fServices);
       i = i+1;
@@ -121,8 +123,10 @@ namespace simx{
       if ( theEntityManager().findEntityLpId(e_id) !=
 	   Control::getRank() )
 	{
+#ifdef DEBUG
 	  Logger::debug3() << "PyEntity " << getId()
 			   << " : Sending remotely, proceeding to pickle Python object" << endl;
+#endif	  
 	  boost::shared_ptr<PyRemoteInfo> info;
 	  theInfoManager().createInfo( info );
 	  if ( ! info->pickleData( py_info ) )
@@ -139,8 +143,10 @@ namespace simx{
 	}
       else // destination entity lives on the same LP. Use regular PyInfo for sending
 	{
+#ifdef DEBUG
 	   Logger::debug3() << "PyEntity " << getId()
 			    << " : Sending locally" << endl;
+#endif
 #endif
 	  // either we are using SimEngine -- in which case sending local 
 	  // and remote infos use the same procedure -- or

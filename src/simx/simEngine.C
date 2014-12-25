@@ -48,6 +48,7 @@
 #include <limits>
 #include <assert.h>
 
+#include <sys/time.h>
 
 using namespace std;
 
@@ -74,6 +75,9 @@ Time g_time_end;	// when the sim ends
 Time g_time_now;	// CURRENT simulation time
 Time g_time_next_sent = numeric_limits<Time>::max();	//< the estimate of the next event from all we sent out each epoch
 
+  // Wall clock timing for performance measurements
+  struct timeval w_time_start;
+  
 
 // EVENT QUEUE
 EventQueue		g_eq;		//< EVENT QUEUE
@@ -251,14 +255,17 @@ void prepare(Time start, Time stop)
 // runs the simulation, does not return untill the end
 void run()
 {
+
+  gettimeofday(&w_time_start, NULL);
+  
 #ifdef HAVE_MPI_H
     // START A SEPARATE THREAD FOR LISTENING TO INCOMMING MESSAGES
     Logger::info() << "MAIN THREAD START: creating other threads" << endl;
-
+    
     
     pthread_t ltId;
-    int threadRet = pthread_create(&ltId, NULL, listeningThread, NULL);
-    SMART_VERIFY( threadRet == 0)( threadRet ).msg("Cannot create a thread");
+      int threadRet = pthread_create(&ltId, NULL, listeningThread, NULL);
+      SMART_VERIFY( threadRet == 0)( threadRet ).msg("Cannot create a thread");
 
     int tmp;	//< various ret values for asserts
     Time base_time = g_time_start;	//< the time we last synchronized
@@ -270,7 +277,7 @@ void run()
 	Time next_time = g_time_end+1;	//< the time for next event
     
 	// 2) do something now, untill you are more than MINDELAY away from base_time, or have no more events
-	Logger::info() << "A: working...." << endl;
+	//Logger::info() << "A: working...." << endl;
 	bool done = false;	//< done with this timestep?
 	while( true )
 	{
@@ -309,9 +316,9 @@ void run()
 	    // you might be beyond end_time due to MINDELAY
 	    if( g_time_now > g_time_end )
 		break;
-	    
+#ifdef DEBUG
     	    Logger::debug2() << "Executing event: " << e << endl;
-
+#endif
 	    /// 2c) and execute the event
 	    /// main try{} catch{} loop of simx
 	    try {
@@ -322,7 +329,9 @@ void run()
 		switch( ex.getLevel() )
 		{
 		    case Exception::kINFO:
+#ifdef DEBUG
 			Logger::debug2() << "Exception: " << ex.getDescription() << endl;
+#endif
 			break;
 		    case Exception::kWARN:
 			Logger::warn() << "Exception: " << ex.getDescription() << endl;
@@ -349,7 +358,7 @@ void run()
 	
 
 	// 3) find out what the next base_time is (SYNC)
-	Logger::info() << "B: waiting...." << endl;
+	//Logger::info() << "B: waiting...." << endl;
 	next_time = min( next_time, g_time_next_sent );	//< you must include the receive time of the sent events, to make sure pending events don't mess with the earliest time
 	MPI_Allreduce( &next_time, &base_time, 1, g_mpi_time_type, MPI_MIN, g_comm_sync );
 	
@@ -392,7 +401,9 @@ void run()
 	    SMART_ASSERT( e.getTime() >= g_time_now)(e.getTime())
 	      (g_time_now);
 	    g_time_now = e.getTime();
+#ifdef DEBUG
 	    Logger::debug2() << "Executing event:" << e << endl;
+#endif
 	     /// 2c) and execute the event
 	    /// main try{} catch{} loop of simx
 	    try {
@@ -403,7 +414,9 @@ void run()
 		switch( ex.getLevel() )
 		  {
 		  case Exception::kINFO:
+#ifdef DEBUG
 		    Logger::debug2() << "Exception: " << ex.getDescription() << endl;
+#endif
 		    break;
 		  case Exception::kWARN:
 		    Logger::warn() << "Exception: " << ex.getDescription() << endl;
@@ -443,13 +456,26 @@ void finalize()
 		   << " at end of simulation" << endl;
   // clear out events from event queue before python erases them.
   g_eq.finalize();
-  
+  uint64_t tot_events = g_eq.getNumEvents();
 #ifdef HAVE_MPI_H
+  uint64_t g_tot_events;
+  if (g_num_proc > 1) {
+    MPI_Allreduce( &tot_events, &g_tot_events,1,MPI_UNSIGNED_LONG_LONG,MPI_SUM,g_comm_sync);
+    tot_events = g_tot_events;
+  }
   MPI_Comm_free( &g_comm_events );
   MPI_Comm_free( &g_comm_sync );
 #endif
+  if (g_my_rank == 0)
+    {
+      std::cerr << "TOTAL EVENTS: " << tot_events << endl;
+      struct timeval w_time_end;
+      gettimeofday(&w_time_end,NULL);
+      double rt = (w_time_end.tv_usec - w_time_start.tv_usec)*0.000001;
+      //std::cerr << "TOTAL RUNNING TIME: " << rt << " (s) " << endl;
+      //std::cerr << "EVENT RATE: " << tot_events/rt << " (evts/s) " << endl;
+    }
 }
-
 //=============================================================
 //=============================================================
 
@@ -462,12 +488,16 @@ Time getNow()
 // DO NOT PACK AND SEND EVENTS TO YOURSELF
 void sendEventInfo( LPID destLP, const EventInfo& e )
 {
+#ifdef DEBUG
     Logger::debug3() << "Sending EventInfo " << e << " for " << destLP << endl;
-
+#endif
+    
 #ifdef HAVE_MPI_H
     if( g_my_rank == destLP )
     {
+#ifdef DEBUG
 	Logger::debug3() << "    .... no need to pack it" << endl;
+#endif
 
 	int tmp = pthread_mutex_lock( &g_eqlock );
 	SMART_ASSERT( tmp == 0 )(tmp);
@@ -477,13 +507,17 @@ void sendEventInfo( LPID destLP, const EventInfo& e )
 	  
     } else
     {
+#ifdef DEBUG
 	Logger::debug3() << "    .... packing it" << endl;
+#endif
 	PackedData dp;
 	e.pack( dp );
     
 	// send it off! (might block, but when it finishes, I can delete dp()
 	// tag==1 means EventInfo
+#ifdef DEBUG
 	Logger::debug3() << "    .... sending it to " << destLP << endl;
+#endif
 
 	g_time_next_sent = min( g_time_next_sent, e.getTime() );
 	

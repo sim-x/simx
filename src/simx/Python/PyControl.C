@@ -47,7 +47,9 @@ namespace simx {
   namespace Python {
     
     void preparePyService( const PyServiceData& serv_data ) {
+#ifdef DEBUG
       Logger::debug3() << "PyControl: preparing python service" << endl;
+#endif
       theServiceManager().preparePyService( serv_data );
     }
     

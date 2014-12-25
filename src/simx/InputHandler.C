@@ -53,9 +53,9 @@ template class InputHandler<std::string>;
 template<typename ObjectIdent>
 void InputHandler<ObjectIdent>::loadProfile( const ProfileID profileId, boost::shared_ptr<Input> input )
 {
-  
+#ifdef DEBUG
     Logger::debug3() << "InputHandler: loading profile " << profileId << endl;
-    
+#endif
     // obtain the appropriate profile set (contains all profileIds in that set)
     const Config::Configuration::ConfigSet& cset = gConfig.GetConfigurationSet(fProfileSetName);
     if (cset.size() == 0)
@@ -94,7 +94,9 @@ void InputHandler<ObjectIdent>::loadProfile( const ProfileID profileId, boost::s
 	    break;
 	}
 	// add the profile to the list
+#ifdef DEBUG
 	Logger::debug3() << "InputHandler: adding " << profileStr << " to the profileList" << endl;
+#endif
 	profileList.push_front( profilePtr );
 
 	// look for its parent

@@ -100,23 +100,25 @@ ServiceManager::~ServiceManager()
 
 void ServiceManager::prepareServices(const string& serviceFiles)
 {
+#ifdef DEBUG
     Logger::debug2() << "ServiceManager: in prepareServices, serviceFiles= '" << serviceFiles << "'" << endl;
-
+#endif
     stringstream sstr;
     sstr << serviceFiles;
     string servFile;
     // read all service files
     while( sstr >> servFile )
     {
+#ifdef DEBUG
 	Logger::debug3() << "ServiceManager: processing file " << servFile << endl;
-    
+#endif
         ServiceData::Reader reader(servFile);
         while (reader.MoreData())
         {
     	    ServiceData data = reader.ReadData();
-    
+#ifdef DEBUG
             Logger::debug3() << "ServiceManager: preparing service, data=" << data << endl;
-    		
+#endif	
     	    // get input object and fill it with data
     	    boost::shared_ptr<Input> input = fInputHandler.createInput( data.getClassType(), data.getProfileId(), data.getData() );
     	    SMART_ASSERT( input );
@@ -141,8 +143,9 @@ void ServiceManager::prepareServices(const string& serviceFiles)
 
 //  void ServiceManager::preparePyService(const python::object& serv_obj) {
     void ServiceManager::preparePyService(const Python::PyServiceData& serv_data) {
-    
+#ifdef DEBUG
     Logger::debug2() << "ServiceManager: in preparePyService " << endl;
+#endif
     try {
       // ServiceName name = python::extract<ServiceName>(serv_obj.attr("name_"));
       // Service::ClassType type = python::extract<Service::ClassType>(serv_obj.attr("type_"));
@@ -150,10 +153,12 @@ void ServiceManager::prepareServices(const string& serviceFiles)
       // string data = python::extract<string>
       // (serv_obj.attr("data_"));
       // stringstream ss(data);
+#ifdef DEBUG
       Logger::debug3() << "ServiceManager: preparing service, data=" << serv_data.fName
 		       << " "
 		       << serv_data.fClassType << " " << serv_data.fProfileId
 		       << endl;
+#endif
       boost::shared_ptr<Input> input = fInputHandler.createInput( "PyService",
 								  serv_data.fProfileId,
 								  serv_data.fProfile,
@@ -183,8 +188,9 @@ void ServiceManager::prepareServices(const string& serviceFiles)
 
 boost::shared_ptr<Service> ServiceManager::createService(const ServiceName& name, Entity& ent)
 {
+#ifdef DEBUG
     Logger::debug2() << "ServiceManager: creating service name=" << name << " on entity " << ent.getId() << endl;
-
+#endif
     ServiceInfoMap::const_iterator iter = fServiceInfoMap.find( name );
     if( iter == fServiceInfoMap.end() )
     {

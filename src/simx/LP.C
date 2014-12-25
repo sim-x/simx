@@ -84,7 +84,9 @@ LP::LP(LPID id)
 //  SMART_ASSERT( fDassfLP );
 
   Config::gConfig.GetConfigurationValueRequired( ky_MINDELAY, MINDELAY );
+#ifdef DEBUG
   Logger::debug3() << "LP.C setting mindelay to " << MINDELAY << endl;
+#endif
 #ifdef SIMX_USE_PRIME
   fDassfLP->mapChannels();
 #endif
@@ -149,10 +151,12 @@ void LP::sendEventInfo(EventInfo& e) const
     // set the time the event is supposed to execute at
     Time eventTime = getNow() + delay;
     e.setTime(eventTime);
-  
+
+#ifdef DEBUG
     Logger::debug2() << "LP " << fId << ": sending EventInfo: " << e 
 	<< " to entity " << entityID << " with delay " << delay << endl;
-
+#endif
+    
 #ifdef SIMX_USE_PRIME
     fDassfLP->sendDassfEvent(destLP, new DassfEventInfo(e), delay);
 #else
@@ -163,10 +167,11 @@ void LP::sendEventInfo(EventInfo& e) const
 void LP::sendEventInfoManager(EventInfoManager& e) const
 {
     LPID destLP = fId;
-  
+
+#ifdef DEBUG
     Logger::debug2() << "LP " << fId << ": sending EventInfoManager: " << e
 	<< " with delay " << e.getDelay()  << endl;
-
+#endif
     // set the time the event is supposed to execute at
     Time delay = e.getDelay();
     Time eventTime = getNow() + delay;
@@ -195,10 +200,11 @@ void LP::sendEventInfoManager(EventInfoManager& e) const
 void LP::sendPyEventInfoManager(PyEventInfoManager& e) const
 {
     LPID destLP = fId;
-  
+
+#ifdef DEBUG
     Logger::debug2() << "LP " << fId << ": sending PyEventInfoManager: " << e
 	<< " with delay " << e.getDelay()  << endl;
-
+#endif
     // set the time the event is supposed to execute at
     Time delay = e.getDelay();
     Time eventTime = getNow() + delay;
@@ -234,8 +240,10 @@ void LP::sendControlInfo( ControlInfoWrapper& cinfo )
   cinfo.setSentTime( fDassfLP->now() );
   cinfo.setSrcLP( fId );
   cinfo.setDestLP( destLP );
+#ifdef DEBUG
   Logger::debug2() << "LP " << fId << ": sending ControlInfo: " << cinfo 
 		   << " to entity " << entityID << endl;
+#endif
   //  bool res;
   if (!( Messenger::sendMessage( fId, destLP, cinfo )) )
     {

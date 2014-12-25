@@ -35,7 +35,7 @@ class System(core.PyService):
     """
     def __init__(self, name, node, service_input):
         super(System, self).__init__(name, node, service_input, self)
-        ds.debug1.write("OS.System ", name, "being created on entity",node.get_id())
+        #ds.debug1.write("OS.System ", name, "being created on entity",node.get_id())
         self.node = node
         self.pm = simx.processmgr.get_process_mgr()
         self.ready_processes = [] #processes waiting for CPU time

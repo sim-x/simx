@@ -99,7 +99,9 @@ InfoManager::InfoManager()
   }
 
   void InfoManager::setPyEventScheduler(boost::python::object evt_scheduler) {
+#ifdef DEBUG
     Logger::debug2() << "InfoManager setting Python event scheduler" << endl;
+#endif
     fPyEventScheduler  = evt_scheduler;
     //cerr << "pyeventscheduler location is " << evt_scheduler.ptr() << endl;
   
@@ -110,7 +112,9 @@ InfoManager::InfoManager()
   }
 
   void InfoManager::processPyEventInfoManager() {
+#ifdef DEBUG
     Logger::debug3() << "InfoManager received Python event info manager"  << endl;
+#endif
     //TODO: put in try-catch block
     //cerr << "pyeventscheduler location is " << fPyEventScheduler.ptr() << endl;
     fPyEventScheduler.attr("process_scheduler_event")();
@@ -153,10 +157,13 @@ void InfoManager::createInfo(Info::ClassType type, boost::shared_ptr<Info>& ptr)
 /// prepares all input files
 void InfoManager::prepareDataFiles(const std::string& infoFiles)
 {
+#ifdef DEBUG
     Logger::debug2() << "InfoManager: in prepareDataFiles, infoFiles= '" << infoFiles << "'" << endl;
+#endif
     const Control::LpPtrMap& lpMap = Control::getLpPtrMap();
+#ifdef DEBUG
     Logger::debug3() << "InfoManager: 	lps= " << lpMap << endl;
-
+#endif
     if( lpMap.empty() )
     {
 	// if there are no LPs, do nothing
@@ -176,8 +183,9 @@ void InfoManager::prepareDataFiles(const std::string& infoFiles)
     {
 	Logger::warn() << "InfoManager: there were no info files found" << endl;
     }
-    
+#ifdef DEBUG
     Logger::debug2() << "InfoManager: opened " << fFileVector.size() << " info files" << endl;
+#endif
 
     // now start reading them all
     for(unsigned fid = 0; fid < fFileVector.size(); ++fid)
@@ -199,10 +207,10 @@ void InfoManager::readDataFile( int fid )
 
     const Time TIMECHUNK = 1000*LOCAL_MINDELAY;	///< how much time ahead will it schedule events
     Time now = lp.getNow();
-    
+#ifdef DEBUG
     Logger::debug3() << "InfoManager: in readDataFile at time " << now
 	<< ", fid= " << fid << endl;
-
+#endif
     SMART_ASSERT( fid >= 0);
     SMART_ASSERT( static_cast<unsigned>(fid) < fFileVector.size() );
     SMART_ASSERT( fFileVector[fid] );
@@ -235,8 +243,10 @@ void InfoManager::readDataFile( int fid )
     SMART_ASSERT( lpMap.begin()->second );
     static const LP& lp = *(lpMap.begin()->second); // get address of ANY lp on this computer node
     Time now = lp.getNow();
-    
+
+#ifdef DEBUG
     Logger::debug2() << "InfoManager: setting event scheduler time for Python" << endl;
+#endif
     Time delay = max (LOCAL_MINDELAY, time - now - 3*LOCAL_MINDELAY);
     PyEventInfoManager eventMng( delay );
     lp.sendPyEventInfoManager( eventMng );
@@ -256,15 +266,16 @@ void InfoManager::readDataFile( int fid )
       {
 	// the destination resides on one of LPs in this Unix process
 	// send the info:
+#ifdef DEBUG
 	Logger::debug3() << "InfoManager: processing data: " << data << endl;
-
+#endif
 	// get info object and fill it with data
 	boost::shared_ptr<Input> input( fInputHandler.createInput( data.getClassType(), data.getProfileId(), data.getData() ) );
 	boost::shared_ptr<Info> info = boost::dynamic_pointer_cast<Info>(input);
 	SMART_ASSERT( info );	/// the object MUST actually be a descendant of Info
-
+#ifdef DEBUG
 	Logger::debug3() << "InfoManager: processing info: " << info << endl;
-	
+#endif
 	// set EventInfo parameters:
 	EventInfo event;
 	event.setTo( data.getEntityId(), data.getServiceAddress() );
@@ -294,15 +305,16 @@ void InfoManager::readDataFile( int fid )
       {
 	// the destination resides on one of LPs in this Unix process
 	// send the info:
+#ifdef DEBUG
 	Logger::debug3() << "InfoManager: processing data: " << data << endl;
-
+#endif
 	// get info object and fill it with data
 	boost::shared_ptr<Input> input( fInputHandler.createInput( data.getClassType(), data.getProfileId(), data.getProfile(), data.getData() ) );
 	boost::shared_ptr<Info> info = boost::dynamic_pointer_cast<Info>(input);
 	SMART_ASSERT( info );	/// the object MUST actually be a descendant of Info
-
+#ifdef DEBUG
 	Logger::debug3() << "InfoManager: processing info: " << info << endl;
-	
+#endif
 	// set EventInfo parameters:
 	EventInfo event;
 	event.setTo( data.getEntityId(), data.getServiceAddress() );
@@ -337,10 +349,12 @@ void InfoManager::readFullDataFile(const std::string& infoFiles )
     SMART_ASSERT( lpMap.begin()->second );
     static const LP& lp = *(lpMap.begin()->second); // get address of ANY lp on this computer node
     Time now = lp.getNow();
-    
+
+#ifdef DEBUG
     Logger::debug3() << "InfoManager: in readFullDataFile at time " << now
 		     << ", infoFiles= " << infoFiles << endl;
-
+#endif
+    
     stringstream sstr;
     sstr << infoFiles;
     string fileName;
@@ -358,15 +372,16 @@ void InfoManager::readFullDataFile(const std::string& infoFiles )
 	  {
 	    // the destination resides on one of LPs in this Unix process
 	    // send the info:
+#ifdef DEBUG
 	    Logger::debug3() << "InfoManager: processing data: " << data << endl;
-	    
+#endif
 	    // get info object and fill it with data
 	    boost::shared_ptr<Input> input( fInputHandler.createInput( data.getClassType(), data.getProfileId(), data.getData() ) );
 	    boost::shared_ptr<Info> info = boost::dynamic_pointer_cast<Info>(input);
 	    SMART_ASSERT( info );	/// the object MUST actually be a descendant of Info
-
+#ifdef DEBUG
 	    Logger::debug3() << "InfoManager: processing info: " << info << endl;
-
+#endif
 	    // set EventInfo parameters:
 	    EventInfo event;
 	    event.setTo( data.getEntityId(), data.getServiceAddress() );

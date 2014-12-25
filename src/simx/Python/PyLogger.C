@@ -53,20 +53,26 @@ namespace simx {
     
     void PyDebug1 (const python::str& msg ) {
 
+#ifdef DEBUG
       Logger::debug1() << extract_py_str( msg ) << endl;
+#endif
 
     }
       
   
 void PyDebug2 (const python::str& msg ) {
 
+#ifdef DEBUG
   Logger::debug2() << extract_py_str( msg ) << endl;
+#endif
 
     }
 
 void PyDebug3 (const python::str& msg ) {
 
+#ifdef DEBUG
   Logger::debug3() << extract_py_str( msg ) << endl;
+#endif
     }
 
 void PyDebugInfo (const python::str& msg ) {

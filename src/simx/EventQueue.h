@@ -46,6 +46,7 @@ class EventQueue
     public:
 	EventQueue()
 	{
+	  fNumEvents = 0;
 	}
 	
 	// is the queue empty?
@@ -73,6 +74,7 @@ class EventQueue
 	void push( Time when, const EventInfo& e )
 	{
 	    fQ.insert( std::make_pair( when, e ) );
+	    fNumEvents++;
 	}
 	
 	/// To be invoked at simulation wrap-up.
@@ -93,13 +95,21 @@ class EventQueue
 	    os << ")";
 	}
 
+  uint64_t getNumEvents() const
+  {
+    return fNumEvents;
+  }
+  
+
     protected:
     private:
     
 	typedef std::multimap< Time, EventInfo > QueueType;
-
+	
 	// the underlying queue implementation
 	QueueType	fQ;
+  //unsigned int fNumEvents;
+  uint64_t fNumEvents;
 };
 
 

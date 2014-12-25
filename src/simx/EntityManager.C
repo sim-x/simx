@@ -111,12 +111,15 @@ EntityManager::~EntityManager()
 
 bool EntityManager::createEntity(const EntityID& id, const Entity::ClassType& type, const ProfileID profileId, const std::string data, bool notifyOtherMachines)
 {
+#ifdef  DEBUG
     Logger::debug3() << "EntityManager::createEntity " << id << " of type " << type << endl;
-
+#endif
     // 1) first inform everybody that we're being created
     if( notifyOtherMachines )
     {
+#ifdef DEBUG
 	Logger::debug3() << "EntityManager::createEntityFromInput: informing other machines" << endl;
+#endif
         SMART_VERIFY( fMyLpPtr ).msg("Cannot create new Entities on machines with no LPs");
 	
         shared_ptr<InfoControllerModifyEntity> info;
@@ -148,11 +151,15 @@ bool EntityManager::createEntity(const EntityID& id, const Entity::ClassType& ty
 void EntityManager::createController() {
 
   const Control::LpPtrMap& lps = Control::getLpPtrMap();
+#ifdef DEBUG
   Logger::debug3() << "EntityManager: 	lps= " << lps << endl;
+#endif
   
   if( !lps.empty() )
     {
+#ifdef DEBUG
         Logger::debug3() << "EntityManager: creating controller" << endl;
+#endif
 	string controllerServicesStr("");
 	Config::gConfig.GetConfigurationValue( ky_CONTROLLER_SERVICES, controllerServicesStr );
 	EntityInput controllerInput;
@@ -173,8 +180,9 @@ void EntityManager::createController() {
 
 void EntityManager::createEntities(const string& dataFiles)
 {
+#ifdef DEBUG
     Logger::debug2() << "EntityManager: in readEntityData, dataFiles= '" << dataFiles << "'" << endl;
-   
+#endif
     /// First of all create the Controller:
     createController();
 
@@ -193,7 +201,9 @@ void EntityManager::createEntities(const string& dataFiles)
 	{
 
     	    EntityData data = reader.ReadData();
+#ifdef DEBUG
     	    Logger::debug3() << "EntityManager: data=" << data << endl;
+#endif
 	    EntityID 		id = data.getEntityId();	// ID of entity being created
 	    Entity::ClassType	type = data.getClassType();	// type of entity being created
 
@@ -323,7 +333,9 @@ LPID EntityManager::defaultEntityPlacingFunction( const EntityID& entId ) const
 bool EntityManager::createEntityPrivate(const EntityID& id, const Entity::ClassType& type, 
 					const ProfileID profileId, Input::DataSource& data)
 {
+#ifdef DEBUG
     Logger::debug3() << "EntityManager::createEntityPrivate " << id << " of type " << type << endl;
+#endif
 
     // get input object and fill it with data
     shared_ptr<Input> input( fInputHandler.createInput( type, profileId, data ) );
@@ -369,8 +381,9 @@ bool EntityManager::createEntityPrivate(const EntityID& id, const Entity::ClassT
     Control::LpPtrMap::const_iterator lpIter = lps.find(lpId);
     if( lpIter != lps.end() )
     {
+#ifdef DEBUG
         Logger::debug3() << "EntityManager: creating Entity " << id << endl;
-
+#endif
 	created = true;
 
         // the entity will reside on this LP
@@ -391,7 +404,9 @@ bool EntityManager::createEntityPrivate(const EntityID& id, const Entity::ClassT
 
     } else
     {
+#ifdef DEBUG
     	Logger::debug3() << "EntityManager: NOT creating Entity " << id << endl;
+#endif
 
     }
     
@@ -427,8 +442,9 @@ bool EntityManager::createEntityPrivate(const EntityID& id, const Entity::ClassT
     Control::LpPtrMap::const_iterator lpIter = lps.find(lpId);
     if( lpIter != lps.end() )
     {
+#ifdef DEBUG
         Logger::debug3() << "EntityManager: creating Entity " << id << endl;
-
+#endif
 	created = true;
 
         // the entity will reside on this LP
@@ -449,7 +465,9 @@ bool EntityManager::createEntityPrivate(const EntityID& id, const Entity::ClassT
 
     } else
     {
+#ifdef DEBUG
     	Logger::debug3() << "EntityManager: NOT creating Entity " << id << endl;
+#endif
 
     }
     

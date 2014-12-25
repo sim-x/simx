@@ -67,7 +67,7 @@ def add_service( serv_name, serv_profile={}, serv_data=() ):
     prof_id = util.get_profile_id(serv_profile)
     sd = core.ServiceData(sn,serv_name,prof_id,
                              serv_profile,serv_data )
-    ds.debug2.write("Service profile",serv_profile,"has id",id(serv_profile))
+    #ds.debug2.write("Service profile",serv_profile,"has id",id(serv_profile))
     core.prepare_services([sd])
     return sn
 
@@ -103,5 +103,5 @@ def create_entity( ent_name, ent_class, ent_profile={}, ent_data=() ):
     prof_id = util.get_profile_id(ent_profile)
     ed = core.EntityData(ent_name,ent_class,prof_id,
                             ent_profile,ent_data)
-    ds.debug2.write("Entity profile",ent_profile,"has id",prof_id)
+    #ds.debug2.write("Entity profile",ent_profile,"has id",prof_id)
     core.create_pyentity(ed)

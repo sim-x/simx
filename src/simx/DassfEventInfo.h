@@ -109,7 +109,9 @@ inline DassfEventInfo* DassfEventInfo::clone() const
 
 inline minissf::CompactDataType* DassfEventInfo::pack(minissf::CompactDataType* dp)
 {
+#ifdef DEBUG
   Logger::debug3() << "DassfEventInfo: packing" << std::endl;
+#endif
     PackedData pd(dp);
     fEventInfo.pack( pd );
     return dp;
@@ -137,7 +139,9 @@ inline minissf::CompactDataType* DassfEventInfo::pack(minissf::CompactDataType* 
   inline minissf::Event* DassfEventInfo::unpack(char* buf, int bufsize)
   {
 #ifdef HAVE_MPI_H
+#ifdef DEBUG
     Logger::debug3() << "DassfEventInfo: unpacking" << std::endl;
+#endif
     minissf::CompactDataType* cdata = new minissf::CompactDataType; //create a byte stream
     
     cdata->unpack(buf, bufsize);

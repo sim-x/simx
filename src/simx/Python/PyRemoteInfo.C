@@ -51,8 +51,10 @@ namespace simx {
       //int debug_wait =1 ;
       //while(debug_wait);
       pd.add( fPickledData );
+#ifdef DEBUG
       Logger::debug3() << "PyRemoteInfo: Packed Pickled data  is "
 		       << fPickledData << endl;
+#endif
 
       
     }
@@ -62,8 +64,10 @@ namespace simx {
     {
       if(!pd.get( fPickledData ))
 	assert(false);
+#ifdef DEBUG
       Logger::debug3() << "PyRemoteInfo: Unpacked Pickled data  is "
 		       << fPickledData << endl;
+#endif
     }      
 
     
@@ -74,10 +78,11 @@ namespace simx {
 	{
 	  fPickledData = python::extract<string>(theInfoManager().
 						 getPacker()(py_obj));
-	  
+
+#ifdef DEBUG
 	  Logger::debug3() << "PyRemoteInfo: Pickled data  is "
 			   << fPickledData << endl;
-
+#endif
 		   
 	  return true;
 	}

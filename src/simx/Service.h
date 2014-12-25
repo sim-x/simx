@@ -142,9 +142,10 @@ void Service::sendInfo(boost::shared_ptr<InfoClass>& info, const Time& delay, co
 	Logger::warn() << "Service (" << getEntityId() << "," << fName 
 	    << "): sending an Info that is not unique " << info << std::endl;
     }
+#ifdef DEBUG
     Logger::debug3() << "Service (" << getEntityId() << "," << fName
 	<< "): sending Info " << info << std::endl;
-
+#endif
     // send it off, and invalidate if not disabled
     if( invalidate )
     {
@@ -177,9 +178,10 @@ void Service::sendControlInfo(boost::shared_ptr<InfoClass>& info, const Time& de
 	Logger::warn() << "Service (" << getEntityId() << "," << fName 
 	    << "): sending an Info that is not unique " << info << std::endl;
     }
+#ifdef DEBUG
     Logger::debug3() << "Service (" << getEntityId() << "," << fName
 	<< "): sending Control Info " << info << std::endl;
-
+#endif
     // send it off, and invalidate if not disabled
     if( invalidate )
     {
@@ -230,9 +232,10 @@ int multiSendInfo(
 	Logger::warn() << "Service (" << service.getEntityId() << "," << service.getName()
 	    << "): multisending an Info that is not unique " << info << std::endl;
     }
-
+#ifdef DEBUG
     Logger::debug3() << "Service (" << service.getEntityId() << "," << service.getName() 
 	<< ": multisending Info " << info << " to neighbors " << neighbors << std::endl;
+#endif
     
     /// send the info to each Entity listed in the neighbors input
     int eventsSent = 0;	///< how many copies of the Info we have sent so far

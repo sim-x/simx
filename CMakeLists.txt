@@ -20,7 +20,7 @@ endif(NOT HAVE_FPERMISSIVE)
 #set(CMAKE_CXX_FLAGS "-g -fpermissive" CACHE STRING "" FORCE)
 
 #set(CMAKE_BUILD_TYPE Release)
-#set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
+set(CMAKE_CXX_FLAGS "-O2 -fpermissive")
 #set(CMAKE_CXX_FLAGS "-g -fpermissive")
 
 #for MPI

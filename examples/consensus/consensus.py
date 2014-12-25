@@ -6,15 +6,15 @@ import simx
 #[5,5,50,200,1024,0.125]
 #[5,5,50,400,1024,0.0825]
 
-min_delay = 5
-update_interval = 5
+min_delay = 1
+update_interval = 1
 #min_delay =1 
 #update_interval = 1
 #velocity scale factor
 vel_scale_factor = 50
 #vel_scale_factor = 10
 num_nodes = 200
-end_time = 1024
+end_time = 10240
 #graph_radius = 0.0825
 graph_radius = 0.125
 #graph_radius = 0.05
@@ -58,7 +58,7 @@ class Receiver(simx.PyService):
 
     def __init__(self, name, entity, service_input):
         super(Receiver,self).__init__(name, entity, service_input, self )
-        simx.debug2.write("receiver in constructor",name, entity.get_id(), service_input.data_)
+        #simx.debug2.write("receiver in constructor",name, entity.get_id(), service_input.data_)
         self.recv_function = {'LocMsg': self.recv_loc_msg, 'LocListMsg':self.recv_loc_list_msg}
         
         
@@ -79,6 +79,7 @@ class Receiver(simx.PyService):
 simx.register_service(Receiver)
 simx.register_address("eAddr_RECVR",eAddr_RECVR)
 
+node_list=[]
 
 class Node(simx.PyEntity):
 
@@ -86,8 +87,8 @@ class Node(simx.PyEntity):
         if py_obj is None:
             py_obj = self
         super(Node,self).__init__(ID,lp,entity_input,py_obj)
-        simx.debug2.write("Node",self.get_id(),"is being created with input ",
-                          entity_input.data_," at time ",self.get_now())
+        #simx.debug2.write("Node",self.get_id(),"is being created with input ",
+        #                  entity_input.data_," at time ",self.get_now())
         self.attr = entity_input.data_
         self.gnode_id = self.attr['gnode_id']
         self.loc = Gpos[self.gnode_id]
@@ -138,6 +139,9 @@ class Updater(simx.Process):
     
     def run(self):
         while(simx.get_now() < end_time):
+            #for node in node_list:
+            #    node.update_pos(None)
+            #    node.update_velocity(None)
             simx.probe_entities('n',Node.update_pos,())
             simx.probe_entities('n',Node.update_velocity,())
             #send location info of nodes on this process to all other LPs
@@ -146,7 +150,7 @@ class Updater(simx.Process):
                     if i == simx.get_rank():
                         continue
                     simx.get_controller().send_info(LocListMsg(local_pos),min_delay,
-                                                  ('!',i),eAddr_RECVR)
+                                                    ('!',i),eAddr_RECVR)
             self.sleep(update_interval)
             
             
@@ -186,10 +190,13 @@ simx.init_env()
 
 for i in xrange(num_nodes):
     simx.create_entity(('n',i),Node,ent_data=({'gnode_id':i}))
+    node_list.append(simx.get_entity(('n',i)))
+
+#quit()
     
 simx.get_controller().install_service(Receiver,eAddr_RECVR)
 simx.schedule_process(Updater())
 #only rank 0 does the plotting
-if simx.get_rank() == 0:
-    simx.schedule_process(Plotter())
+#if simx.get_rank() == 0:
+#    simx.schedule_process(Plotter())
 simx.run()

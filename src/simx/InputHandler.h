@@ -107,12 +107,15 @@ InputHandler<ObjectIdent>::InputHandler(const std::string& profileSetName)
 template<typename ObjectIdent>
 boost::shared_ptr<Input> InputHandler<ObjectIdent>::createInput(const ObjectIdent& inputIdent, const ProfileID profileId, Input::DataSource& dataSource)
 {
+#ifdef DEBUG
     Logger::debug3() << "InputHandler: creating Input " << inputIdent << " " << profileId << std::endl;
-
+#endif
     boost::shared_ptr<Input>& input = fProfileMap[ std::make_pair(inputIdent,profileId) ];
     if( !input )
     {
+#ifdef DEBUG
       Logger::debug3() << "InputHandler: loading in new profile" << std::endl;
+#endif
 	// the Input does not yet have its Profile read in, so do it
 	input.reset( fInputFactory.CreateObject(inputIdent, input ) );
 	SMART_ASSERT( input );
@@ -139,8 +142,10 @@ boost::shared_ptr<Input> InputHandler<ObjectIdent>::createInput(const ObjectIden
     ws(dataSource);
     if( !dataSource.eof() )
     {
+#ifdef DEBUG
 	Logger::debug2() << "InputHandler: not all data read when creating Input " << inputIdent 
 			 << " with ProfileSetName " << fProfileSetName << std::endl;
+#endif
     }
     
     return newInput;
@@ -152,12 +157,15 @@ template<typename ObjectIdent>
 boost::shared_ptr<Input> InputHandler<ObjectIdent>::createInput( const ObjectIdent& inputIdent, const ProfileID profileId, const PyProfile& profile, const boost::python::object& data )
 
 {
+#ifdef DEBUG
   Logger::debug3() << "InputHandler: creating Input " << inputIdent << " " << profileId << std::endl;
-
+#endif
   boost::shared_ptr<Input>& input = fProfileMap[ std::make_pair(inputIdent,profileId) ];
   if( !input )
     {
+#ifdef DEBUG
       Logger::debug3() << "InputHandler: loading in new profile" << std::endl;
+#endif
       // the Input does not yet have its Profile read in, so do it
       input.reset( fInputFactory.CreateObject(inputIdent, input ) );
       SMART_ASSERT( input );
@@ -180,8 +188,9 @@ void InputHandler<ObjectIdent>::loadProfile( const ProfileID profileId,
 					     const PyProfile& profile,
 					     boost::shared_ptr<Input> input)
 {
-  
+#ifdef DEBUG
   Logger::debug3() << "InputHandler: loading in Python profile " << profileId << std::endl;
+#endif
     SMART_ASSERT( input );
     // make a copy of profile using shared pointer
     //boost::shared_ptr<PyProfile> profile_ptr = 

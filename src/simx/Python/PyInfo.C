@@ -154,7 +154,7 @@ namespace simx {
       //gstate = PyGILState_Ensure();
       //Py_INCREF(fData.ptr());
       //assert(fData.ptr());
-     
+
       pd.add( 
 	     //python::extract<python::str>
 	     //(theInfoManager().getPacker()(*fData)));

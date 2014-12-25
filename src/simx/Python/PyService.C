@@ -53,7 +53,11 @@ using boost::shared_ptr;
     void PyService::receive( shared_ptr<PyInfo> info )
 
     {
+
+
+#ifdef DEBUG
       Logger::debug3() << "PyService.C: Service " << getName() << ": PyInfo received" << endl;
+#endif
       //PyGILState_STATE gstate;
       //gstate = PyGILState_Ensure();
       try {
@@ -78,7 +82,13 @@ using boost::shared_ptr;
 	//fPyObj.attr("recv")(*(info->fData));
 	//assert(info->getData());
 	//else
-	fPyObj.attr("recv")(info->getData());
+	//fPyObj.attr("recv")(info->getData());
+	fReceiver(info->getData());
+	// if (! fRecvrSet)
+	//   {
+	//     fReceiver = 
+	//   }
+	  
       }
       catch(...)
 	{
@@ -95,14 +105,17 @@ using boost::shared_ptr;
 #ifdef SIMX_USE_PRIME
     void PyService::receive( shared_ptr<PyRemoteInfo> info )
     {
+#ifdef DEBUG
       Logger::debug3() << "Pyservice.C: Service " << getName() 
 		       << ": PyRemoteInfo received" << endl;
+#endif
       try
 	{
 	  //theInfoManager().getUnpacker();
 	  //theInfoManager().getUnpacker()( info->fPickledData );
-	  fPyObj.attr("recv")( theInfoManager().getUnpacker()
-			       ( info->fPickledData));
+	  //fPyObj.attr("recv")( theInfoManager().getUnpacker()
+	  //		       ( info->fPickledData));
+	  fReceiver( theInfoManager().getUnpacker()(info->fPickledData));
 	}
       catch(...)
 	{
@@ -123,8 +136,10 @@ using boost::shared_ptr;
 			       const python::tuple& dest_ent,
 			       const long dest_serv ) {
 
+#ifdef DEBUG
       Logger::debug3() << "PyService: (" << getName() <<  ") on Entity" 
 		       << getEntityId() << "sending PyInfo" << endl;
+#endif
       fPyEnt.sendPyInfo( py_info, time, dest_ent, dest_serv);
      //  return;
 

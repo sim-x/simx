@@ -20,8 +20,10 @@ import simx
 from Person import *
 from HelloHandler import *
 
+random.seed(0)
+
 num_entities = 32
-end_time = 1024
+end_time = 1000000
 
 # initialize
 simx.init("helloworldv2")
@@ -41,16 +43,18 @@ class MessageGen (simx.Process):
     Schedule simple message sending and receiving
     """
     def run(self):
-        for evt_time in range(1,end_time):
+        for evt_time in xrange(1,end_time/2-1):
             hello_rcvr = ('p',random.choice(xrange(num_entities)))
             reply_rcvr = ('p',random.choice(xrange(num_entities)))
-            simx.schedule_event(evt_time, hello_rcvr, eAddr_HelloHandlerPerson,
+            #print evt_time,hello_rcvr,reply_rcvr
+            simx.schedule_event(simx.get_now()+evt_time, hello_rcvr, eAddr_HelloHandlerPerson,
                                 HelloMessage(source_id=reply_rcvr))
             #schedule in chunks of 10 time units
             if (evt_time % 10 == 0):
                 # go to sleep, and wake up in time to schedule
                 # next batch of events
-                 self.sleep(evt_time - simx.get_now())
+                #raw_input()
+                self.sleep(evt_time - simx.get_now())
             
             
 mg = MessageGen()

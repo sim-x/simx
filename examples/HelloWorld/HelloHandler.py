@@ -36,8 +36,8 @@ class HelloHandlerPerson(simx.PyService):
 
     def __init__(self,name, person, service_input ):
         super(HelloHandlerPerson,self).__init__( name, person, service_input,self )
-        simx.debug2.write("HelloHandlerPerson in constructor",
-                     name, person.get_id(), service_input.data_)   
+        #simx.debug2.write("HelloHandlerPerson in constructor",
+        #             name, person.get_id(), service_input.data_)   
         self.person = person
         #self.person.say_hello()
         self.recv_function = {'HelloMessage':self.recv_HelloMessage,
@@ -55,11 +55,13 @@ class HelloHandlerPerson(simx.PyService):
         #rf = random.choice([self.recv_hello, self.recv_reply])
         #rf(msg)
 
-    def recv_HelloMessage(self,msg):    
-        simx.debug3.write("HelloHandler received hello",msg)
-        simx.output.write(self,100,'Received a hello')
-        simx.output.write(self,200,"Random number:",
-                     self.get_random().get_uniform() )
+    def recv_HelloMessage(self,msg):
+        #print "person ",self.get_entity_id()," received hello from ", \
+         #   msg.source_id, " at time ", simx.get_now()
+        #simx.debug3.write("HelloHandler received hello",msg)
+        #simx.output.write(self,100,'Received a hello')
+        #simx.output.write(self,200,"Random number:",
+        #             self.get_random().get_uniform() )
         #simulate some computation
         # x = int(random.expovariate(0.00001))
         # for i in xrange(x):
@@ -69,9 +71,12 @@ class HelloHandlerPerson(simx.PyService):
                        simx.get_min_delay(), msg.source_id,eAddr_HelloHandlerPerson)
 
     def recv_ReplyMessage(self,msg):
-        simx.debug3.write("HelloHandlerPerson::receive(Reply):",msg)
-        simx.output.write(self,100,"Received a reply")
-
+        #simx.debug3.write("HelloHandlerPerson::receive(Reply):",msg)
+        #simx.output.write(self,100,"Received a reply")
+        #print "person ",self.get_entity_id()," received reply from ", \
+        #    msg.source_id, " at time ", simx.get_now()
+        pass
+    
     def __str__(self):
         return "HelloHandler(%s)" %(self.get_entity_id())
 

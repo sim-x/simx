@@ -49,7 +49,9 @@ namespace Output {
 
     void init(const std::string& fileName)
     {
+#ifdef DEBUG
         Logger::debug2() << "Output: opening OutputStream '" << fileName << "'" << endl;
+#endif
         SMART_ASSERT( !fOutputStream.fStream.is_open() );
 
         // try to open the file

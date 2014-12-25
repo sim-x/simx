@@ -65,7 +65,9 @@ void EntityInput::readProfile(Input::ProfileSource& p)
    } else
    {
       // no services specified
+#ifdef DEBUG
       Logger::debug3() << "EntityInput: no SERVICES specification in a profile" << std::endl;
+#endif
    }
 }
 
@@ -82,16 +84,20 @@ void EntityInput::loadServices( EntityInput& input, string result )
          {
             // erase a possible service when no '=' is used
             ServiceAddress addr = boost::lexical_cast<ServiceAddress>(setting);
+#ifdef DEBUG
             Logger::debug3() << "EntityInput: erasing service " 
-                             << addr << std::endl;            
+                             << addr << std::endl;
+#endif
             for( Services::iterator itr = input.fServices.begin();  
                  itr != input.fServices.end();  ++itr ) {
                bool hasAddr = false;
                for( ServiceAddresses::iterator addrItr = itr->first.begin();  
                     addrItr != itr->first.end();  ++addrItr ) {
                   if(*addrItr == addr) {
+#ifdef DEBUG
                      Logger::debug3() << "EntityInput: erasing ServiceAddress" 
-                                      << std::endl;                        
+                                      << std::endl;
+#endif
                      hasAddr = true;
                      itr->first.erase(addrItr);
                      break;
@@ -99,9 +105,11 @@ void EntityInput::loadServices( EntityInput& input, string result )
                }   
                if(hasAddr) {
                   if(itr->first.size() == 0) {
-                     // erase the whole thing 
+                     // erase the whole thing
+#ifdef DEBUG
                      Logger::debug3() << "EntityInput: erasing ServiceAssignment" 
-                                      << std::endl;                       
+                                      << std::endl;
+#endif
                      input.fServices.erase(itr);  
                   }   
                   break;
@@ -109,15 +117,18 @@ void EntityInput::loadServices( EntityInput& input, string result )
             } 
          } else
          {
+#ifdef DEBUG
             Logger::debug3() << "EntityInput: adding service" 
-                             << std::endl;             
+                             << std::endl;
+#endif
             // add serviceaddr-servicename setting
             string addressStr = setting.substr(0,pos);
             ServiceName id = boost::lexical_cast<ServiceName>( 
                setting.substr(pos+1,setting.size())
             );
+#ifdef DEBUG
             Logger::debug3() << "EntityInput: id: " << id << std::endl; 
-                        
+#endif            
             ServiceAddresses addresses;
             pos = addressStr.find(',');
             while(pos > 0) {
@@ -131,11 +142,14 @@ void EntityInput::loadServices( EntityInput& input, string result )
             ServiceAddress address = boost::lexical_cast<ServiceAddress>(
                   addressStr);
             addresses.push_back(address);
-                              
-            Logger::debug3() << "EntityInput: addresses: " << std::endl;                  
+#ifdef DEBUG     
+            Logger::debug3() << "EntityInput: addresses: " << std::endl;
+#endif
             for( ServiceAddresses::const_iterator itr = addresses.begin();
                  itr != addresses.end();  ++itr ) {
+#ifdef DEBUG
                Logger::debug3() << "   " << *itr << std::endl;
+#endif
             }
             
             input.fServices.push_back(ServiceAssignment(addresses, id));
@@ -172,8 +186,9 @@ void EntityInput::print(std::ostream& os) const
     //Initializee the weight to default 1
 
     fWeight = 1;
+#ifdef DEBUG
     Logger::debug2() << "Entity " << id << ": is being created on LP=" << fLP.getId() << endl;
-
+#endif
 }
 
 Entity::~Entity()
@@ -238,9 +253,10 @@ void Entity::processOutgoingControlInfo(const boost::shared_ptr<const Info> info
 
 void Entity::processIncomingInfo(boost::shared_ptr<Info> info, const ServiceAddress& address) const
 {
+#ifdef DEBUG
     Logger::debug2() << "Entity " << fId << ": received Info " << info 
 	<< " to address " << address << endl;
-
+#endif
     SMART_ASSERT( info )( fId )( address ).msg("received NULL Info");
     SMART_ASSERT( info.unique() )( fId )( address )( info ).msg("expected unique info Ptr");
 
@@ -260,9 +276,10 @@ void Entity::processIncomingInfo(boost::shared_ptr<Info> info, const ServiceAddr
 
 void Entity::processIncomingControlInfo(boost::shared_ptr<Info> info, const ServiceAddress& address) const
 {
+#ifdef DEBUG
     Logger::debug2() << "Entity " << fId << ": received Control Info " << info 
 	<< " to address " << address << endl;
-
+#endif
     SMART_ASSERT( info )( fId )( address ).msg("received NULL Info");
     SMART_ASSERT( info.unique() )( fId )( address )( info ).msg("expected unique info Ptr");
 

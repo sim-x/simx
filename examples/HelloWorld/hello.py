@@ -26,10 +26,12 @@ from Person import *
 from HelloHandler import *
 
 
+random.seed(0)
+
 ####### Initialize MPI and configuration framework#######
 simx.init("HelloWorld")
 
-end_time = 2**10
+end_time = 500000
 
 ##### set simulation configuration values ########
 simx.set_min_delay(1)
@@ -37,7 +39,7 @@ simx.set_end_time(end_time)
 
 # These are optional
 simx.set_output_file("helloworld.out")
-simx.set_log_level("info")
+#simx.set_log_level("debug3")
 simx.set_log_file("helloworld.log")
 
 ####### Initialize environment (logging, output etc) ###########
@@ -75,7 +77,9 @@ def create_events():
         
     
 #schedule_events()
-es = simx.EventScheduler(create_events)
+#es = simx.EventScheduler(create_events)
+
+create_events()
 
 ##### Run Simulation #################
 simx.run()

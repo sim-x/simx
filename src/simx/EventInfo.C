@@ -125,9 +125,11 @@ void EventInfo::execute(void)
     
     // DEBUGGING!
     // check that the current time is the time that I am supposed to execute!
+#ifdef DEBUG
     Logger::debug3() << "Executing ";
     print(Logger::debug3());
     Logger::debug3() << endl;
+#endif
     Time currentTime = entity->getNow();
     // This doesn't work for types like uint64_t -- Do not calculate diff for these!
     //Time diff = abs(currentTime - fTime);
@@ -158,12 +160,16 @@ void EventInfo::execute(void)
     SMART_ASSERT( noconstInfo );
     if( !noconstInfo.unique() )
     {
+#ifdef DEBUG
 	Logger::debug3() << "EventInfo: making copy of info " << noconstInfo << endl;
+#endif
 	theInfoManager().duplicateInfo( *noconstInfo, noconstInfo );
 	SMART_ASSERT( noconstInfo );
     } else
     {
+#ifdef DEBUG
 	Logger::debug3() << "EventInfo: info is unique " << noconstInfo << endl;
+#endif
     }
     SMART_ASSERT( noconstInfo.unique() )( noconstInfo );
     

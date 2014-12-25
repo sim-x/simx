@@ -59,9 +59,14 @@ namespace simx {
 		 const PyServiceInput& input, const boost::python::object& serv_obj )
 	: Service(name, ent, input),
 	fPyEnt(ent), fPyObj( serv_obj ){
-
+#ifdef DEBUG
 	    Logger::debug3() << "I'm a c++ PyService" << std::endl;
+#endif
 	    i = 9374;
+	    if (PyObject_HasAttrString(serv_obj.ptr(), "recv"))
+	      fReceiver = fPyObj.attr("recv");
+	    else
+	      fReceiver = boost::python::object();
 	//print_i();
 	//fPyObj( name, ent, input );
 	//print_i();
@@ -108,6 +113,7 @@ namespace simx {
     private:
       PyEntity& fPyEnt;
       boost::python::object fPyObj; // Python service object
+      boost::python::object fReceiver; // the receive method of the python object
 
     };
 
