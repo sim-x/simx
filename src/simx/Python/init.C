@@ -52,7 +52,7 @@
 #include <boost/python.hpp>
 
 #include "simx/LP.h"
-
+#include <sys/time.h>
 
 using namespace Log;
 using namespace std;
@@ -65,13 +65,15 @@ using namespace boost;
 //extern void Global::ModuleMain();
 namespace{
 
-
+  struct timeval w_time_start_init;
 
 int die( const string& emsg );
 
 //int main(int argc, char** argv)
  int init_mpi(const python::object& name_str)//, const python::object& config_str )
 {
+
+  gettimeofday(&w_time_start_init,NULL);
 
   string name("()");
   try {
@@ -181,7 +183,10 @@ int die( const string& emsg );
   int rank = 0;
   Common::Values::SetRank(rank);
 #endif
+  if (rank == 0)
+    cerr << "[SimX: INITIALIZING]" << endl;
   const int myRank( Common::Values::gRank() );
+
 #ifdef HAVE_MPI_H
   int mpiSize;
   const int mpiReturn2( MPI_Comm_size( MPI_COMM_WORLD, &mpiSize ) );
@@ -200,9 +205,15 @@ int die( const string& emsg );
     cerr << emsg << endl;
     log().Failure( 0, emsg );
   }
+  if ( rank == 0 )
+    {
+      cerr << "[MPI INITIALIZED] " << endl;
+      cerr << "[NUMBER OF PROCESSES: " << mpiSize << "]" << endl;
+    }
   return MPI_SUCCESS;
 #endif //HAVE_MPI_H
-
+  cerr << "[MPI DISABLED]" << endl;
+  cerr << "[NUMBER OF PROCESSES: 1]" << endl;
 #endif // SIMX_USE_PRIME
 
 }
@@ -329,7 +340,16 @@ int init_env() {
 
 
 int run_simulation() {
-
+  if (Common::Values::gRank() == 0)
+    {
+      struct timeval w_time_end_init;
+      gettimeofday(&w_time_end_init,NULL);
+      double it = (w_time_end_init.tv_sec - w_time_start_init.tv_sec) +
+	(w_time_end_init.tv_usec - w_time_start_init.tv_usec) * 0.000001;
+      cerr << "[INITIALIZATION TIME: " << it << " SECS]" << endl;
+    }
+  
+  
    // TODO (remove code repetition below for failmsg
   //  const int myRank( Common::Values::gRank() );
   const string failMsg = Common::Values::gProgName() + 

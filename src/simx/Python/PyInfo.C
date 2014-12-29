@@ -85,7 +85,7 @@ namespace simx {
       //fDataPtr = boost::shared_ptr<PyObjHolder>(new PyObjHolder( data ));
       fDataPtr = boost::shared_ptr<PyObjHolder>(new PyObjHolder);
       //fDataPtr = new PyObjHolder;
-     
+      
       //fDataPtr->fObj = &data;
       fDataPtr->fObj = data;
       //Py_INCREF(data.ptr());
@@ -183,7 +183,7 @@ namespace simx {
       //assert(pd.getAnything( fData ));
 
       /* // python::object pickler = python::import("cPickle");
-      
+	 
       string s;
       pd.get( s );
       Logger::debug3() << "PyInfo: Inside unpack" <<  s << endl;

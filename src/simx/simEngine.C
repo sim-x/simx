@@ -360,7 +360,10 @@ void run()
 	// 3) find out what the next base_time is (SYNC)
 	//Logger::info() << "B: waiting...." << endl;
 	next_time = min( next_time, g_time_next_sent );	//< you must include the receive time of the sent events, to make sure pending events don't mess with the earliest time
-	MPI_Allreduce( &next_time, &base_time, 1, g_mpi_time_type, MPI_MIN, g_comm_sync );
+	if (g_num_proc > 1)
+	  MPI_Allreduce( &next_time, &base_time, 1, g_mpi_time_type, MPI_MIN, g_comm_sync );
+	else
+	  base_time = next_time;
 	
     } // while( base_time <= g_time_end )
     
@@ -444,7 +447,7 @@ void run()
 #endif
 }
 
-// shuts down MPI
+// reports some stats, shuts down MPI (if enabled) and clears out queue
 void finalize()
 {
     // MPI is shut down in framework/Global/main_MPI.C
@@ -468,12 +471,13 @@ void finalize()
 #endif
   if (g_my_rank == 0)
     {
-      std::cerr << "TOTAL EVENTS: " << tot_events << endl;
+      std::cerr << "[TOTAL EVENTS: " << tot_events << "]" << endl;
       struct timeval w_time_end;
       gettimeofday(&w_time_end,NULL);
-      double rt = (w_time_end.tv_usec - w_time_start.tv_usec)*0.000001;
-      //std::cerr << "TOTAL RUNNING TIME: " << rt << " (s) " << endl;
-      //std::cerr << "EVENT RATE: " << tot_events/rt << " (evts/s) " << endl;
+      double rt = (w_time_end.tv_sec - w_time_start.tv_sec) +
+	(w_time_end.tv_usec - w_time_start.tv_usec)*0.000001;
+      std::cerr << "[RUNNING TIME: " << rt << " (s)]" << endl;
+      std::cerr << "[RUNNING TIME EVENT RATE: " << tot_events/rt << " (evts/s)]" << endl;
     }
 }
 //=============================================================
@@ -527,7 +531,7 @@ void sendEventInfo( LPID destLP, const EventInfo& e )
 	// Better solution would be to send 'empty' messages at the end of
 	// each time-step to all recipients that you send anything to
 	// in it, send that synchronously, and send the rest using normal send. 
-	MPI_Ssend( dp.getMem(), dp.getLength(), MPI_BYTE, destLP, g_eventinfo_tag, g_comm_events );
+	MPI_Send( dp.getMem(), dp.getLength(), MPI_BYTE, destLP, g_eventinfo_tag, g_comm_events );
     }
 #else // MPI  not enabled
     g_eq.push( e.getTime(), e );

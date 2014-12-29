@@ -58,5 +58,8 @@ class MessageGen (simx.Process):
             
             
 mg = MessageGen()
+
+
+
 simx.schedule_process(mg)
 simx.run()

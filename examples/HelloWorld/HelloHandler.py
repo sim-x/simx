@@ -69,7 +69,6 @@ class HelloHandlerPerson(simx.PyService):
         self.send_info(ReplyMessage(source_id=self.get_entity_id(),
                                     dest_id=msg.source_id),
                        simx.get_min_delay(), msg.source_id,eAddr_HelloHandlerPerson)
-
     def recv_ReplyMessage(self,msg):
         #simx.debug3.write("HelloHandlerPerson::receive(Reply):",msg)
         #simx.output.write(self,100,"Received a reply")

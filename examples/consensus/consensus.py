@@ -1,11 +1,12 @@
 import networkx as nx
-import matplotlib.pyplot as plt
+
 
 import simx
 
 #[5,5,50,200,1024,0.125]
 #[5,5,50,400,1024,0.0825]
 
+plot = True
 min_delay = 1
 update_interval = 1
 #min_delay =1 
@@ -196,7 +197,11 @@ for i in xrange(num_nodes):
     
 simx.get_controller().install_service(Receiver,eAddr_RECVR)
 simx.schedule_process(Updater())
+
 #only rank 0 does the plotting
-#if simx.get_rank() == 0:
-#    simx.schedule_process(Plotter())
+if plot == True:
+    import matplotlib.pyplot as plt
+    if simx.get_rank() == 0:
+        simx.schedule_process(Plotter())
+
 simx.run()
