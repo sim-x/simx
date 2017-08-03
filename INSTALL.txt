@@ -65,13 +65,12 @@ python setup.py install
 Other Options
 -------------
 
-By default SimX is built with the bundled SSF library 
-(www.primessf.net/minissf) for message passing and synchronization. 
-SimX can also be built with its own native message passing library.
+SimX comes with the option to use the SSF library (www.primessf.net/minissf) for message passing and synchronization. 
+By default, SimX is built with its own native message passing library.
 
-For this, do the following:
+TO use SSF, do the following:
 
-python setup.py build --without-ssf
+python setup.py build --with-ssf
 python setup.py install
 
 Depending on your computational setup and simulation needs, 
